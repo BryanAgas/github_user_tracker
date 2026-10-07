@@ -37,7 +37,7 @@ Unit tests for `tracker.js` use Node's built-in runner (Node 20+):
     node --test tests/*.test.mjs
 
 The browser smoke test (`tests/smoke.mjs`) serves `site/` with the production
-CSP and checks every page at 360, 768, 1280 and 1600px: console errors,
+CSP and checks every page at 320, 360, 768, 1280 and 1600px: console errors,
 horizontal scroll, links and anchors, the mobile menu, form validation and
 the tracker against a mocked GitHub API. Playwright isn't a dependency of
 this repo, so point Node at an existing install:
@@ -49,5 +49,5 @@ Add `--shots <dir>` to save screenshots.
 
 ### Deploy
 
-Netlify publishes `site/` as-is (see `netlify.toml`, which also sets the
+Live at https://bryan-agas.netlify.app. Netlify publishes `site/` as-is (see `netlify.toml`, which also sets the
 security and caching headers). The contact form uses Netlify Forms.
