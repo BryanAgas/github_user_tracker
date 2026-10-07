@@ -42,11 +42,17 @@ def display_event(event):
     event_type = event.get("type")
     repo_name = event["repo"]["name"]
     
+    payload = event.get("payload") or {}
+
     if event_type == "PushEvent":
-        commit_count = len(event["payload"]["commits"])
-        print(f"Pushed {commit_count} commit(s) to {repo_name}")
+        # GitHub no longer always includes the commit list in push events
+        commits = payload.get("commits")
+        if commits is None:
+            print(f"Pushed to {repo_name}")
+        else:
+            print(f"Pushed {len(commits)} commit(s) to {repo_name}")
     elif event_type == "IssuesEvent":
-        action = event["payload"]["action"]
+        action = payload.get("action") or "updated"
         print(f"{action.capitalize()} an issue in {repo_name}")
     elif event_type == "WatchEvent":
         print(f"Starred {repo_name}")

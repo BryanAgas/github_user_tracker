@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Both Homes — case study · Bryan Agas</title>
+  <meta name="description" content="How Bryan Agas designed, built and ships Both Homes, a calm shared calendar for separated parents: the problem, the decisions that shaped it, and how it’s built.">
+  <link rel="canonical" href="https://bryan-agas.netlify.app/work/both-homes/">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F5F2EB" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121316" media="(prefers-color-scheme: dark)">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Bryan Agas">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:url" content="https://bryan-agas.netlify.app/work/both-homes/">
+  <meta property="og:title" content="Both Homes — case study · Bryan Agas">
+  <meta property="og:description" content="How Bryan Agas designed, built and ships Both Homes, a calm shared calendar for separated parents: the problem, the decisions that shaped it, and how it’s built.">
+  <meta property="og:image" content="https://bryan-agas.netlify.app/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Bryan Agas — I build calm software for the parts of life that get messy.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Both Homes — case study · Bryan Agas">
+  <meta name="twitter:description" content="How Bryan Agas designed, built and ships Both Homes, a calm shared calendar for separated parents: the problem, the decisions that shaped it, and how it’s built.">
+  <meta name="twitter:image" content="https://bryan-agas.netlify.app/og.png">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&amp;display=swap">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <script type="module" src="/assets/js/main.js"></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Both Homes",
+    "description": "A calm shared calendar for separated parents.",
+    "url": "https://bothhomes.co.uk",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "iOS, Web",
+    "author": { "@type": "Person", "name": "Bryan Agas", "url": "https://bryan-agas.netlify.app/" },
+    "publisher": { "@type": "Person", "name": "Bryan Agas", "url": "https://bryan-agas.netlify.app/" },
+    "offers": [
+      { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "GBP" },
+      { "@type": "Offer", "name": "Plus (monthly)", "price": "3.99", "priceCurrency": "GBP" },
+      { "@type": "Offer", "name": "Plus (yearly)", "price": "34.99", "priceCurrency": "GBP" }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="wordmark" href="/">Bryan Agas</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" hidden>Menu</button>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <ul class="site-nav__list">
+          <li><a href="/#work">Work</a></li>
+          <li><a href="/#path">Path</a></li>
+          <li><a href="/#tracker">Tracker</a></li>
+          <li><a href="/#about">About</a></li>
+          <li><a href="/#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <article class="case">
+      <header class="hero hero--case">
+        <div class="container">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <ol>
+              <li><a href="/#work">Work</a></li>
+              <li><a href="/work/both-homes/" aria-current="page">Both Homes</a></li>
+            </ol>
+          </nav>
+          <p class="eyebrow">Case study · 2026</p>
+          <h1 class="display display--case">Both Homes: one calm answer to <span class="hl">“where is my child tonight?”</span></h1>
+          <div class="ledger hero__ledger">
+            <div class="ledger__body hero__body">
+              <p class="lede">A shared calendar for separated parents that I designed, built and publish on my own. It runs as an iOS app (in public TestFlight while the App Store listing is finalised) and as a web app for Android and computers.</p>
+            </div>
+          </div>
+          <dl class="case-facts">
+            <div><dt>Role</dt><dd>Everything: product, design, engineering, policy</dd></div>
+            <div><dt>Platforms</dt><dd>iOS, web</dd></div>
+            <div><dt>Public site</dt><dd>React, TypeScript, Vite, Tailwind, Vitest, Playwright, Netlify</dd></div>
+            <div><dt>Status</dt><dd>Live; App Store listing pending</dd></div>
+          </dl>
+        </div>
+      </header>
+
+      <section class="section" aria-labelledby="problem-title">
+        <div class="container section__inner">
+          <div class="ledger">
+            <p class="note">01</p>
+            <div class="ledger__body prose">
+              <h2 id="problem-title">The problem</h2>
+              <p>When a child lives across two homes, the schedule is the thing everyone has to agree on and the thing most likely to start an argument. Group chats bury it, shared generic calendars let anyone change anything, and the question a child or a parent actually asks is simple: where am I sleeping tonight?</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="idea-title">
+        <div class="container section__inner">
+          <div class="ledger">
+            <p class="note">02</p>
+            <div class="ledger__body prose">
+              <h2 id="idea-title">The idea</h2>
+              <p>Answer that one question so clearly that there’s nothing to argue about. Set the pattern once and every night is laid out months ahead, one colour per home, in the same place for both homes.</p>
+            </div>
+          </div>
+          <div class="ledger case__art">
+            <div class="ledger__body">
+              <div class="bh bh--wide" role="img" aria-label="Illustration of the Both Homes calendar: four weeks of nights laid out ahead, each coloured for one of two homes in a repeating pattern. Tonight is at Home B. Wednesday the 16th carries a note, Swim kit, and a request to swap Friday the 18th is awaiting a reply.">
+              <div class="bh__cal">
+                <div class="bh__top">
+                  <p class="bh__tonight"><span class="bh__kicker">Tonight</span> <span class="bh__home"><span class="bh__swatch bh__swatch--b"></span>Home B</span></p>
+                  <p class="bh__legend"><span><span class="bh__swatch bh__swatch--a"></span>Home A</span> <span><span class="bh__swatch bh__swatch--b"></span>Home B</span></p>
+                </div>
+                <div class="bh__dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+                <div class="bh__grid">
+                  <span class="bh__d bh__d--a">7</span>
+                  <span class="bh__d bh__d--a">8</span>
+                  <span class="bh__d bh__d--b">9</span>
+                  <span class="bh__d bh__d--b is-today">10</span>
+                  <span class="bh__d bh__d--a">11</span>
+                  <span class="bh__d bh__d--a">12</span>
+                  <span class="bh__d bh__d--a">13</span>
+                  <span class="bh__d bh__d--b">14</span>
+                  <span class="bh__d bh__d--b">15</span>
+                  <span class="bh__d bh__d--a has-note">16</span>
+                  <span class="bh__d bh__d--a">17</span>
+                  <span class="bh__d bh__d--b is-pending">18</span>
+                  <span class="bh__d bh__d--b">19</span>
+                  <span class="bh__d bh__d--b">20</span>
+                  <span class="bh__d bh__d--a">21</span>
+                  <span class="bh__d bh__d--a">22</span>
+                  <span class="bh__d bh__d--b">23</span>
+                  <span class="bh__d bh__d--b">24</span>
+                  <span class="bh__d bh__d--a">25</span>
+                  <span class="bh__d bh__d--a">26</span>
+                  <span class="bh__d bh__d--a">27</span>
+                  <span class="bh__d bh__d--b">28</span>
+                  <span class="bh__d bh__d--b">29</span>
+                  <span class="bh__d bh__d--a">30</span>
+                  <span class="bh__d bh__d--a">1</span>
+                  <span class="bh__d bh__d--b">2</span>
+                  <span class="bh__d bh__d--b">3</span>
+                  <span class="bh__d bh__d--b">4</span>
+                </div>
+              </div>
+              <div class="bh__side">
+                <p class="bh__side-label">This month</p>
+                <div class="bh__item"><span class="bh__note-dot"></span><span><strong>Swim kit</strong> Wed 16 · Home A</span></div>
+                <div class="bh__item bh__item--pending"><span class="bh__pending-mark"></span><span><strong>Swap Fri 18?</strong> Home B → Home A · Awaiting reply</span></div>
+                <p class="bh__side-foot">Nothing changes until it’s answered.</p>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="decisions-title">
+        <div class="container section__inner">
+          <div class="ledger">
+            <p class="note">03</p>
+            <div class="ledger__body">
+              <h2 id="decisions-title">Decisions that shaped it</h2>
+              <ol class="decisions">
+                <li>
+                  <h3>Nothing moves without agreement.</h3>
+                  <p>A change is a request that the other parent answers. The calendar only updates once the required decisions are made, so neither parent wakes up to a surprise.</p>
+                </li>
+                <li>
+                  <h3>Notes live on the day.</h3>
+                  <p>Swimming kit, a passport, a dentist appointment. A short note attached to a night means both homes see it in context, not lost in a chat thread.</p>
+                </li>
+                <li>
+                  <h3>Private by default.</h3>
+                  <p>No public links. An invitation goes to one email address, works once and expires after seven days. People can export their data or ask for deletion from the site.</p>
+                </li>
+                <li>
+                  <h3>A free tier that’s genuinely useful.</h3>
+                  <p>One calendar, two homes, templates and a few shared requests a month are free, and so is viewing and responding. Plus (£3.99 a month or £34.99 a year) adds calendars and lets a decision-maker sponsor a child’s calendar. The 14-day trial asks for no payment details and doesn’t auto-renew.</p>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="built-title">
+        <div class="container section__inner">
+          <div class="ledger">
+            <p class="note">04</p>
+            <div class="ledger__body prose">
+              <h2 id="built-title">How it’s built and shipped</h2>
+              <p>The public site is React and TypeScript on Vite and Tailwind, with unit tests in Vitest and browser tests in Playwright. Publishing goes through a script that refuses to push unless the branch, working tree and checks are clean, and every release is verified on the live routes afterwards. The terms, privacy policy and data-choices pages were written alongside the product, not after it.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="advice-title">
+        <div class="container section__inner">
+          <div class="ledger">
+            <p class="note">05</p>
+            <div class="ledger__body">
+              <h2 id="advice-title">What I’d tell the next person building in this space</h2>
+              <blockquote class="pull">
+                <p>Tone is a feature. Every label and notification is read by someone who may already be upset, so the copy is short, neutral and never takes a side.</p>
+              </blockquote>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section case-cta" aria-label="Next steps">
+        <div class="container section__inner">
+          <div class="ledger">
+            <div class="ledger__body">
+              <div class="cta-row">
+                <a class="btn" href="https://bothhomes.co.uk" target="_blank" rel="noopener">Visit bothhomes.co.uk <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens in a new tab)</span></a>
+                <a class="link-arrow" href="/#contact">Get in touch about Both Homes <span aria-hidden="true">→</span></a>
+              </div>
+              <p class="case-cta__back"><a class="link-arrow link-arrow--back" href="/#work"><span aria-hidden="true">←</span> Back to all work</a></p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <p class="site-footer__hello">
+        <a class="site-footer__cta" href="/#contact">Say hello <span aria-hidden="true">→</span></a>
+        <span class="site-footer__or">or find me on <a href="https://www.linkedin.com/in/bryanagas/" target="_blank" rel="noopener">LinkedIn<span class="visually-hidden"> (opens in a new tab)</span></a></span>
+      </p>
+      <div class="site-footer__cols">
+        <nav class="site-footer__col" aria-label="Footer">
+          <h2 class="note">Site</h2>
+          <ul>
+            <li><a href="/#work">Work</a></li>
+            <li><a href="/work/both-homes/">Both Homes case study</a></li>
+            <li><a href="/#path">Path</a></li>
+            <li><a href="/#tracker">Tracker</a></li>
+            <li><a href="/#about">About</a></li>
+            <li><a href="/#contact">Contact</a></li>
+          </ul>
+        </nav>
+        <div class="site-footer__col">
+          <h2 class="note">Elsewhere</h2>
+          <ul>
+            <li><a href="https://github.com/BryanAgas" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens in a new tab)</span></a></li>
+            <li><a href="https://www.linkedin.com/in/bryanagas/" target="_blank" rel="noopener">LinkedIn <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens in a new tab)</span></a></li>
+            <li><a href="https://github.com/BryanAgas/github_user_tracker" target="_blank" rel="noopener">Source on GitHub <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens in a new tab)</span></a></li>
+          </ul>
+        </div>
+        <p class="site-footer__legal">© <span data-year>2026</span> Bryan Agas</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
