@@ -254,10 +254,24 @@ html.is-plain .stage,html.is-plain .panel{display:none}
 .plain .about-confirm{margin-top:20px;font-size:.9375rem;color:#BDB2A3;border:1px dashed #5A4E44;border-radius:10px;padding:14px 16px}
 
 /* ---------- tablet ---------- */
-@media (max-width:1023px){ :root{--panel-w:380px} .top{padding-left:calc(24px + var(--sal));padding-right:calc(24px + var(--sar))} .trails{right:calc(24px + var(--sar))} }
+@media (max-width:1023px){ .top{padding-left:calc(24px + var(--sal));padding-right:calc(24px + var(--sar))} .trails{right:calc(24px + var(--sar))} }
+.subnav{display:contents}
+/* short landscape (phones on their side): side panel, compact header */
+@media (max-height:499px) and (min-aspect-ratio:1/1){
+  :root{--panel-w:min(380px,46vw)}
+  .pos,.status{display:none}
+  .top{padding-top:calc(12px + var(--sat))}
+  .panel{top:calc(64px + var(--sat));bottom:calc(8px + var(--sab))}
+  .hint .l2{display:none}
+  .hint{bottom:calc(10px + var(--sab))}
+  .clabel{min-height:30px;font-size:.75rem;background:rgba(20,17,15,.78)}
+  .clabel::before{content:"";position:absolute;inset:-7px -2px}
+  .panel-inner{padding:20px 22px 24px}
+  .trailbar{margin:-20px -22px 16px;padding:14px 22px 12px}
+}
 
 /* ---------- phone ---------- */
-@media (max-width:719px){
+@media (max-width:1023px) and (min-height:500px), (max-width:1023px) and (max-aspect-ratio:1/1){
   .top{padding:calc(14px + var(--sat)) calc(16px + var(--sar)) 0 calc(16px + var(--sal));display:grid;grid-template-columns:1fr auto;gap:0 12px;align-items:center}
   .ident{display:contents}
   .name{grid-column:1;grid-row:1;font-size:1.625rem}
@@ -267,7 +281,11 @@ html.is-plain .stage,html.is-plain .panel{display:none}
   .pos em{font-size:.9375rem}
   .status{display:none}
   .subnav{grid-column:1/-1;grid-row:3;display:flex;gap:2px;margin:2px 0 0 -12px}
-  .tbtn{font-size:.75rem;padding:12px 12px}
+  .tbtn{font-size:.75rem;padding:0 12px;min-height:44px;display:inline-flex;align-items:center}
+  .crumbs button{min-height:44px;padding:0 4px}
+  .close{min-height:44px}
+  .panel .lnk,.hint a{display:inline-flex;align-items:center;min-height:44px;padding:0}
+  html.deep .clabel::before{inset:-10px -4px}
   .hint{display:none}
   .clabel{font-size:.6875rem;min-height:30px;padding:0 9px;gap:6px;background:rgba(20,17,15,.72)}
   .clabel::before{content:"";position:absolute;inset:-7px -2px}
@@ -294,7 +312,6 @@ html.is-plain .stage,html.is-plain .panel{display:none}
   .trails{left:0;right:0;bottom:0;top:auto;width:auto;max-width:none;border-radius:18px 18px 0 0;padding:22px 20px calc(22px + var(--sab));max-height:85dvh;overflow:auto}
   .plain{padding-top:calc(150px + var(--sat))}
 }
-@media (min-width:720px){ .subnav{display:contents} }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition-duration:0ms!important;animation-duration:0ms!important;animation-iteration-count:1!important}
 }
@@ -334,7 +351,7 @@ html.is-plain .stage,html.is-plain .panel{display:none}
     <div class="handle" id="handle" role="button" tabindex="-1" aria-hidden="true"></div>
     <div class="panel-scroll" id="pscroll"><div class="panel-inner" id="pinner"></div></div>
   </section>
-  <section id="plainview" class="plain" aria-label="Plain view"></section>
+  <section id="plain" class="plain" aria-label="Plain view"></section>
 </main>
 <div class="scrim" id="scrim" hidden></div>
 <div class="trails" id="trails" role="dialog" aria-modal="true" aria-labelledby="trails-h" hidden></div>
@@ -666,7 +683,7 @@ var SCOUT = {
           "id": "m-privacy",
           "title": "Private by default",
           "hook": "Family data shouldn't be one link away from a stranger.",
-          "body": "Both Homes has no public links. An invitation goes to one email address, works once and expires after seven days. People can export their data or ask for it to be deleted. Even the GitHub tracker's browser version talks straight to GitHub, not through a server of mine. I'd rather collect less than explain more.",
+          "body": "Both Homes has no public links. An invitation goes to one email address, works once and expires after seven days. People can export their data or ask for it to be deleted. I'd rather collect less than explain more.",
           "facts": [
             "Single-use invites",
             "Export + deletion"
@@ -741,7 +758,7 @@ var SCOUT = {
           "id": "c-family-week",
           "title": "Tested against a real week",
           "hook": "The test environment is a busy family week.",
-          "body": "I'm a dad of two, so most of what I build gets tested against a busy family week before anyone else sees it. That's a harsh test. If something takes three taps when one would do, or a message reads badly first thing in the morning, I'll notice. It keeps the work honest and the scope small.",
+          "body": "I'm a dad of two, so most of what I build gets tested against a busy family week. I think that's a useful test. If something takes three taps when one would do, or a message reads badly first thing in the morning, a busy week is where I'd expect it to show. I try to keep the scope small enough to pass it.",
           "facts": [
             "Dad of two"
           ],
@@ -847,7 +864,7 @@ var SCOUT = {
           "id": "i-spreadsheets",
           "title": "Open question: what still runs on a spreadsheet and a chat?",
           "hook": "Look for the job people do by scrolling.",
-          "body": "The data dictionary existed because people were scrolling a spreadsheet to answer one question. Both Homes exists partly because group chats bury the schedule. Both started the same way: someone doing a small, repeated job the hard way. I keep an eye out for the next one. It usually looks too boring to notice.",
+          "body": "The data dictionary existed because people were scrolling a spreadsheet to answer one question. With Both Homes, my view is that group chats bury the schedule. Both started the same way: someone doing a small, repeated job the hard way. I keep an eye out for the next one. It usually looks too boring to notice.",
           "source": "VERIFIED"
         },
         {
@@ -1124,14 +1141,17 @@ var mqHover = window.matchMedia('(hover: hover) and (pointer: fine)');
 var RM = mqRM.matches;
 var canHover = mqHover.matches;
 var W = window.innerWidth, H = window.innerHeight;
-var isPhone = function(){ return W < 720; };
+var isShort = function(){ return H < 500 && W > H; };
+var isPhone = function(){ return W < 1024 && !isShort(); }; // 'sheet' layout: everything under 1024px except short landscape
 var coarse = window.matchMedia('(pointer: coarse)').matches;
 var phoneClass = coarse && Math.min(screen.width, screen.height) < 720;
 var lowClass = !phoneClass && (navigator.hardwareConcurrency || 8) <= 4;
-var PCOUNT = phoneClass ? 6000 : lowClass ? 9000 : 14000;
+var PCOUNT = phoneClass ? 4500 : lowClass ? 7000 : 14000;
 var DPR_CAP = phoneClass ? 1.75 : lowClass ? 1.5 : 2;
 var SIG_POOL = phoneClass ? 12 : 36, SIG_AMBIENT_CAP = phoneClass ? 6 : lowClass ? 10 : 14, SIG_TRAIL = 16;
 function ss(k, v){ try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch(e){ return null; } }
+function plural(n, w){ return n + ' ' + w + (n === 1 ? '' : 's'); }
+function sent(t){ return /[.?!…]$/.test(t) ? t : t + '.'; }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function hex3(h){ var n = parseInt(h.slice(1), 16); return [(n>>16&255)/255, (n>>8&255)/255, (n&255)/255]; }
 var HUE = REG.map(function(r){ return hex3(META[r].hue); }); HUE.push(hex3(LAMP));
@@ -1242,11 +1262,12 @@ var BRAIN_C = [0.0, -0.15, 0.0];
 var NPOS = {};
 (function(){
   var OFF = [[0,0],[0.13,0.07],[-0.13,0.06],[0.11,-0.08],[-0.11,-0.08],[0,0.14]];
-  var SC = {mindset:[0.9,1], ideas:[1,1], current:[0.75,1], experiments:[1,1], projects:[0.85,1], experience:[1,0.6], skills:[0.8,0.6]};
+  var SK_OFF = [[-0.20,0.05],[-0.07,0.09],[0.07,0.07],[0.17,0.0],[-0.12,-0.10],[0.03,-0.08]]; // cerebellum is wide and short: spread nodes sideways
+  var SC = {mindset:[0.9,1], ideas:[1,1], current:[0.75,1], experiments:[1,1], projects:[0.85,1], experience:[1,0.6], skills:[1,1]};
   BRAIN.compartments.forEach(function(c){
     var ri = REG.indexOf(c.id), ce = CENT[ri], sc = SC[c.id];
     c.nodes.forEach(function(n, i){
-      var o = OFF[i % 6], x = ce[0] + o[0]*sc[0], y = ce[1] + o[1]*sc[0]*sc[1];
+      var o = c.id === 'skills' ? SK_OFF[i % 6] : OFF[i % 6], x = ce[0] + o[0]*sc[0], y = ce[1] + o[1]*sc[0]*sc[1];
       for (var k = 0; k < 20 && classify(x, y, false) !== ri; k++){ x = lerp(x, ce[0], 0.2); y = lerp(y, ce[1], 0.2); }
       NPOS[n.key] = [x, y, 0.9 * halfDepth(ri, x, y)];
     });
@@ -1361,7 +1382,7 @@ var nodeVis = {}; Object.keys(NODES).forEach(function(k){ nodeVis[k] = {a:0.45, 
 var flashes = [[0,0,0,-1e9],[0,0,0,-1e9]], flashI = 0;
 function flash(p, t){ var f = flashes[flashI++ % 2]; f[0] = p[0]; f[1] = p[1]; f[2] = p[2]; f[3] = t; }
 var lastAccent = -1e9, pointerBrain = null, needsRender = true;
-function requestRender(){ needsRender = true; if (RM && !rafId && running) rafId = requestAnimationFrame(frame); }
+function requestRender(){ needsRender = true; layoutDirty = true; if (RM && !rafId && running) rafId = requestAnimationFrame(frame); }
 
 function computeTargets(){
   var r = state.route, open = state.openRegion, hov = state.hoverRegion, node = state.openNode;
@@ -1677,7 +1698,7 @@ function make2D(){
     Object.keys(NODES).forEach(function(k){ var v = nodeVis[k], p = NPOS[k]; project(p[0], p[1], p[2], o);
       var c = hueCss[REG.indexOf(NODES[k].comp)]; ctx.fillStyle = rgba(c, v.a); ctx.beginPath(); ctx.arc(o[0], o[1], 3.5, 0, 6.3); ctx.fill();
       if (v.ring > 0.05){ ctx.strokeStyle = rgba(c, v.ring * v.a); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(o[0], o[1], 7.5, 0, 6.3); ctx.stroke(); } });
-    sigs.forEach(function(s){ if (!s.on) return; var k = (t - s.t0) / s.dur; if (k >= 1){ s.on = false; if (s.cb){ var cb = s.cb; s.cb = null; cb(); } return; }
+    sigs.forEach(function(s){ if (!s.on) return; var k = Math.max(0, (t - s.t0) / s.dur); if (k >= 1){ s.on = false; if (s.cb){ var cb = s.cb; s.cb = null; cb(); } return; }
       var u = s.ease(k), poly = s.poly, f = (s.rev ? 1 - u : u) * (poly.n - 1), i0 = Math.floor(f);
       project(poly.pts[i0*3], poly.pts[i0*3+1], poly.pts[i0*3+2], o);
       var g = ctx.createRadialGradient(o[0], o[1], 0, o[0], o[1], s.head * 1.6); var c = s.lamp ? hueCss[7] : hueCss[s.c1];
@@ -1718,7 +1739,7 @@ DOM_ORDER.concat(['stem']).forEach(function(id){
   var li = document.createElement('li'), b = document.createElement('button'), isStem = id === 'stem';
   var hue = isStem ? LAMP : META[id].hue; b.type = 'button'; b.style.setProperty('--c', hue);
   if (isStem){
-    b.className = 'clabel out'; b.setAttribute('aria-label', 'Signal out: say hello');
+    b.className = 'clabel out';
     b.innerHTML = '<span class="dot"></span><span class="txt">Signal out</span><span class="sub">say hello</span>';
   } else {
     var c = BRAIN.comp[id], m = META[id], n = c.nodes.length;
@@ -1746,61 +1767,77 @@ function pulseHint(){ var p = $('#pulse'); if (!p) return; p.classList.remove('b
    11. LABEL LAYOUT (every frame the camera moves)
    ===================================================================== */
 var tmp3 = [0,0,0], obstacles = [];
-function uncovered(){
+var _unc = {l:0, t:0, r:0, b:0, w:0, h:0, cx:0, cy:0};
+function uncovered(){ // reused object: callers must not keep it
   var top = isPhone() ? headerH() + 8 : 0, bottom = H, left = 0, right = W;
   if (isPhone()) bottom = H - sheetPx();
   else if (panel.classList.contains('open')) right = W - (panelW() + 32);
-  return {l:left, t:top, r:right, b:bottom, w:right - left, h:bottom - top, cx:(left + right)/2, cy:(top + bottom)/2};
+  _unc.l = left; _unc.t = top; _unc.r = right; _unc.b = bottom; _unc.w = right - left; _unc.h = bottom - top; _unc.cx = (left + right) / 2; _unc.cy = (top + bottom) / 2;
+  return _unc;
 }
-var _hh = 0; function headerH(){ return _hh; }
-function panelW(){ return W >= 1024 ? 440 : 380; }
+var _hh = 0, _hhOv = 0; function headerH(){ return _hh; }
+function measureHeader(){ _hh = Math.ceil($('#top').getBoundingClientRect().bottom); if (!docEl.classList.contains('deep')) _hhOv = _hh; else if (!_hhOv) _hhOv = _hh + 50; }
+function panelW(){ return W >= 1024 ? 440 : Math.min(380, Math.round(W * 0.46)); }
+// label layout state (preallocated; nothing is allocated per frame)
+var LB = {minX:0, maxX:0, minY:0, maxY:0, gap:8}, PLACED = [], NPLACED = 0, CAND = new Float32Array(64);
+for (var pi = 0; pi < 16; pi++) PLACED.push({x:0, y:0, w:0, h:0});
+function lclampX(x, w){ return clamp(x, LB.minX, Math.max(LB.minX, LB.maxX - w)); }
+function lclampY(y, h){ return clamp(y, LB.minY, Math.max(LB.minY, LB.maxY - h)); }
+function overlapArea(x, y, w, h){ // overlap with placed labels (+gap) and obstacles; 0 = free
+  var g = LB.gap, sum = 0;
+  for (var q = 0; q < NPLACED; q++){ var o = PLACED[q];
+    var ox = Math.min(x + w + g, o.x + o.w) - Math.max(x, o.x - g), oy = Math.min(y + h + g, o.y + o.h) - Math.max(y, o.y - g);
+    if (ox > 0 && oy > 0) sum += ox * oy; }
+  for (var k = 0; k < obstacles.length; k++){ var O = obstacles[k];
+    var ox2 = Math.min(x + w, O.r) - Math.max(x, O.l), oy2 = Math.min(y + h, O.b) - Math.max(y, O.t);
+    if (ox2 > 0 && oy2 > 0) sum += ox2 * oy2; }
+  return sum;
+}
 function layoutLabels(){
-  var rect = uncovered(), phone = isPhone(), lead = phone ? 12 : 26, gap = 8;
-  var minY = phone ? headerH() + 4 : 8, maxY = rect.b - 4, minX = 8, maxX = rect.r - 8;
-  var boxes = [];
-  labels.forEach(function(L){
-    var a = L.cfg.a, z = L.id === 'stem' ? 0.07 : halfDepth(L.ri, a[0], a[1]) * 0.9;
+  var rect = uncovered(), phone = isPhone(), lead = phone ? 12 : (isShort() ? 14 : 26);
+  LB.minY = (phone || isShort()) ? headerH() + 4 : 8; LB.maxY = rect.b - 4; LB.minX = 8; LB.maxX = rect.r - 8;
+  NPLACED = 0;
+  for (var li = 0; li < labels.length; li++){
+    var L = labels[li], a = L.cfg.a, z = L.id === 'stem' ? 0.07 : halfDepth(L.ri, a[0], a[1]) * 0.9;
     project(a[0], a[1], z, tmp3); L.ax = tmp3[0]; L.ay = tmp3[1];
     var d = phone ? L.cfg.pd : L.cfg.d, dl = Math.sqrt(d[0]*d[0] + d[1]*d[1]), dx = d[0]/dl, dy = d[1]/dl;
     var ex = L.ax + dx * lead, ey = L.ay + dy * lead;
-    var sx = Math.abs(d[0]) > 0.3 ? Math.sign(d[0]) : 0, sy = Math.abs(d[1]) > 0.3 ? Math.sign(d[1]) : 0;
-    var x = ex - L.w/2 + sx * L.w/2, y = ey - L.h/2 + sy * L.h/2;
-    if (sx === 0) x = ex - L.w/2; if (sy === 0) y = ey - L.h/2;
-    L.x = x; L.y = y; L.vert = Math.abs(d[1]) >= Math.abs(d[0]); L.sy = sy || 1; L.sx = sx || 1;
-    boxes.push(L);
-  });
-  function cl(L){ L.x = clamp(L.x, minX, Math.max(minX, maxX - L.w)); L.y = clamp(L.y, minY, Math.max(minY, maxY - L.h)); }
-  function hits(x, y, L, placed){
-    for (var q = 0; q < placed.length; q++){ var o = placed[q]; if (x < o.x + o.w + gap && x + L.w + gap > o.x && y < o.y + o.h + gap && y + L.h + gap > o.y) return true; }
-    for (var k = 0; k < obstacles.length; k++){ var O = obstacles[k]; if (x < O.r && x + L.w > O.l && y < O.b && y + L.h > O.t) return true; }
-    return false;
-  }
-  // greedy: priority order = DOM order; each label tries its preferred spot, then spots stepped away along its side, then sideways
-  var placed = [];
-  boxes.forEach(function(L){
-    cl(L); var bx = L.x, by = L.y, stepY = L.h + gap, stepX = Math.min(L.w, 60);
-    var cands = [[0,0]];
-    for (var s = 1; s <= 6; s++){ var vy = L.vert ? L.sy : (L.ay > H/2 ? 1 : -1);
-      cands.push([0, vy * s * stepY * 0.5], [0, -vy * s * stepY * 0.5], [L.sx * s * stepX * 0.5, 0], [-L.sx * s * stepX * 0.5, 0], [L.sx * s * stepX * 0.5, vy * s * stepY * 0.5]); }
-    if (L.lastC != null && L.lastC < cands.length){ var lc = cands.splice(L.lastC, 1)[0]; cands.unshift(lc); L._m = 1; } else L._m = 0;
-    var chosen = -1;
-    for (var c = 0; c < cands.length; c++){
-      var x = clamp(bx + cands[c][0], minX, Math.max(minX, maxX - L.w)), y = clamp(by + cands[c][1], minY, Math.max(minY, maxY - L.h));
-      if (!hits(x, y, L, placed)){ L.x = x; L.y = y; chosen = c; break; }
+    var sx = Math.abs(d[0]) > 0.3 ? (d[0] > 0 ? 1 : -1) : 0, sy = Math.abs(d[1]) > 0.3 ? (d[1] > 0 ? 1 : -1) : 0;
+    var bx = sx === 0 ? ex - L.w/2 : ex - L.w/2 + sx * L.w/2, by = sy === 0 ? ey - L.h/2 : ey - L.h/2 + sy * L.h/2;
+    bx = lclampX(bx, L.w); by = lclampY(by, L.h);
+    var vert = Math.abs(d[1]) >= Math.abs(d[0]), vy = vert ? (sy || 1) : (L.ay > H/2 ? 1 : -1), hx = sx || 1;
+    var stepY = (L.h + LB.gap) * 0.5, stepX = Math.min(L.w, 60) * 0.5, nc = 1;
+    CAND[0] = 0; CAND[1] = 0;
+    for (var s2 = 1; s2 <= 6; s2++){
+      CAND[nc*2] = 0; CAND[nc*2+1] = vy * s2 * stepY; nc++;
+      CAND[nc*2] = 0; CAND[nc*2+1] = -vy * s2 * stepY; nc++;
+      CAND[nc*2] = hx * s2 * stepX; CAND[nc*2+1] = 0; nc++;
+      CAND[nc*2] = -hx * s2 * stepX; CAND[nc*2+1] = 0; nc++;
+      CAND[nc*2] = hx * s2 * stepX; CAND[nc*2+1] = vy * s2 * stepY; nc++;
     }
-    // remember the candidate index in the original ordering (hysteresis against sway jitter)
-    if (chosen >= 0){ if (L._m){ L.lastC = chosen === 0 ? L.lastC : (chosen <= L.lastC ? chosen - 1 : chosen); } else L.lastC = chosen; if (L.lastC === 0) L.lastC = null; }
-    placed.push({x:L.x, y:L.y, w:L.w, h:L.h});
-  });
-  boxes.forEach(function(L){
-    L.li.style.transform = 'translate3d(' + Math.round(L.x) + 'px,' + Math.round(L.y) + 'px,0)';
-    L.li.classList.toggle('r', L.x + L.w / 2 > W * 0.6); L.li.classList.toggle('up', L.y + L.h / 2 > L.ay + 4 && L.ay > H * 0.55);
-    var nx = clamp(L.ax, L.x, L.x + L.w), ny = clamp(L.ay, L.y, L.y + L.h);
-    var dd = Math.hypot(nx - L.ax, ny - L.ay);
-    L.ln.setAttribute('x1', L.ax.toFixed(1)); L.ln.setAttribute('y1', L.ay.toFixed(1)); L.ln.setAttribute('x2', nx.toFixed(1)); L.ln.setAttribute('y2', ny.toFixed(1));
-    L.ln.style.opacity = dd < 3 ? 0 : 1;
-    L.dot.setAttribute('cx', L.ax.toFixed(1)); L.dot.setAttribute('cy', L.ay.toFixed(1));
-  });
+    // try the last chosen candidate first (hysteresis against sway jitter), then the rest in order;
+    // if nothing is free, keep the least-overlapping candidate
+    var best = -1, bestA = 1e18, start = (L.lastC != null && L.lastC < nc) ? L.lastC : -1;
+    for (var c = -1; c < nc; c++){
+      var ci = c < 0 ? start : c; if (ci < 0 || (c >= 0 && ci === start)) continue;
+      var x = lclampX(bx + CAND[ci*2], L.w), y = lclampY(by + CAND[ci*2+1], L.h), ar = overlapArea(x, y, L.w, L.h);
+      if (ar < bestA){ bestA = ar; best = ci; L.x = x; L.y = y; }
+      if (ar === 0) break;
+    }
+    L.lastC = best > 0 ? best : null;
+    var P0 = PLACED[NPLACED++]; P0.x = L.x; P0.y = L.y; P0.w = L.w; P0.h = L.h;
+  }
+  for (var lj = 0; lj < labels.length; lj++){
+    var M = labels[lj];
+    M.li.style.transform = 'translate3d(' + Math.round(M.x) + 'px,' + Math.round(M.y) + 'px,0)';
+    var isR = M.x + M.w / 2 > W * 0.6, isUp = M.y + M.h / 2 > M.ay + 4 && M.ay > H * 0.55;
+    if (M._r !== isR){ M._r = isR; M.li.classList.toggle('r', isR); }
+    if (M._up !== isUp){ M._up = isUp; M.li.classList.toggle('up', isUp); }
+    var nx = clamp(M.ax, M.x, M.x + M.w), ny = clamp(M.ay, M.y, M.y + M.h), dd = Math.hypot(nx - M.ax, ny - M.ay);
+    M.ln.setAttribute('x1', M.ax.toFixed(1)); M.ln.setAttribute('y1', M.ay.toFixed(1)); M.ln.setAttribute('x2', nx.toFixed(1)); M.ln.setAttribute('y2', ny.toFixed(1));
+    M.ln.style.opacity = dd < 3 ? 0 : 1;
+    M.dot.setAttribute('cx', M.ax.toFixed(1)); M.dot.setAttribute('cy', M.ay.toFixed(1));
+  }
 }
 function updateObstacles(){
   obstacles = [];
@@ -1858,7 +1895,7 @@ function layoutNodesAndChips(){
 var ghostKey = null;
 function showGhost(key, delay){
   clearTimeout(ghostTimer);
-  ghostTimer = setTimeout(function(){ ghostKey = key; ghost.textContent = NODES[key].title; ghost.classList.add('on');
+  ghostTimer = setTimeout(function(){ ghostKey = key; layoutDirty = true; ghost.textContent = NODES[key].title; ghost.classList.add('on');
     ghostTimer = setTimeout(function(){ ghost.classList.remove('on'); setTimeout(function(){ ghostKey = null; }, 320); }, 1800); }, Math.max(0, delay - 200));
 }
 function setHoverNode(k){
@@ -1884,7 +1921,7 @@ function compHTML(cid){
   h += '<p class="eyebrow">' + esc(m.region) + ' · ' + esc(c.label) + '</p><h2 class="ph" id="panel-h" tabindex="-1">' + esc(c.label) + '</h2><p class="line">' + esc(c.line) + '</p>';
   h += '<ul class="rows">' + c.nodes.map(function(n){
     return '<li><button type="button" class="row" data-go="' + keyToHash(n.key) + '" data-key="' + n.key + '"><span class="t">' + esc(n.title) + (n.provenance === 'observed' ? confirmTag() : '') + '</span>' +
-      '<span class="s">' + esc(n.summary) + '</span><span class="c" aria-label="' + n.links2.length + ' connections">' + n.links2.length + ' →</span></button></li>';
+      '<span class="s">' + esc(n.summary) + '</span><span class="c" aria-label="' + plural(n.links2.length, 'connection') + '">' + n.links2.length + ' →</span></button></li>';
   }).join('') + '</ul>';
   if (linked.length) h += '<p class="sec">Connected regions</p><div class="regchips">' + linked.map(function(r){
     return '<button type="button" class="regchip" style="--c:' + META[r].hue + '" data-go="' + r + '"><i></i>' + esc(META[r].label) + '</button>'; }).join('') + '</div>';
@@ -1902,8 +1939,8 @@ function nodeBody(n, inTrail){
   if (n.links2.length){
     h += '<p class="sec" id="ct-h">Connected thoughts</p><ul class="conns" aria-labelledby="ct-h">' + n.links2.map(function(l){
       var o = NODES[l.other], oc = BRAIN.comp[o.comp];
-      return '<li><button type="button" class="conn" style="--c:' + META[o.comp].hue + '" data-follow="' + o.key + '" aria-label="' + esc(l.label) + ': ' + esc(o.title) + ', in ' + esc(oc.label) + '. Follow this connection.">' +
-        '<span class="d" aria-hidden="true"></span><span class="lab">' + esc(l.label) + '</span><span class="ar" aria-hidden="true">→</span><span class="to">' + esc(o.title) + '<small>' + esc(oc.label) + '</small></span></button></li>';
+      return '<li><button type="button" class="conn" style="--c:' + META[o.comp].hue + '" data-follow="' + o.key + '">' +
+        '<span class="d" aria-hidden="true"></span><span class="lab">' + esc(l.label) + '<span class="sr-only">:</span></span><span class="ar" aria-hidden="true">→</span><span class="to">' + esc(o.title) + '<span class="sr-only">, in</span><small>' + esc(oc.label) + '</small><span class="sr-only">. Follow this connection.</span></span></button></li>';
     }).join('') + '</ul>';
   }
   return h;
@@ -1967,7 +2004,13 @@ function setPanel(html, hue, opts){
    13. PHONE SHEET
    ===================================================================== */
 var sheet = 'peek';
-function snapPx(s){ var sab = 0; return s === 'peek' ? 112 + safeBottom() : s === 'half' ? Math.round(H * 0.56) : Math.round(H * 0.92); }
+function peekPx(){ // the sheet rises to meet the brain so the overview has no dead bands
+  var base = 112 + safeBottom(); if (!isPhone()) return base;
+  var ppuW = Math.min((W - 32) / 2.0, 470), block = 1.72 * ppuW + 80;
+  return Math.round(clamp(H - (_hhOv || 120) - 8 - block - 12, base, H * 0.5));
+}
+function snapPx(s){ return s === 'peek' ? peekPx() : s === 'half' ? Math.round(H * (W >= 600 ? 0.48 : 0.56)) : Math.round(H * 0.92); }
+function sheetFor(r){ return r.type === 'overview' ? 'peek' : (r.type === 'comp' || r.type === 'hello') ? 'half' : 'full'; }
 var _sab = 0; function safeBottom(){ return _sab; }
 function sheetPx(){ return dragPx != null ? dragPx : snapPx(sheet); }
 var dragPx = null;
@@ -2008,7 +2051,7 @@ function parseHash(){
   if (h.indexOf('plain--') === 0) return {type:'plain', comp:h.slice(7)};
   if (h === 'hello') return {type:'hello'};
   var m = /^trail--(.+?)(?:--(\d+))?$/.exec(h);
-  if (m && TRAIL[m[1]]){ var t = TRAIL[m[1]], st = clamp(parseInt(m[2] || '1', 10) || 1, 1, t.steps.length); return {type:'trail', trail:m[1], step:st, key:t.steps[st - 1].node}; }
+  if (m && TRAIL[m[1]]){ var t = TRAIL[m[1]], st = clamp(parseInt(m[2] || '1', 10) || 1, 1, t.steps.length); return {type:'trail', trail:m[1], step:st, key:t.steps[st - 1].node, fix:String(st) !== (m[2] || '1') ? 'trail--' + m[1] + '--' + st : null}; }
   if (BRAIN.comp[h]) return {type:'comp', comp:h};
   var parts = h.split('--');
   if (parts.length === 2 && NODES[parts[0] + '/' + parts[1]]) return {type:'node', comp:parts[0], key:parts[0] + '/' + parts[1]};
@@ -2029,13 +2072,13 @@ function routeKey(r){ return r.type === 'node' || r.type === 'trail' ? r.key : n
 
 function frameRoute(animate){
   var r = state.route, rect = uncovered(), phone = isPhone();
-  if (!phone){ rect.t = 96; rect.b = H - (r.type === 'overview' ? 78 : 16); rect.h = rect.b - rect.t; rect.cy = (rect.t + rect.b) / 2; }
+  if (!phone){ rect.t = deskTop(); rect.b = H - deskBottom(r.type === 'overview'); rect.h = rect.b - rect.t; rect.cy = (rect.t + rect.b) / 2; }
   var ov = overviewRect(), ppuOv = fitPPU(ov);
   var ppu0 = fitPPU(rect, r.type !== 'overview');
   var f = BRAIN_C, ppu = ppu0;
   if (r.type === 'comp' || r.type === 'node' || r.type === 'trail'){
     var ri = REG.indexOf(r.type === 'comp' ? r.comp : NODES[r.key].comp), c = CENT[ri];
-    f = [lerp(BRAIN_C[0], c[0], 0.4), lerp(BRAIN_C[1], c[1], 0.4), c[2] * 0.4]; ppu = ppu0 * (phone ? 1.25 : 1.12);
+    f = [lerp(BRAIN_C[0], c[0], 0.4), lerp(BRAIN_C[1], c[1], 0.4), c[2] * 0.4]; ppu = ppu0 * (phone ? 1.35 : 1.12);
     if (r.type !== 'comp'){ var np = NPOS[r.key]; f = [lerp(BRAIN_C[0], np[0], 0.5), lerp(BRAIN_C[1], np[1], 0.5), np[2] * 0.5]; ppu = ppu0 * 1.12 * 1.15; }
     sway.regionYawT = (c[0] > 0 ? -6 : 6) * Math.PI / 180;
   } else sway.regionYawT = 0;
@@ -2048,11 +2091,14 @@ function frameRoute(animate){
 }
 
 var curHash = '';
-function fitPPU(rect, deep){ var phone = isPhone(), lx = phone ? 16 : 170, ly = phone ? (deep ? 14 : 40) : 50;
+function deskTop(){ return isShort() ? _hh + 4 : 96; }
+function deskBottom(ov){ return ov ? (isShort() ? 44 : 78) : (isShort() ? 8 : 16); }
+function fitPPU(rect, deep){ var phone = isPhone(), lx = phone ? 16 : clamp(rect.w * 0.13, 24, 170), ly = phone ? (deep ? 14 : 40) : (isShort() ? 26 : 50);
   return clamp(Math.min((rect.w - 2*lx) / 2.0, (rect.h - 2*ly) / 1.72), 60, 470); }
-function overviewRect(){ if (isPhone()){ var t = headerH() + 8, b = H - snapPx('peek'); return {w:W, h:b - t}; } return {w:W, h:H - 96 - 78}; }
+function overviewRect(){ if (isPhone()){ var t = _hhOv + 8, b = H - snapPx('peek'); return {w:W, h:b - t}; } return {w:W, h:H - deskTop() - deskBottom(true)}; }
 function applyRoute(){
   var r = parseHash(), from = state.route, initial = firstRoute; firstRoute = false;
+  if (r.fix){ try { history.replaceState(null, '', '#' + r.fix); } catch(e){} }
   var prevHash = curHash; curHash = (location.hash || '').replace(/^#/, '');
   if (r.type === 'plain' && from.type !== 'plain' && !initial) prevNonPlain = prevHash;
   if (r.type === 'hello' && from.type !== 'hello') prevHelloFrom = initial ? '' : prevHash;
@@ -2085,7 +2131,7 @@ function renderRoute(r, from, cf, initial){
   state.openNode = (r.type === 'node' || r.type === 'trail') ? r.key : null;
   state.hoverNode = null;
   var opened = r.type !== 'overview';
-  if (docEl.classList.contains('deep') !== opened){ docEl.classList.toggle('deep', opened); measureLabels(); labels.forEach(function(L){ L.lastC = null; }); _hh = isPhone() ? Math.ceil($('#top').getBoundingClientRect().bottom) : 0; }
+  if (docEl.classList.contains('deep') !== opened){ docEl.classList.toggle('deep', opened); measureLabels(); labels.forEach(function(L){ L.lastC = null; }); measureHeader(); }
   panel.classList.toggle('open', opened || phone);
   stage.classList.toggle('has-open', opened);
   var hue = r.type === 'hello' || r.type === 'trail' ? LAMP : opened ? META[NODES[r.key] ? NODES[r.key].comp : r.comp].hue : LAMP;
@@ -2094,7 +2140,7 @@ function renderRoute(r, from, cf, initial){
   else if (r.type === 'trail'){ setPanel(trailHTML(TRAIL[r.trail], r.step, cf), LAMP); }
   else if (r.type === 'hello'){ setPanel(helloHTML(), LAMP); }
   else { setPanel(phone ? overviewPeekHTML() : '', LAMP, {noAnim:true}); }
-  if (phone) sheet = r.type === 'overview' ? 'peek' : (r.type === 'comp' || r.type === 'hello') ? 'half' : 'full';
+  if (phone) sheet = sheetFor(r);
   applySheet();
   buildNodeButtons(state.openRegion >= 0 && state.openRegion !== STEM ? REG[state.openRegion] : null);
   buildChips();
@@ -2104,14 +2150,21 @@ function renderRoute(r, from, cf, initial){
   // announce + focus
   var msg = '';
   if (r.unknown) msg = 'That part of the brain wasn’t found, showing the whole brain.';
-  else if (r.type === 'comp'){ var c = BRAIN.comp[r.comp]; msg = c.label + ' opened. ' + META[r.comp].region + '. ' + c.nodes.length + ' thoughts.'; }
-  else if (r.type === 'node'){ var n = NODES[r.key]; msg = (cf ? 'Followed “' + cf.label + '” to ' : '') + n.title + (cf ? ', in ' + BRAIN.comp[n.comp].label + '.' : '. ' + BRAIN.comp[n.comp].label + '. ' + n.links2.length + ' connections.'); }
-  else if (r.type === 'trail'){ var t = TRAIL[r.trail]; msg = 'Trail: ' + t.title + '. Step ' + r.step + ' of ' + t.steps.length + ': ' + NODES[r.key].title + '. ' + t.steps[r.step-1].note; }
+  else if (r.type === 'comp'){ var c = BRAIN.comp[r.comp]; msg = c.label + ' opened. ' + META[r.comp].region + '. ' + plural(c.nodes.length, 'thought') + '.'; }
+  else if (r.type === 'node'){ var n = NODES[r.key]; msg = (cf ? 'Followed “' + cf.label + '” to ' : '') + (cf ? n.title + ', in ' + BRAIN.comp[n.comp].label + '.' : sent(n.title) + ' ' + BRAIN.comp[n.comp].label + '. ' + plural(n.links2.length, 'connection') + '.'); }
+  else if (r.type === 'trail'){ var t = TRAIL[r.trail]; msg = 'Trail: ' + t.title + '. Step ' + r.step + ' of ' + t.steps.length + ': ' + sent(NODES[r.key].title) + ' ' + t.steps[r.step-1].note; }
   else if (r.type === 'hello') msg = 'Say hello. Links to LinkedIn and GitHub.';
   else if (from && from.type !== 'overview') msg = 'Showing the whole brain.';
   if (msg) announce(msg);
   if (r.unknown){ curHash = ''; try { history.replaceState(null, '', location.pathname + location.search); } catch(e){} }
-  if (!initial || r.type !== 'overview'){
+  var sameTrail = from && from.type === 'trail' && r.type === 'trail' && from.trail === r.trail && !initial;
+  if (from && from.type === 'plain' && !initial){ $('#plainLink').focus({preventScroll:true}); }
+  else if (sameTrail){ // P2-6: keep focus on the trail control that was pressed
+    var back = pinner.querySelector('.trailbar .pill:not(.pri):not(.ghostp)'), next = pinner.querySelector('.trailbar .pill.pri');
+    var tgt = r.step > from.step ? (next || back) : (back && !back.disabled ? back : next);
+    if (tgt) tgt.focus({preventScroll:true});
+  }
+  else if (!initial || r.type !== 'overview'){
     if (r.type === 'overview'){
       var lid = from && from.type === 'comp' ? from.comp : from && (from.type === 'node' || from.type === 'trail') ? NODES[from.key].comp : null;
       var L = labels.filter(function(x){ return x.id === lid; })[0];
@@ -2208,7 +2261,7 @@ function buildPlain(){
   h += '<section class="pc" id="pl-hello" aria-labelledby="plh-hello"><h2 id="plh-hello">Say hello</h2><p class="tl">I’m looking for junior or product-minded developer roles, and people building calm tools.</p>' +
     '<div class="hello-links" style="max-width:420px"><a class="biglink" href="https://www.linkedin.com/in/bryanagas/" target="_blank" rel="noopener noreferrer"><span><b>LinkedIn</b><small>linkedin.com/in/bryanagas</small></span><span class="ar" aria-hidden="true">↗</span></a>' +
     '<a class="biglink" href="https://github.com/BryanAgas" target="_blank" rel="noopener noreferrer"><span><b>GitHub</b><small>github.com/BryanAgas</small></span><span class="ar" aria-hidden="true">↗</span></a></div><p class="tl" style="font-size:.9375rem">The full site will have a contact form here too.</p></section></div>';
-  $('#plainview').innerHTML = h;
+  $('#plain').innerHTML = h;
 }
 function setPlain(on, comp){
   var was = docEl.classList.contains('is-plain');
@@ -2387,7 +2440,7 @@ function frame(t){
   for (var j = 0; j < PATHS.length; j++){ var p = PATHS[j]; if (Math.abs(p.alpha - p.alphaT) > 0.002 || Math.abs(p.lamp - p.lampT) > 0.002){ p.alpha = lerpTo(p.alpha, p.alphaT, kp); p.lamp = lerpTo(p.lamp, p.lampT, kp); pathsDirty = true; } }
   for (var key in nodeVis){ var v = nodeVis[key]; v.a = lerpTo(v.a, v.aT, k); v.ring = lerpTo(v.ring, v.ringT, k); }
   if (R) R.render(t);
-  layoutLabels(); layoutNodesAndChips();
+  if (layoutChanged()){ layoutLabels(); layoutNodesAndChips(); }
   needsRender = false;
   // adaptive quality (once or twice)
   if (!RM && state.introDone && adaptDone < 2 && R && R.kind === 'gl'){
@@ -2396,6 +2449,13 @@ function frame(t){
       if (mean > 19 && qualityScale > 0.5){ qualityScale = Math.max(0.5, qualityScale - 0.125); R.resize(); } }
   }
   if (RM && (moving || needsRender)) rafId = requestAnimationFrame(frame);
+}
+var LSIG = new Float64Array(13), layoutDirty = true;
+function sg(i, v){ if (LSIG[i] !== v){ LSIG[i] = v; return 1; } return 0; }
+function layoutChanged(){
+  var ch = layoutDirty; layoutDirty = false;
+  ch = sg(0, cam.yaw) | sg(1, cam.pitch) | sg(2, cam.s) | sg(3, cam.fx) | sg(4, cam.fy) | sg(5, cam.fz) | sg(6, cam.ppu) | sg(7, cam.ox) | sg(8, cam.oy) | sg(9, W) | sg(10, H) | sg(11, isPhone() ? sheetPx() : 0) | ch;
+  return !!ch;
 }
 function startLoop(){ running = true; lastT = 0; if (!rafId) rafId = requestAnimationFrame(frame); }
 document.addEventListener('visibilitychange', function(){ if (document.hidden){ running = false; if (rafId){ cancelAnimationFrame(rafId); rafId = 0; } } else if (!docEl.classList.contains('is-plain')) { clockT0 = now(); startLoop(); } });
@@ -2407,9 +2467,10 @@ if (window.IntersectionObserver){ /* plain view hides the stage via display:none
 var resizeTimer = 0;
 function onResize(){
   W = window.innerWidth; H = window.innerHeight;
-  _hh = isPhone() ? Math.ceil($('#top').getBoundingClientRect().bottom) : 0;
+  measureHeader();
   var probe = document.createElement('div'); probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);visibility:hidden'; document.body.appendChild(probe); _sab = probe.offsetHeight; probe.remove();
   if (R) R.resize();
+  if (state.route.type !== 'plain') sheet = sheetFor(state.route);
   measureLabels(); updateObstacles(); applySheet(); buildChips();
   if (state.route.type !== 'plain'){ panel.classList.toggle('open', state.route.type !== 'overview' || isPhone()); if (isPhone() && state.route.type === 'overview' && !pinner.innerHTML) setPanel(overviewPeekHTML(), LAMP, {noAnim:true}); if (!isPhone() && state.route.type === 'overview') pinner.innerHTML = ''; }
   frameRoute(false); requestRender();
