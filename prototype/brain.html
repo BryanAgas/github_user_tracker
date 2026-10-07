@@ -1,0 +1,2438 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bryan Agas — My Brain</title>
+<meta name="description" content="Bryan Agas builds calm software for the parts of life that get messy. An interactive map of the brain behind it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --night:#14110F; --surface:#1D1916; --surface-2:#27211D; --rule:#3A322C; --rule-strong:#5A4E44;
+  --chalk:#F1EADF; --chalk-2:#BDB2A3; --chalk-3:#9A8F82; --lamp:#F2B35E;
+  --h-projects:#F0A35E; --h-skills:#9DBCE0; --h-experience:#E68F72; --h-mindset:#9FCBA8;
+  --h-current:#F4D58D; --h-experiments:#74C4BE; --h-ideas:#E7A2BC; --h-stem:#F2B35E;
+  --serif:'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --sans:'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  --ease-out:cubic-bezier(.2,.7,.2,1); --ease-travel:cubic-bezier(.65,0,.35,1);
+  --t-fast:160ms; --t-ui:240ms; --t-panel:400ms;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
+  --panel-w:440px; --hue:var(--lamp);
+}
+*{box-sizing:border-box}
+html{background:#14110F;color:#F1EADF;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;height:100%}
+body{background:#14110F;color:#F1EADF;font-family:var(--sans);font-size:1rem;line-height:1.5;overflow:hidden;overflow-x:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+html.is-plain body{overflow-y:auto}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit}
+a{color:inherit}
+:focus{outline:none}
+:focus-visible{outline:2px solid #F2B35E;outline-offset:3px;border-radius:6px}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip{position:fixed;left:16px;top:calc(8px + var(--sat));z-index:100;background:#F2B35E;color:#14110F;padding:10px 14px;border-radius:999px;font:500 .8125rem/1 var(--mono);text-decoration:none;transform:translateY(-200%);transition:transform .2s}
+.skip:focus{transform:none}
+.skip-intro{position:fixed;right:calc(16px + var(--sar));bottom:calc(16px + var(--sab));z-index:60;font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#BDB2A3;padding:12px 14px;border:1px solid #3A322C;border-radius:999px;background:#14110F}
+.skip-intro:hover{color:#F1EADF}
+
+/* ---------- header ---------- */
+.top{position:fixed;left:0;right:0;top:0;z-index:30;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  padding:calc(24px + var(--sat)) calc(32px + var(--sar)) 0 calc(32px + var(--sal));pointer-events:none}
+.top > *{pointer-events:auto}
+.ident{max-width:30rem}
+.name{margin:0;font:400 clamp(1.5rem,1.1rem + 1.2vw,1.875rem)/1.1 var(--serif);color:#F1EADF;letter-spacing:.005em}
+.name a{text-decoration:none}
+.pos{margin:6px 0 0;font:400 .9375rem/1.45 var(--sans);color:#BDB2A3;max-width:36ch}
+.pos em{font-family:var(--serif);font-style:italic;font-size:1.0625rem;color:#F1EADF}
+.status{margin:10px 0 0;font:500 .6875rem/1.2 var(--mono);letter-spacing:.08em;color:#9A8F82;display:flex;align-items:center;gap:8px}
+.status::before{content:"";width:6px;height:6px;border-radius:50%;background:#9FCBA8;box-shadow:0 0 0 3px rgba(159,203,168,.15)}
+.sitenav{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.tbtn{font:500 .8125rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#BDB2A3;text-decoration:none;padding:13px 12px;border-radius:999px;transition:color var(--t-fast)}
+.tbtn:hover,.tbtn[aria-expanded="true"]{color:#F1EADF}
+.cta{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border-radius:999px;background:#F2B35E;color:#14110F;font:600 .9375rem/1 var(--sans);text-decoration:none;margin-left:8px;transition:background var(--t-fast),transform var(--t-fast)}
+.cta:hover{background:#F6C47D}
+.cta:active{transform:scale(.98)}
+
+/* ---------- stage ---------- */
+.stage{position:fixed;inset:0;overflow:hidden}
+#gl,#c2d{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.stage.can-hover #gl,.stage.can-hover #c2d{cursor:default}
+.stage.over-brain #gl,.stage.over-brain #c2d{cursor:pointer}
+.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%, rgba(20,17,15,0) 55%, rgba(12,10,9,.65) 100%)}
+html[data-fallback] .stage{background:radial-gradient(55% 50% at 50% 48%, rgba(242,179,94,.07), rgba(20,17,15,0) 70%), #14110F}
+.leaders{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.leaders line{stroke:#5A4E44;stroke-width:1}
+.leaders circle{fill:#BDB2A3}
+.leaders g.on line{stroke:var(--c)}
+.leaders g.on circle{fill:var(--c)}
+.leaders g.dim{opacity:.55}
+.cnav ul{list-style:none;margin:0;padding:0}
+.cnav li{position:absolute;left:0;top:0;will-change:transform}
+.clabel{display:flex;align-items:center;gap:8px;min-height:36px;padding:0 12px;border-radius:999px;font:500 .8125rem/1.2 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#BDB2A3;white-space:nowrap;position:relative;transition:color var(--t-fast),background var(--t-fast),opacity .6s}
+.clabel .dot{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 10px var(--c)}
+.clabel .txt{position:relative}
+.clabel .txt::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;background:var(--c);transform:scaleX(0);transform-origin:left;transition:transform 180ms var(--ease-out)}
+.clabel .n{color:#9A8F82;font-weight:400}
+.clabel:hover,.clabel.hot,.clabel:focus-visible{color:var(--c)}
+.clabel:hover .txt::after,.clabel.hot .txt::after,.clabel:focus-visible .txt::after{transform:scaleX(1)}
+.clabel[aria-pressed="true"]{background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+@supports not (background:color-mix(in srgb,red 10%,transparent)){.clabel[aria-pressed="true"]{background:rgba(242,179,94,.14)}}
+.clabel[aria-pressed="true"] .n{color:var(--c)}
+.stage.has-open .clabel:not([aria-pressed="true"]):not(:hover):not(:focus-visible):not(.hot){color:#9A8F82}
+.clabel.out{color:#F2B35E;border:1px solid rgba(242,179,94,.35)}
+.clabel.out .sub{color:#9A8F82;text-transform:none;letter-spacing:0;font-weight:400}
+.preview{position:absolute;top:calc(100% + 6px);left:0;min-width:max-content;font:400 .875rem/1.35 var(--sans);letter-spacing:0;text-transform:none;color:#BDB2A3;background:rgba(20,17,15,.88);border:1px solid #3A322C;padding:8px 10px;border-radius:8px;opacity:0;transform:translateY(-4px);transition:opacity var(--t-fast),transform var(--t-fast);pointer-events:none}
+.clabel:hover .preview,.clabel.hot .preview,.clabel:focus-visible .preview{opacity:1;transform:none}
+.cnav li.r .preview{left:auto;right:0}
+.cnav li.up .preview{top:auto;bottom:calc(100% + 6px)}
+.intro .cnav li{opacity:.6}
+.cnav li{transition:opacity .5s}
+
+.nodebtns{position:fixed;inset:0;pointer-events:none}
+.nodebtn{position:absolute;left:0;top:0;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;pointer-events:auto}
+.nlabel,.ghost{position:fixed;left:0;top:0;pointer-events:none;font:500 .75rem/1.2 var(--mono);letter-spacing:.06em;color:#F1EADF;background:rgba(20,17,15,.86);border:1px solid #3A322C;border-radius:999px;padding:6px 10px;white-space:nowrap;opacity:0;transition:opacity 300ms;max-width:min(320px,70vw);overflow:hidden;text-overflow:ellipsis}
+.nlabel.on,.ghost.on{opacity:1}
+.ghost{color:#BDB2A3;font-style:normal;background:rgba(20,17,15,.6);border-style:dashed}
+.chips{position:fixed;inset:0;pointer-events:none}
+.chip{position:absolute;left:0;top:0;pointer-events:auto;font:400 .75rem/1 var(--mono);color:#BDB2A3;background:#27211D;border:1px solid #3A322C;border-radius:999px;padding:6px 10px;white-space:nowrap;transition:color var(--t-fast),border-color var(--t-fast),opacity .3s}
+.chip:hover{color:#F1EADF;border-color:var(--c)}
+
+.hint{position:fixed;left:50%;bottom:calc(24px + var(--sab));transform:translateX(-50%);text-align:center;font:500 .8125rem/1.5 var(--mono);color:#BDB2A3;width:max-content;max-width:calc(100vw - 32px);transition:opacity .4s}
+.hint p{margin:0}
+.hint .l1{display:inline-flex;align-items:center;gap:10px}
+.hint .pulse{width:6px;height:6px;border-radius:50%;background:#F2B35E;box-shadow:0 0 0 0 rgba(242,179,94,.6)}
+.hint .pulse.beat{animation:beat .65s ease-out}
+@keyframes beat{0%{box-shadow:0 0 0 0 rgba(242,179,94,.65);transform:scale(1.4)}100%{box-shadow:0 0 0 10px rgba(242,179,94,0);transform:scale(1)}}
+.hint .l2{margin-top:6px;display:flex;gap:6px 18px;justify-content:center;flex-wrap:wrap}
+.hint a,.lnk{white-space:nowrap;color:#F1EADF;text-decoration:none;border-bottom:1px solid #5A4E44;padding:6px 0 2px;transition:border-color var(--t-fast),color var(--t-fast)}
+.hint a:hover,.lnk:hover{border-color:#F2B35E;color:#F2B35E}
+.hint.gone{opacity:0;pointer-events:none}
+
+/* ---------- panel ---------- */
+.panel{position:fixed;right:calc(16px + var(--sar));top:calc(92px + var(--sat));bottom:calc(16px + var(--sab));width:var(--panel-w);z-index:20;background:#1D1916;border:1px solid #3A322C;border-radius:14px;box-shadow:0 24px 60px -20px rgba(0,0,0,.6);display:flex;flex-direction:column;overflow:hidden;
+  opacity:0;transform:translateX(24px);visibility:hidden;transition:opacity var(--t-panel) var(--ease-out),transform var(--t-panel) var(--ease-out),visibility 0s linear var(--t-panel)}
+.panel.open{opacity:1;transform:none;visibility:visible;transition:opacity var(--t-panel) var(--ease-out),transform var(--t-panel) var(--ease-out),visibility 0s}
+.panel::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--hue);z-index:2;transition:background .4s}
+.panel-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#3A322C transparent}
+.panel-inner{padding:28px 28px 32px;transition:opacity 200ms}
+.panel-inner.travel{opacity:.4}
+.panel-inner.enter{animation:penter var(--t-ui) var(--ease-out)}
+@keyframes penter{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+.handle{display:none}
+.ptop{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:-6px 0 18px;min-height:32px}
+.crumbs{font:500 .75rem/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#9A8F82;display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin:0;padding:0;list-style:none}
+.crumbs button{color:#BDB2A3;padding:6px 0;border-radius:4px}
+.crumbs button:hover{color:#F1EADF}
+.crumbs .sep{color:#5A4E44}
+.crumbs [aria-current]{color:#F1EADF;max-width:22ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.close{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#BDB2A3;display:inline-flex;align-items:center;gap:8px;padding:9px 4px 9px 10px;border-radius:999px;flex:none}
+.close:hover{color:#F1EADF}
+.kbd{font:500 .625rem/1 var(--mono);color:#9A8F82;border:1px solid #3A322C;border-radius:4px;padding:3px 5px}
+.eyebrow{font:500 .75rem/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--hue);margin:0 0 10px}
+.ph{font:400 clamp(1.875rem,1.5rem + 1vw,2.25rem)/1.08 var(--serif);color:#F1EADF;margin:0;letter-spacing:.003em;text-wrap:balance}
+.ph:focus{outline:none}
+.ph:focus-visible{outline:none}
+.line{font:400 1.0625rem/1.55 var(--sans);color:#BDB2A3;margin:10px 0 0}
+.dek{font:400 italic 1.25rem/1.35 var(--serif);color:#E9DFD1;margin:12px 0 0;text-wrap:pretty}
+.body p{font:400 1.0625rem/1.65 var(--sans);color:#F1EADF;margin:18px 0 0;max-width:60ch;text-wrap:pretty}
+.facts{display:flex;flex-wrap:wrap;gap:6px;margin:20px 0 0;padding:0;list-style:none}
+.facts li{font:500 .75rem/1 var(--mono);letter-spacing:.02em;color:#BDB2A3;border:1px solid #3A322C;border-radius:999px;padding:7px 10px}
+.links{margin:18px 0 0;display:flex;flex-wrap:wrap;gap:8px 18px}
+.links a{font:500 .9375rem/1 var(--sans);color:var(--hue);text-decoration:none;border-bottom:1px solid currentColor;padding:8px 0 3px}
+.links a:hover{color:#F1EADF}
+.confirm{display:inline-block;font:500 .625rem/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#9A8F82;border:1px dashed #5A4E44;border-radius:4px;padding:4px 6px;vertical-align:middle;white-space:nowrap}
+.kickrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+.kickrow .eyebrow{margin:0}
+.sec{font:500 .6875rem/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#9A8F82;margin:32px 0 10px;display:flex;align-items:center;gap:10px}
+.sec::after{content:"";flex:1;height:1px;background:#3A322C}
+.rows{list-style:none;margin:20px 0 0;padding:0;border-top:1px solid #3A322C}
+.rows li{border-bottom:1px solid #3A322C}
+.row{display:grid;grid-template-columns:1fr auto;gap:4px 14px;width:100%;padding:14px 10px;margin:0 -10px;width:calc(100% + 20px);border-radius:8px;transition:background var(--t-fast)}
+.row:hover,.row.hot{background:#27211D}
+.row .t{font:600 1.0625rem/1.3 var(--sans);color:#F1EADF}
+.row .s{grid-column:1;font:400 .9375rem/1.45 var(--sans);color:#BDB2A3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.row .c{grid-column:2;grid-row:1/span 2;align-self:center;font:500 .75rem/1 var(--mono);color:#9A8F82;white-space:nowrap}
+.row:hover .c,.row.hot .c{color:var(--hue)}
+.row .confirm{margin-left:8px;position:relative;top:-2px}
+.conns{list-style:none;margin:0;padding:0}
+.conn{display:grid;grid-template-columns:14px 1fr auto;gap:2px 10px;align-items:start;width:calc(100% + 20px);margin:0 -10px;padding:12px 10px;border-radius:8px;transition:background var(--t-fast)}
+.conn:hover{background:#27211D}
+.conn .d{width:8px;height:8px;border-radius:50%;background:var(--c);margin-top:6px;box-shadow:0 0 8px var(--c)}
+.conn .lab{font:400 .9375rem/1.4 var(--sans);color:#BDB2A3}
+.conn .to{grid-column:2;font:600 1rem/1.35 var(--sans);color:#F1EADF}
+.conn .to small{font:500 .6875rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--c);margin-left:6px;white-space:nowrap}
+.conn .ar{grid-column:3;grid-row:1/span 2;align-self:center;font:500 .875rem/1 var(--mono);color:#9A8F82;transition:transform var(--t-fast),color var(--t-fast)}
+.conn:hover .ar{transform:translateX(3px);color:var(--c)}
+.came{display:inline-flex;align-items:center;gap:8px;font:500 .75rem/1.3 var(--mono);letter-spacing:.04em;color:#BDB2A3;border:1px solid #3A322C;border-radius:999px;padding:8px 12px;margin:0 0 18px;max-width:100%;text-align:left}
+.came:hover{color:#F1EADF;border-color:#5A4E44}
+.came span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.regchips{display:flex;flex-wrap:wrap;gap:8px}
+.regchip{display:inline-flex;align-items:center;gap:8px;font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#BDB2A3;background:#27211D;border:1px solid #3A322C;border-radius:999px;padding:10px 12px}
+.regchip i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+.regchip:hover{color:var(--c);border-color:var(--c)}
+.foot{margin-top:28px;padding-top:18px;border-top:1px solid #3A322C;font:400 .9375rem/1.5 var(--sans);color:#BDB2A3}
+.trailbar{position:sticky;top:0;z-index:3;background:#1D1916;margin:-28px -28px 20px;padding:20px 28px 16px;border-bottom:1px solid #3A322C}
+.trailbar .tt{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font:500 .6875rem/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#F2B35E}
+.trailbar .tt b{font-weight:500;color:#F1EADF;letter-spacing:.04em;text-transform:none;font-family:var(--sans);font-size:.9375rem}
+.trailbar .tt span:last-child{color:#BDB2A3;white-space:nowrap}
+.prog{display:flex;gap:4px;margin:12px 0 14px}
+.prog i{flex:1;height:3px;border-radius:2px;background:#3A322C}
+.prog i.on{background:#F2B35E}
+.tbtns{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid #3A322C;font:500 .8125rem/1 var(--mono);letter-spacing:.04em;color:#F1EADF;background:#27211D;transition:border-color var(--t-fast),background var(--t-fast)}
+.pill:hover{border-color:#5A4E44}
+.pill.pri{background:#F2B35E;color:#14110F;border-color:#F2B35E;font-weight:500}
+.pill.pri:hover{background:#F6C47D}
+.pill[disabled]{opacity:.4;cursor:default}
+.pill.ghostp{background:none}
+.note{font:400 italic 1.25rem/1.38 var(--serif);color:#F1EADF;margin:0 0 22px;padding-left:14px;border-left:2px solid #F2B35E;text-wrap:pretty}
+.endt{margin-top:30px;padding:20px;border:1px solid #3A322C;border-radius:12px;background:#27211D}
+.endt h3{margin:0 0 6px;font:400 1.5rem/1.15 var(--serif);color:#F1EADF}
+.endt p{margin:0 0 14px;color:#BDB2A3;font-size:.9375rem}
+.endt .tlist{display:grid;gap:8px}
+.hello-links{display:grid;gap:10px;margin:26px 0 0}
+.biglink{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;border:1px solid #3A322C;border-radius:12px;background:#27211D;text-decoration:none;transition:border-color var(--t-fast),transform var(--t-fast)}
+.biglink:hover{border-color:#F2B35E;transform:translateY(-1px)}
+.biglink b{display:block;font:400 1.75rem/1.1 var(--serif);color:#F1EADF}
+.biglink small{display:block;margin-top:4px;font:500 .75rem/1.2 var(--mono);letter-spacing:.04em;color:#9A8F82}
+.biglink span.ar{font:500 1.25rem/1 var(--mono);color:#F2B35E}
+.overline{font:400 .9375rem/1.55 var(--sans);color:#BDB2A3;margin:16px 0 0}
+.peek{display:none}
+
+/* trails picker */
+.trails{position:fixed;z-index:50;top:calc(76px + var(--sat));right:calc(170px + var(--sar));width:380px;max-width:calc(100vw - 32px);background:#1D1916;border:1px solid #3A322C;border-radius:14px;box-shadow:0 24px 60px -20px rgba(0,0,0,.7);padding:22px}
+.trails[hidden]{display:none}
+.trails h2{margin:0;font:400 1.75rem/1.1 var(--serif)}
+.trails .sub{margin:6px 0 16px;color:#BDB2A3;font-size:.9375rem;line-height:1.5}
+.tcard{display:block;width:100%;text-align:left;padding:14px;border:1px solid #3A322C;border-radius:10px;background:#27211D;margin-top:8px;transition:border-color var(--t-fast)}
+.tcard:hover{border-color:#F2B35E}
+.tcard b{display:block;font:600 1rem/1.3 var(--sans);color:#F1EADF}
+.tcard span{display:block;font-size:.9375rem;color:#BDB2A3;margin-top:3px;line-height:1.45}
+.tcard small{display:block;margin-top:10px;font:500 .6875rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#F2B35E}
+.trails .x{position:absolute;top:14px;right:14px}
+.scrim{position:fixed;inset:0;z-index:45;background:rgba(10,8,7,.55)}
+.scrim[hidden]{display:none}
+
+/* plain view */
+.plain{display:none}
+html.is-plain .plain{display:block}
+html.is-plain .top{background:#14110F;border-bottom:1px solid #3A322C;padding-bottom:16px}
+html.is-plain .status{display:none}
+.plain section.pc,.plain article{scroll-margin-top:170px!important}
+html.is-plain .stage,html.is-plain .panel{display:none}
+.plain{padding:calc(150px + var(--sat)) calc(16px + var(--sar)) calc(64px + var(--sab)) calc(16px + var(--sal));background:#14110F}
+.plain .wrap{max-width:68ch;margin:0 auto}
+.plain h1{font:400 clamp(2.5rem,2rem + 2vw,3.5rem)/1.05 var(--serif);margin:0}
+.plain .lead{font-size:1.125rem;color:#BDB2A3;margin:12px 0 0;line-height:1.55}
+.plain .meta{font:500 .75rem/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#9A8F82;margin:16px 0 0}
+.plain nav ol{margin:28px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.plain nav a{display:inline-flex;align-items:center;gap:8px;font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#BDB2A3;text-decoration:none;border:1px solid #3A322C;border-radius:999px;padding:10px 12px}
+.plain nav a i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+.plain nav a:hover{color:var(--c);border-color:var(--c)}
+.plain section.pc{margin-top:64px;scroll-margin-top:24px}
+.plain h2{font:400 2.25rem/1.1 var(--serif);margin:0;color:#F1EADF}
+.plain .reg{font:500 .75rem/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--c);margin:0 0 8px}
+.plain .tl{color:#BDB2A3;font-size:1.0625rem;margin:8px 0 0}
+.plain article{margin-top:28px;padding-top:24px;border-top:1px solid #3A322C;scroll-margin-top:24px}
+.plain h3{font:600 1.1875rem/1.3 var(--sans);margin:0;color:#F1EADF}
+.plain h3 .confirm{margin-left:8px}
+.plain .hk{font:italic 400 1.125rem/1.4 var(--serif);color:#E9DFD1;margin:6px 0 0}
+.plain article p.b{line-height:1.65;margin:12px 0 0;color:#F1EADF;font-size:1.0625rem}
+.plain .pf{font:500 .75rem/1.6 var(--mono);color:#BDB2A3;letter-spacing:.04em;margin:12px 0 0}
+.plain .pl a{color:var(--c);font-weight:500}
+.plain .ct{margin:12px 0 0;font-size:.9375rem;color:#BDB2A3}
+.plain .ct ul{margin:6px 0 0;padding-left:1.1em}
+.plain .ct a{color:#F1EADF}
+.plain .trs ol{padding-left:1.3em;color:#BDB2A3}
+.plain .trs li{margin:4px 0}
+.plain .trs a{color:#F1EADF}
+.plain .trs h3{margin-top:28px}
+.plain .about-confirm{margin-top:20px;font-size:.9375rem;color:#BDB2A3;border:1px dashed #5A4E44;border-radius:10px;padding:14px 16px}
+
+/* ---------- tablet ---------- */
+@media (max-width:1023px){ :root{--panel-w:380px} .top{padding-left:calc(24px + var(--sal));padding-right:calc(24px + var(--sar))} .trails{right:calc(24px + var(--sar))} }
+
+/* ---------- phone ---------- */
+@media (max-width:719px){
+  .top{padding:calc(14px + var(--sat)) calc(16px + var(--sar)) 0 calc(16px + var(--sal));display:grid;grid-template-columns:1fr auto;gap:0 12px;align-items:center}
+  .ident{display:contents}
+  .name{grid-column:1;grid-row:1;font-size:1.625rem}
+  .sitenav{display:contents}
+  .sitenav .cta{grid-column:2;grid-row:1;height:40px;margin:0;padding:0 16px;font-size:.875rem}
+  .pos{grid-column:1/-1;grid-row:2;font-size:.875rem;margin-top:4px;max-width:none}
+  .pos em{font-size:.9375rem}
+  .status{display:none}
+  .subnav{grid-column:1/-1;grid-row:3;display:flex;gap:2px;margin:2px 0 0 -12px}
+  .tbtn{font-size:.75rem;padding:12px 12px}
+  .hint{display:none}
+  .clabel{font-size:.6875rem;min-height:30px;padding:0 9px;gap:6px;background:rgba(20,17,15,.72)}
+  .clabel::before{content:"";position:absolute;inset:-7px -2px}
+  .clabel .dot{width:7px;height:7px}
+  .clabel .long{display:none}
+  .clabel .sub{display:none}
+  html.deep .clabel .n{display:none}
+  html.deep .clabel{font-size:.625rem;min-height:26px;padding:0 8px}
+  .preview{display:none}
+  html.deep .pos{display:none}
+  .stage.sheet-full .cnav,.stage.sheet-full .leaders,.stage.sheet-full .nlabel,.stage.sheet-full .nodebtns{visibility:hidden}
+  .panel{z-index:35;left:0;right:0;top:auto;bottom:0;width:auto;height:92dvh;border-radius:18px 18px 0 0;border-bottom:0;opacity:1;visibility:visible;transform:translateY(calc(92dvh - 112px - var(--sab)));transition:transform var(--t-panel) var(--ease-out)}
+  .panel.open{transform:translateY(calc(92dvh - 112px - var(--sab)))}
+  .panel.dragging{transition:none}
+  .panel::before{display:none}
+  .handle{display:flex;justify-content:center;align-items:center;height:28px;flex:none;width:100%;touch-action:none;cursor:grab;position:relative}
+  .handle::before{content:"";width:40px;height:4px;border-radius:2px;background:#5A4E44}
+  .handle::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--hue);opacity:.9;border-radius:18px 18px 0 0}
+  .panel-inner{padding:6px 20px calc(28px + var(--sab))}
+  .trailbar{margin:-6px -20px 18px;padding:12px 20px 14px}
+  .kbd{display:none}
+  .ph{font-size:1.875rem}
+  .peek{display:block}
+  .trails{left:0;right:0;bottom:0;top:auto;width:auto;max-width:none;border-radius:18px 18px 0 0;padding:22px 20px calc(22px + var(--sab));max-height:85dvh;overflow:auto}
+  .plain{padding-top:calc(150px + var(--sat))}
+}
+@media (min-width:720px){ .subnav{display:contents} }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:0ms!important;animation-duration:0ms!important;animation-iteration-count:1!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#plain">Skip to the plain list of everything</a>
+<button class="skip-intro" id="skipIntro" type="button" hidden>Skip intro</button>
+<header class="top" id="top">
+  <div class="ident" id="ident">
+    <p class="name"><a href="#" id="homeLink">Bryan Agas</a></p>
+    <p class="pos" id="pos"></p>
+    <p class="status" id="status"></p>
+  </div>
+  <nav aria-label="Site" class="sitenav" id="sitenav">
+    <span class="subnav">
+      <button type="button" class="tbtn" id="trailsBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="trails">Trails</button>
+      <a class="tbtn" id="plainLink" href="#plain">Plain view</a>
+    </span>
+    <a class="cta" id="helloCta" href="#hello">Say hello</a>
+  </nav>
+</header>
+<main id="main">
+  <section class="stage" id="stage" aria-label="Brain map">
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <canvas id="c2d" aria-hidden="true" hidden></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+    <nav aria-label="Compartments of the brain" class="cnav"><ul id="clist"></ul></nav>
+    <div class="chips" id="chips" aria-hidden="true"></div>
+    <div class="nodebtns" id="nodebtns"></div>
+    <div class="nlabel" id="nlabel" aria-hidden="true"></div>
+    <div class="ghost" id="ghost" aria-hidden="true"></div>
+    <div class="hint" id="hint"></div>
+  </section>
+  <section id="panel" class="panel" role="region" aria-labelledby="panel-h" tabindex="-1">
+    <div class="handle" id="handle" role="button" tabindex="-1" aria-hidden="true"></div>
+    <div class="panel-scroll" id="pscroll"><div class="panel-inner" id="pinner"></div></div>
+  </section>
+  <section id="plainview" class="plain" aria-label="Plain view"></section>
+</main>
+<div class="scrim" id="scrim" hidden></div>
+<div class="trails" id="trails" role="dialog" aria-modal="true" aria-labelledby="trails-h" hidden></div>
+<div aria-live="polite" class="sr-only" id="announce"></div>
+<noscript><div style="position:fixed;inset:0;z-index:99;background:#14110F;color:#F1EADF;padding:48px 16px;font-family:Georgia,serif;overflow:auto"><div style="max-width:60ch;margin:0 auto"><h1 style="font-weight:400">Bryan Agas</h1><p>I build calm software for the parts of life that get messy.</p><p>This interactive brain needs JavaScript. Find me on <a style="color:#F2B35E" href="https://www.linkedin.com/in/bryanagas/">LinkedIn</a> or <a style="color:#F2B35E" href="https://github.com/BryanAgas">GitHub</a>, or see <a style="color:#F2B35E" href="https://bothhomes.co.uk">Both Homes</a>.</p></div></div></noscript>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* =====================================================================
+   1. CONTENT — Scout's JSON, embedded as-is
+   ===================================================================== */
+var SCOUT = {
+  "hero": {
+    "recommended": "I build calm software for the parts of life that get messy. This is the brain behind it.",
+    "options": [
+      "I build calm software for the parts of life that get messy. This is the brain behind it.",
+      "Everything I've built started as a thought somewhere in here. Follow one.",
+      "Shop floor, kitchens, then code. Step inside and see how it connects."
+    ],
+    "eyebrow": "Bryan Agas · Product builder, UK",
+    "sub": "Pick a part of my brain, or follow a thought from one part to the next. Everything here is also in the plain list below.",
+    "ctas": [
+      {
+        "label": "Start with Both Homes",
+        "to": "p-bothhomes"
+      },
+      {
+        "label": "Follow a thought",
+        "to": "trail:both-homes"
+      },
+      {
+        "label": "Get in touch",
+        "href": "https://www.linkedin.com/in/bryanagas/"
+      }
+    ],
+    "status": "Now: shipping Both Homes on iOS and the web"
+  },
+  "compartments": [
+    {
+      "id": "projects",
+      "label": "PROJECTS",
+      "tagline": "Things I've built and put in public.",
+      "nodes": [
+        {
+          "id": "p-bothhomes",
+          "title": "Both Homes",
+          "hook": "One calm answer to: where is my child tonight?",
+          "body": "A shared calendar for separated parents. I designed, built and publish it on my own. You set the pattern once and every night is laid out months ahead, one colour per home. Changes are asked for and answered, so nothing moves without agreement. Notes sit on the day they belong to. It runs on iOS through public TestFlight and as a web app for Android and computers.",
+          "facts": [
+            "iOS (TestFlight)",
+            "Web app",
+            "Free + Plus"
+          ],
+          "link": {
+            "label": "Visit bothhomes.co.uk",
+            "href": "https://bothhomes.co.uk"
+          },
+          "source": "VERIFIED"
+        },
+        {
+          "id": "p-bothhomes-decisions",
+          "title": "Both Homes: the decisions",
+          "hook": "Four choices that shaped it more than any feature.",
+          "body": "A change is a request the other parent answers. Notes live on the night, not in a chat. There are no public links: an invitation goes to one email, works once and expires after seven days. And the free tier is useful on its own. Plus is £3.99 a month or £34.99 a year, and the 14-day trial asks for no card and doesn't auto-renew.",
+          "facts": [
+            "Invite-only",
+            "Data export + deletion",
+            "Prices as of Oct 2026"
+          ],
+          "link": {
+            "label": "Visit bothhomes.co.uk",
+            "href": "https://bothhomes.co.uk"
+          },
+          "source": "VERIFIED"
+        },
+        {
+          "id": "p-tracker",
+          "title": "GitHub activity tracker",
+          "hook": "Public GitHub events, turned into plain sentences.",
+          "body": "A command-line tool in Python, standard library only. Give it a username and it reads that person's public events from GitHub's API, then prints them as readable lines: pushed to this repo, starred that one. It handles the boring cases properly too, like a username that doesn't exist or a request that fails. Small, but it taught me to respect error states.",
+          "facts": [
+            "Python",
+            "Standard library only",
+            "2024"
+          ],
+          "link": {
+            "label": "Code on GitHub",
+            "href": "https://github.com/BryanAgas/github_user_tracker"
+          },
+          "source": "VERIFIED"
+        },
+        {
+          "id": "p-datadict",
+          "title": "Data dictionary search",
+          "hook": "Type a column name. Get back what it means.",
+          "body": "A desktop search over a spreadsheet of Redshift column definitions. Type a column and it tells you the description, the table, the schema and the database. I built it to stop scrolling through a spreadsheet to answer one question. It uses Python, pandas and Tkinter, and there's a plain HTML and JavaScript version for the browser too.",
+          "facts": [
+            "Python",
+            "pandas",
+            "Tkinter",
+            "HTML/JS",
+            "2024"
+          ],
+          "link": {
+            "label": "Code on GitHub",
+            "href": "https://github.com/BryanAgas/data-dictionary-app"
+          },
+          "source": "VERIFIED"
+        },
+        {
+          "id": "p-mycv",
+          "title": "MyCV",
+          "hook": "The first website I wrote by hand.",
+          "body": "A plain, multi-page CV in HTML, from January 2022. It isn't clever and I don't pretend it is. I keep it public because it's where this started: the first site I wrote line by line and put online. Everything else in this brain grew out of it.",
+          "facts": [
+            "HTML",
+            "Jan 2022"
+          ],
+          "link": {
+            "label": "Code on GitHub",
+            "href": "https://github.com/BryanAgas/MyCV"
+          },
+          "source": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "id": "skills",
+      "label": "SKILLS",
+      "tagline": "What I can do, and where each one came from.",
+      "nodes": [
+        {
+          "id": "s-web",
+          "title": "TypeScript and React",
+          "hook": "The stack behind the Both Homes site.",
+          "body": "The public Both Homes site is React and TypeScript, built with Vite and styled with Tailwind CSS, deployed on Netlify. I learned it because the product needed it. A product site has to load fast, read clearly on a phone and be safe to change. That's the standard I hold this work to.",
+          "facts": [
+            "TypeScript",
+            "React",
+            "Vite",
+            "Tailwind CSS",
+            "Netlify"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "s-testing",
+          "title": "Testing and shipping safely",
+          "hook": "A publish script that refuses to push a mess.",
+          "body": "The Both Homes site has unit tests in Vitest and browser tests in Playwright. Publishing goes through a script that checks the branch, checks the working tree is clean and runs validation before anything is pushed. The checklist ends with looking at the live site: the deployed commit and the public routes. Shipped means checked, not just sent.",
+          "facts": [
+            "Vitest",
+            "Playwright",
+            "Publish checks"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "s-python",
+          "title": "Python",
+          "hook": "Small tools that answer one question well.",
+          "body": "I use Python for tools that save someone a job. The GitHub tracker uses nothing but the standard library: an HTTP client and JSON. The data dictionary search uses pandas to read a spreadsheet and Tkinter for a simple desktop window. Neither is big. Both do one thing and handle the cases where things go wrong.",
+          "facts": [
+            "http.client",
+            "json",
+            "pandas",
+            "Tkinter"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "s-html-css",
+          "title": "HTML and CSS",
+          "hook": "Where it started, and still the bit I check first.",
+          "body": "My first site was hand-written HTML in 2022. I still start there. If a page makes sense with the styles and scripts stripped away, it will make sense to a screen reader, a slow phone and a tired parent. Everything clever goes on top of that, never instead of it.",
+          "facts": [
+            "Semantic HTML",
+            "CSS",
+            "Since 2022"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "s-product",
+          "title": "Product, pricing and policy",
+          "hook": "The parts of shipping that aren't code.",
+          "body": "On Both Homes I do everything: product, design, engineering and policy. That meant deciding what's free and what's paid, writing terms and a privacy policy, and building a way for people to export their data or ask for it to be deleted. My business degree helps here, and so do twelve years of working with customers face to face.",
+          "facts": [
+            "Pricing",
+            "Terms",
+            "Privacy",
+            "BA Business Management"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "s-words",
+          "title": "Plain words",
+          "hook": "Copy is part of the interface.",
+          "body": "I studied public relations, advertising and communication to MA level, then spent five years explaining products to people who hadn't asked. In software that turns into labels, notifications and error messages. In Both Homes, every message may be read by someone who's already upset, so it's short, neutral and never takes a side.",
+          "facts": [
+            "MA PR, Advertising & Applied Communication",
+            "Merit"
+          ],
+          "source": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "id": "experience",
+      "label": "EXPERIENCE",
+      "tagline": "Tills, sales floors, kitchens, then code.",
+      "nodes": [
+        {
+          "id": "e-building",
+          "title": "Building software",
+          "hook": "From a hand-coded CV to a shipped product.",
+          "body": "Self-taught, from 2022. I started with a plain HTML CV and kept going: Python tools in 2024, then Both Homes, a product with pricing, a privacy policy, data export and tests. Nobody handed me a curriculum. I learned each thing because the next thing I wanted to build needed it.",
+          "facts": [
+            "2022 – now",
+            "Self-taught"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "e-cafe",
+          "title": "Cafe assistant manager",
+          "hook": "Systems only work if the person on shift can follow them.",
+          "body": "At a meditation centre café, from January 2021 to January 2022. I wrote rotas, planned menus, did the ordering, trained new staff and helped HR with recruitment. The lesson I took into software: a system is only as good as what the person on shift at 8am can follow without asking anyone.",
+          "facts": [
+            "Jan 2021 – Jan 2022",
+            "Rotas",
+            "Ordering",
+            "Training"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "e-kitchen",
+          "title": "Kitchen assistant to acting manager",
+          "hook": "Started as an assistant. Ended up running the kitchen.",
+          "body": "A full-time volunteer role in a meditation centre kitchen, September 2019 to December 2020. I started as a kitchen assistant and spent six months as acting kitchen manager. Menus, budgets, rotas and a team to look after. A busy kitchen teaches you that calm is a skill, and that it spreads.",
+          "facts": [
+            "Sep 2019 – Dec 2020",
+            "Volunteer",
+            "6 months acting manager"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "e-sales",
+          "title": "Sales representative",
+          "hook": "Thirty seconds to explain a product to a stranger.",
+          "body": "Agency roles for brands including Samsung, LG, Aldi and Sainsbury's, from 2014 to 2019. The job was explaining a product in thirty seconds to someone who didn't ask. It's still the best test I know of whether a feature makes sense. If I can't say what it does that quickly, it isn't ready.",
+          "facts": [
+            "Apr 2014 – Jun 2019",
+            "Samsung",
+            "LG",
+            "Aldi",
+            "Sainsbury's"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "e-tesco",
+          "title": "Customer service assistant",
+          "hook": "Four years of questions from the public.",
+          "body": "Tesco Superstore in Sheffield, October 2010 to June 2014. Four years on the shop floor answering whatever people asked. Most of the time the problem wasn't the product or the price. It was that something hadn't been made clear. I still think most problems are clarity problems, and I build like it.",
+          "facts": [
+            "Oct 2010 – Jun 2014",
+            "Sheffield"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "e-education",
+          "title": "Education",
+          "hook": "Business, then communication. Both show up in the work.",
+          "body": "An Access to Higher Education course at Barnsley College, where I was elected Student Governor. Then a BA in Business Management and an MA in Public Relations, Advertising and Applied Communication, both at Sheffield Hallam and both with merit. At university I was also president of the Salsa Society.",
+          "facts": [
+            "MA 2015–17",
+            "BA 2011–14",
+            "Access to HE 2010–11"
+          ],
+          "source": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "id": "mindset",
+      "label": "MINDSET",
+      "tagline": "How I think, shown by what I've built.",
+      "nodes": [
+        {
+          "id": "m-calm",
+          "title": "Calm beats clever",
+          "hook": "Software for tense moments should lower the temperature.",
+          "body": "I meditate every day, and I've worked in kitchens where calm was the difference between service and chaos. So I build for calm. Both Homes has one colour per home, one question answered, and messages that never take a side. The clever version would do more. The calm version gets used when people are already stressed.",
+          "facts": [
+            "Evidence: Both Homes tone",
+            "Daily meditation"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "m-clarity",
+          "title": "Most problems are clarity problems",
+          "hook": "Before building more, make the existing thing clearer.",
+          "body": "Four years on a Tesco shop floor taught me this. People rarely needed something new. They needed the thing in front of them explained. It's why the GitHub tracker prints sentences, not raw data, and why the data dictionary exists at all. When something isn't working, I look for what isn't clear before I look for what's missing.",
+          "facts": [
+            "Evidence: tracker, data dictionary"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "m-agreement",
+          "title": "Nothing moves without agreement",
+          "hook": "Shared things change only when both sides say yes.",
+          "body": "In Both Homes, a change to the schedule is a request. The other parent answers it, and the calendar only updates once the decision is made. Nobody wakes up to a surprise. I think that rule works beyond calendars. When something is shared, the tool should protect the agreement, not let the fastest person win.",
+          "facts": [
+            "Evidence: Both Homes change requests"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "m-privacy",
+          "title": "Private by default",
+          "hook": "Family data shouldn't be one link away from a stranger.",
+          "body": "Both Homes has no public links. An invitation goes to one email address, works once and expires after seven days. People can export their data or ask for it to be deleted. Even the GitHub tracker's browser version talks straight to GitHub, not through a server of mine. I'd rather collect less than explain more.",
+          "facts": [
+            "Single-use invites",
+            "Export + deletion"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "m-ship",
+          "title": "Shipped means checked",
+          "hook": "It isn't done until I've seen it live.",
+          "body": "A release isn't finished when I press publish. It's finished when I've looked at the live site and checked the right commit is there and the public pages load. The Both Homes publish script won't push from the wrong branch or a messy working tree. Boring guardrails mean I can ship often without worrying.",
+          "facts": [
+            "Evidence: publish script, release checklist"
+          ],
+          "source": "VERIFIED"
+        },
+        {
+          "id": "m-turn-up",
+          "title": "Turn up every week",
+          "hook": "Code, salsa and tennis all get better the same way.",
+          "body": "I taught myself to code, and I treat it the way I treat salsa and tennis: you get better by turning up every week, not by waiting to feel ready. I'm a dad of two, so the time is short and fixed. Small, regular steps took me from a hand-coded CV to a shipped product.",
+          "facts": [
+            "Salsa",
+            "Tennis weekly",
+            "Dad of two"
+          ],
+          "source": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "id": "current",
+      "label": "CURRENT WORK",
+      "tagline": "What I'm building right now.",
+      "nodes": [
+        {
+          "id": "c-appstore",
+          "title": "Getting Both Homes into the App Store",
+          "hook": "Live on TestFlight and the web. App Store next.",
+          "body": "Both Homes is live: the iOS app is in public TestFlight, the web app runs at app.bothhomes.co.uk for Android and computers, and the site is at bothhomes.co.uk. The App Store listing is the step I'm working on now. It's the slow, careful part, because a listing is often the first thing a parent sees.",
+          "facts": [
+            "Status: App Store listing pending"
+          ],
+          "link": {
+            "label": "Visit bothhomes.co.uk",
+            "href": "https://bothhomes.co.uk"
+          },
+          "source": "VERIFIED"
+        },
+        {
+          "id": "c-backend",
+          "title": "The Both Homes app backend",
+          "hook": "A Supabase-backed app behind the calendar.",
+          "body": "The Both Homes app runs on Supabase. The data behind the calendar sits there, so it's where the rule that nothing moves without agreement has to hold. The interface can promise agreement. The backend has to keep that promise, for both parents, every time.",
+          "facts": [
+            "Supabase"
+          ],
+          "source": "CONFIRM"
+        },
+        {
+          "id": "c-this-brain",
+          "title": "This brain",
+          "hook": "You're standing inside the current project.",
+          "body": "This portfolio is something I'm building right now, with a small team of AI agents I direct. One researches, one designs, one builds and one reviews, and an orchestrator keeps them on brief. I decide what it says and whether it's good enough. You're looking at the prototype stage.",
+          "facts": [
+            "Prototype",
+            "AI studio"
+          ],
+          "source": "CONFIRM"
+        },
+        {
+          "id": "c-family-week",
+          "title": "Tested against a real week",
+          "hook": "The test environment is a busy family week.",
+          "body": "I'm a dad of two, so most of what I build gets tested against a busy family week before anyone else sees it. That's a harsh test. If something takes three taps when one would do, or a message reads badly first thing in the morning, I'll notice. It keeps the work honest and the scope small.",
+          "facts": [
+            "Dad of two"
+          ],
+          "source": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "id": "experiments",
+      "label": "EXPERIMENTS",
+      "tagline": "AI, data, automation and agent work.",
+      "nodes": [
+        {
+          "id": "x-studio",
+          "title": "An AI studio I direct",
+          "hook": "Research, design, engineering and QA, each its own agent.",
+          "body": "I'm testing how far one person can go by directing AI agents like a small studio. Each has one job: research, design, engineering or independent review, with an orchestrator passing work between them and a checkpoint where I approve or stop it. The useful part isn't speed. It's that each step leaves something I can read and question.",
+          "facts": [
+            "Orchestrator",
+            "Research",
+            "Design",
+            "Engineering",
+            "QA"
+          ],
+          "source": "CONFIRM"
+        },
+        {
+          "id": "x-product-research",
+          "title": "Agents for product research",
+          "hook": "Scout, vet, build, audit: a workflow, not a guess.",
+          "body": "For an e-commerce side project I set up a multi-agent workflow with four roles: a scout finds candidates, a vetter checks them, a builder prepares them and an auditor reviews the result. Splitting the work this way means one agent's enthusiasm gets checked by another. It's the same principle as nothing moving without agreement.",
+          "facts": [
+            "Scout",
+            "Vetter",
+            "Builder",
+            "Auditor"
+          ],
+          "source": "CONFIRM"
+        },
+        {
+          "id": "x-ai-builder",
+          "title": "Prototyping with an AI app builder",
+          "hook": "An early Both Homes, built fast to learn fast.",
+          "body": "An early version of Both Homes started in an AI app builder. It was a quick way to see the idea on a screen and find out what mattered before committing to anything. The question it answered carried through to what's live now: where is my child tonight?",
+          "facts": [
+            "Early repo",
+            "AI app builder"
+          ],
+          "source": "CONFIRM"
+        },
+        {
+          "id": "x-automation",
+          "title": "Automation with n8n",
+          "hook": "Connecting tools so the dull steps run themselves.",
+          "body": "I have n8n connected to my tools. I'm using it to learn where automation earns its place and where it just moves the mess somewhere harder to see. The cafe taught me that a system nobody understands is worse than no system, so I want every flow to be small enough to explain.",
+          "facts": [
+            "n8n"
+          ],
+          "source": "CONFIRM"
+        },
+        {
+          "id": "x-two-runtimes",
+          "title": "One tool, two runtimes",
+          "hook": "Same search, as a desktop app and a web page.",
+          "body": "The data dictionary search exists twice: once in Python with pandas and Tkinter on the desktop, and once in plain HTML and JavaScript in the browser. Building it both ways showed me where the logic really lives and how much of an app is just its window. It's a small experiment I still learn from.",
+          "facts": [
+            "Python",
+            "HTML/JS"
+          ],
+          "link": {
+            "label": "Code on GitHub",
+            "href": "https://github.com/BryanAgas/data-dictionary-app"
+          },
+          "source": "VERIFIED"
+        }
+      ]
+    },
+    {
+      "id": "ideas",
+      "label": "IDEAS",
+      "tagline": "Ideas in progress, and how they get caught.",
+      "nodes": [
+        {
+          "id": "i-idea-bank",
+          "title": "The Idea Bank",
+          "hook": "Every raw idea gets written down, expanded and scored.",
+          "body": "Ideas arrive at bad times: on the school run, mid-rally, in the middle of a shift. So I don't trust memory. Each raw idea goes into a workbook, gets expanded into something I can actually judge, and gets a score. Scoring is how I decide which ones deserve time. Writing them down is how I stop chasing all of them.",
+          "facts": [
+            "Capture",
+            "Expand",
+            "Score"
+          ],
+          "source": "CONFIRM"
+        },
+        {
+          "id": "i-one-question",
+          "title": "Open question: what else needs one calm answer?",
+          "hook": "Both Homes answers one question. What are the others?",
+          "body": "Both Homes works because it answers one question so clearly there's nothing to argue about. I keep asking where else that applies. Which other shared, emotional, everyday decisions would be easier if one plain screen just answered them? I don't have the answer yet. This is where the question lives while I think about it.",
+          "source": "VERIFIED"
+        },
+        {
+          "id": "i-spreadsheets",
+          "title": "Open question: what still runs on a spreadsheet and a chat?",
+          "hook": "Look for the job people do by scrolling.",
+          "body": "The data dictionary existed because people were scrolling a spreadsheet to answer one question. Both Homes exists partly because group chats bury the schedule. Both started the same way: someone doing a small, repeated job the hard way. I keep an eye out for the next one. It usually looks too boring to notice.",
+          "source": "VERIFIED"
+        },
+        {
+          "id": "i-one-person",
+          "title": "Open question: how much can one person run well?",
+          "hook": "Agents make more possible. Not all of it is wise.",
+          "body": "With agents doing research, design, engineering and review, one person can make much more than before. The open question for me is what should stay human. Deciding what a product says to someone who's upset, choosing what's free, approving a release: so far I keep those. I'm still working out where the line sits.",
+          "source": "CONFIRM"
+        }
+      ]
+    }
+  ],
+  "synapses": [
+    {
+      "from": "p-bothhomes",
+      "to": "s-web",
+      "label": "The site runs on this stack"
+    },
+    {
+      "from": "p-bothhomes",
+      "to": "e-tesco",
+      "label": "Clear answers learned at a till"
+    },
+    {
+      "from": "p-bothhomes",
+      "to": "m-calm",
+      "label": "Calm tool for a tense situation"
+    },
+    {
+      "from": "p-bothhomes-decisions",
+      "to": "m-agreement",
+      "label": "The rule behind change requests"
+    },
+    {
+      "from": "p-bothhomes-decisions",
+      "to": "m-privacy",
+      "label": "Single-use invites, no public links"
+    },
+    {
+      "from": "p-bothhomes-decisions",
+      "to": "s-product",
+      "label": "Pricing and policy are product decisions"
+    },
+    {
+      "from": "p-tracker",
+      "to": "s-python",
+      "label": "Standard library only, by choice"
+    },
+    {
+      "from": "p-tracker",
+      "to": "m-clarity",
+      "label": "Raw events turned into sentences"
+    },
+    {
+      "from": "p-datadict",
+      "to": "x-two-runtimes",
+      "label": "Same tool, desktop and browser"
+    },
+    {
+      "from": "p-datadict",
+      "to": "i-spreadsheets",
+      "label": "Born from scrolling a spreadsheet"
+    },
+    {
+      "from": "p-mycv",
+      "to": "s-html-css",
+      "label": "Where the HTML habit started"
+    },
+    {
+      "from": "p-mycv",
+      "to": "e-building",
+      "label": "The first step on the path"
+    },
+    {
+      "from": "s-testing",
+      "to": "m-ship",
+      "label": "Guardrails that make shipping safe"
+    },
+    {
+      "from": "s-words",
+      "to": "e-sales",
+      "label": "Thirty-second explanations became UI copy"
+    },
+    {
+      "from": "s-words",
+      "to": "m-calm",
+      "label": "Neutral wording for upset readers"
+    },
+    {
+      "from": "s-product",
+      "to": "e-education",
+      "label": "Business degree, used for real"
+    },
+    {
+      "from": "e-cafe",
+      "to": "x-automation",
+      "label": "Systems people on shift can follow"
+    },
+    {
+      "from": "e-kitchen",
+      "to": "m-calm",
+      "label": "Calm learned in a busy kitchen"
+    },
+    {
+      "from": "e-tesco",
+      "to": "m-clarity",
+      "label": "Where the clarity rule came from"
+    },
+    {
+      "from": "e-sales",
+      "to": "c-appstore",
+      "label": "A listing is a thirty-second pitch"
+    },
+    {
+      "from": "m-turn-up",
+      "to": "e-building",
+      "label": "Weekly practice, self-taught code"
+    },
+    {
+      "from": "m-turn-up",
+      "to": "c-family-week",
+      "label": "Short, fixed time as a dad"
+    },
+    {
+      "from": "m-agreement",
+      "to": "x-product-research",
+      "label": "One agent checks another's work"
+    },
+    {
+      "from": "c-backend",
+      "to": "m-agreement",
+      "label": "Where the agreement rule must hold"
+    },
+    {
+      "from": "c-this-brain",
+      "to": "x-studio",
+      "label": "This site is the studio's output"
+    },
+    {
+      "from": "x-studio",
+      "to": "i-one-person",
+      "label": "Raises what should stay human"
+    },
+    {
+      "from": "x-ai-builder",
+      "to": "p-bothhomes",
+      "label": "The early prototype of Both Homes"
+    },
+    {
+      "from": "i-one-question",
+      "to": "p-bothhomes",
+      "label": "The one-question pattern, generalised"
+    },
+    {
+      "from": "i-idea-bank",
+      "to": "x-product-research",
+      "label": "Both are structured ways to judge candidates"
+    },
+    {
+      "from": "c-family-week",
+      "to": "p-bothhomes",
+      "label": "Built and tested by a parent"
+    }
+  ],
+  "trails": [
+    {
+      "id": "both-homes",
+      "title": "How Both Homes happened",
+      "intro": "From a till in Sheffield to a calendar two homes agree on.",
+      "stops": [
+        "e-tesco",
+        "m-clarity",
+        "x-ai-builder",
+        "p-bothhomes",
+        "m-agreement",
+        "c-appstore"
+      ]
+    },
+    {
+      "id": "shop-floor",
+      "title": "From the shop floor to the command line",
+      "intro": "Twelve years serving people, and what each job left behind.",
+      "stops": [
+        "e-tesco",
+        "e-sales",
+        "e-kitchen",
+        "e-cafe",
+        "p-mycv",
+        "e-building"
+      ]
+    },
+    {
+      "id": "ai",
+      "title": "How I work with AI",
+      "intro": "Agents do the legwork. I keep the decisions.",
+      "stops": [
+        "x-ai-builder",
+        "x-product-research",
+        "x-studio",
+        "c-this-brain",
+        "i-one-person"
+      ]
+    }
+  ]
+};
+
+/* =====================================================================
+   2. ADAPTER — Scout → Nova's BRAIN contract
+   ===================================================================== */
+var REG = ['projects','skills','experience','mindset','current','experiments','ideas']; // 0..6, stem = 7
+var STEM = 7;
+var META = {
+  projects:   {label:'Projects',     short:'Projects',    region:'Occipital lobe',           hue:'#F0A35E'},
+  skills:     {label:'Skills',       short:'Skills',      region:'Cerebellum',               hue:'#9DBCE0'},
+  experience: {label:'Experience',   short:'Experience',  region:'Temporal lobe',            hue:'#E68F72'},
+  mindset:    {label:'Mindset',      short:'Mindset',     region:'Prefrontal cortex',        hue:'#9FCBA8'},
+  current:    {label:'Current work', short:'Current',     region:'Motor cortex',             hue:'#F4D58D'},
+  experiments:{label:'Experiments',  short:'Experiments', region:'Parietal lobe',            hue:'#74C4BE'},
+  ideas:      {label:'Ideas',        short:'Ideas',       region:'Superior frontal lobe',    hue:'#E7A2BC'}
+};
+var LAMP = '#F2B35E';
+var RING = ['mindset','ideas','current','experiments','projects','skills','experience']; // swipe / arrow order
+var DOM_ORDER = ['projects','current','skills','experience','mindset','experiments','ideas'];
+
+function adapt(s){
+  var byScout = {}, nodes = {}, B = {compartments:[], synapses:[], trails:[]};
+  s.compartments.forEach(function(c){
+    var id = c.id, comp = {id:id, label:META[id].label, region:META[id].region, line:c.tagline, nodes:[]};
+    c.nodes.forEach(function(n, i){
+      var slug = n.id.replace(/^[a-z]-/, ''), key = id + '/' + slug;
+      var node = {id:slug, key:key, comp:id, idx:i, title:n.title,
+        summary:n.hook, body:[n.body], facts:n.facts || [],
+        links:n.link ? [{label:n.link.label, href:n.link.href, external:true}] : [],
+        provenance:n.source === 'VERIFIED' ? 'verified' : 'observed', links2:[]};
+      byScout[n.id] = node; nodes[key] = node; comp.nodes.push(node);
+    });
+    B.compartments.push(comp);
+  });
+  s.synapses.forEach(function(x){
+    var a = byScout[x.from], b = byScout[x.to];
+    if (a && b) B.synapses.push({from:a.key, to:b.key, label:x.label});
+  });
+  s.trails.forEach(function(t){
+    B.trails.push({id:t.id, title:t.title, intro:t.intro,
+      steps:t.stops.filter(function(k){return byScout[k];}).map(function(k){ return {node:byScout[k].key, note:byScout[k].summary}; })});
+  });
+  B.nodes = nodes;
+  B.comp = {}; B.compartments.forEach(function(c){ B.comp[c.id] = c; });
+  B.hero = s.hero;
+  return B;
+}
+var BRAIN = adapt(SCOUT);
+var NODES = BRAIN.nodes;
+var TRAIL = {}; BRAIN.trails.forEach(function(t){ TRAIL[t.id] = t; });
+// connections per node (both directions)
+BRAIN.synapses.forEach(function(s, i){
+  NODES[s.from].links2.push({syn:i, other:s.to, label:s.label, dir:'out'});
+  NODES[s.to].links2.push({syn:i, other:s.from, label:s.label, dir:'in'});
+});
+function compLinks(cid){
+  var set = {};
+  BRAIN.comp[cid].nodes.forEach(function(n){ n.links2.forEach(function(l){ var o = NODES[l.other].comp; if (o !== cid) set[o] = (set[o]||0) + 1; }); });
+  return RING.filter(function(r){ return set[r]; });
+}
+var keyToHash = function(k){ return k.replace('/', '--'); };
+
+/* =====================================================================
+   3. ENVIRONMENT
+   ===================================================================== */
+var $ = function(s){ return document.querySelector(s); };
+var docEl = document.documentElement;
+var mqRM = window.matchMedia('(prefers-reduced-motion: reduce)');
+var mqHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+var RM = mqRM.matches;
+var canHover = mqHover.matches;
+var W = window.innerWidth, H = window.innerHeight;
+var isPhone = function(){ return W < 720; };
+var coarse = window.matchMedia('(pointer: coarse)').matches;
+var phoneClass = coarse && Math.min(screen.width, screen.height) < 720;
+var lowClass = !phoneClass && (navigator.hardwareConcurrency || 8) <= 4;
+var PCOUNT = phoneClass ? 6000 : lowClass ? 9000 : 14000;
+var DPR_CAP = phoneClass ? 1.75 : lowClass ? 1.5 : 2;
+var SIG_POOL = phoneClass ? 12 : 36, SIG_AMBIENT_CAP = phoneClass ? 6 : lowClass ? 10 : 14, SIG_TRAIL = 16;
+function ss(k, v){ try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch(e){ return null; } }
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function hex3(h){ var n = parseInt(h.slice(1), 16); return [(n>>16&255)/255, (n>>8&255)/255, (n&255)/255]; }
+var HUE = REG.map(function(r){ return hex3(META[r].hue); }); HUE.push(hex3(LAMP));
+var CHALK = hex3('#F1EADF'), LAMP3 = hex3(LAMP);
+function clamp(v, a, b){ return v < a ? a : v > b ? b : v; }
+function lerp(a, b, t){ return a + (b - a) * t; }
+function easeTravel(t){ return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2; } // ≈ cubic-bezier(.65,0,.35,1)
+function easeSine(t){ return -(Math.cos(Math.PI * t) - 1) / 2; }
+function now(){ return performance.now(); }
+
+/* =====================================================================
+   4. BRAIN GEOMETRY — sagittal silhouette as shape functions
+   ===================================================================== */
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function e1(x, y){ var ry = 0.55 * (1 + 0.07 * x), dx = x / 0.95, dy = (y - 0.12) / ry; return dx*dx + dy*dy; }
+function e2(x, y){ var dx = (x - 0.08) / 0.52, dy = (y + 0.26) / 0.22; return dx*dx + dy*dy; }
+function eCb(x, y){ var dx = (x + 0.60) / 0.31, dy = (y + 0.45) / 0.19; return dx*dx + dy*dy; }
+function orbitalCut(x, y){ return x > 0.36 && y < -0.13 + 0.14 * (x - 0.36); }
+function inCerebrum(x, y){ if (y < -0.49) return false; return (e1(x, y) <= 1 && !orbitalCut(x, y)) || e2(x, y) <= 1; }
+// Sylvian fissure: quadratic (0.50,-0.10) → ctrl (0.15,-0.02) → (-0.30,0.00), then curving down behind the temporal lobe
+var FISS = (function(){ var p = []; for (var i = 0; i <= 32; i++){ var t = i / 32, u = 1 - t;
+  p.push([u*u*0.50 + 2*u*t*0.15 + t*t*(-0.30), u*u*(-0.10) + 2*u*t*(-0.02) + t*t*0.0]); }
+  p.push([-0.38, -0.02], [-0.44, -0.07], [-0.48, -0.14], [-0.50, -0.22]); return p; })();
+function fissY(x){
+  if (x >= FISS[0][0]) return FISS[0][1];
+  for (var i = 1; i < FISS.length; i++){ var a = FISS[i-1], b = FISS[i]; if (x >= b[0]) { var t = (x - a[0]) / (b[0] - a[0]); return lerp(a[1], b[1], t); } }
+  return -0.6;
+}
+function fissDist(x, y){
+  var best = 9;
+  for (var i = 1; i < FISS.length; i++){ var a = FISS[i-1], b = FISS[i], vx = b[0]-a[0], vy = b[1]-a[1], wx = x-a[0], wy = y-a[1];
+    var t = clamp((wx*vx + wy*vy) / (vx*vx + vy*vy), 0, 1), dx = wx - vx*t, dy = wy - vy*t, d = dx*dx + dy*dy; if (d < best) best = d; }
+  return Math.sqrt(best);
+}
+var SEEDS = [ // cerebral regions (excluding temporal): [regionIndex, x, y, weight]
+  [3, 0.80, -0.02, 1.00], [6, 0.45, 0.42, 1.00], [4, 0.03, 0.52, 0.85], [5, -0.42, 0.40, 1.00], [0, -0.80, 0.02, 1.00]
+];
+function stemDist(x, y){ var ax = -0.24, ay = -0.40, bx = -0.37, by = -0.98, vx = bx-ax, vy = by-ay, wx = x-ax, wy = y-ay;
+  var t = clamp((wx*vx + wy*vy)/(vx*vx + vy*vy), 0, 1), dx = wx - vx*t, dy = wy - vy*t; return Math.sqrt(dx*dx + dy*dy); }
+// classify(x,y) → region index (0–7) or -1; gap=true → also returns -2 for sulci (generation only)
+function classify(x, y, gap){
+  if (inCerebrum(x, y)){
+    if (e2(x, y) <= 1 && y < fissY(x)){ if (gap && fissDist(x, y) < 0.022) return -2; return 2; }
+    if (gap && fissDist(x, y) < 0.022) return -2;
+    var b1 = 9, b2 = 9, r1 = -1;
+    for (var i = 0; i < SEEDS.length; i++){ var s = SEEDS[i], dx = x - s[1], dy = y - s[2], d = Math.sqrt(dx*dx + dy*dy) / s[3];
+      if (d < b1){ b2 = b1; b1 = d; r1 = s[0]; } else if (d < b2) b2 = d; }
+    if (gap && b2 - b1 < 0.016) return -2;
+    return r1;
+  }
+  if (eCb(x, y) <= 1){ if (gap && (e1(x, y) < 1.10 || e2(x, y) < 1.14)) return -2; return 1; }
+  if (y < -0.36 && stemDist(x, y) < 0.072){ if (gap && (eCb(x, y) < 1.18 || e2(x, y) < 1.18 || e1(x,y) < 1.08)) return -2; return STEM; }
+  return -1;
+}
+function halfDepth(r, x, y){
+  if (r === 1) return 0.24 * Math.sqrt(Math.max(0.08, 1 - eCb(x, y)));
+  if (r === STEM) return 0.07;
+  return 0.42 * Math.sqrt(Math.max(0.05, 1 - (x/0.97)*(x/0.97) - ((y-0.10)/0.66)*((y-0.10)/0.66)));
+}
+function genParticles(count){
+  var rnd = mulberry32(1235), pos = new Float32Array(count * 3), reg = new Float32Array(count), ph = new Float32Array(count), sz = new Float32Array(count), sh = new Float32Array(count);
+  var LX = 0.42, LY = 0.62, LZ = 0.66, LL = Math.sqrt(LX*LX + LY*LY + LZ*LZ); LX /= LL; LY /= LL; LZ /= LL;
+  var n = 0, tries = 0, maxTries = count * 14;
+  while (n < count && tries < maxTries){
+    tries++;
+    var x = rnd() * 2 - 1, y = rnd() * 1.72 - 1.0;
+    var r = classify(x, y, true); if (r < 0) continue;
+    var p, fold = 1;
+    if (r === 1){ var fl = Math.abs(Math.sin(36 * y + 2.6 * x + 1.2 * Math.sin(9 * x))); p = 0.15 + 0.85 * fl; fold = 0.4 + 0.6 * fl; }
+    else if (r === STEM) p = 0.55 + 0.45 * Math.abs(Math.sin(40 * x + 6 * y));
+    else {
+      // gyri: meandering zero-contours of two warped waves become the sulci (dark grooves)
+      var gy = Math.abs(Math.sin(17*x + 2.6*Math.sin(11*y)) + 0.8*Math.sin(15*y + 2.2*Math.sin(13*x + 1.0)) + 0.35*Math.sin(9.0*x + 3.0*Math.sin(7.0*y) + 1.7*Math.sin(4.0*x*y)));
+      p = 0.03 + 0.97 * clamp((gy - 0.20) / 0.45, 0, 1);
+      fold = 0.30 + 0.70 * clamp((gy - 0.15) / 0.9, 0, 1);
+      // crisper rim: brighten the silhouette edge
+      var ee = Math.min(e1(x, y), e2(x, y) * 1.0);
+      if (ee > 0.86 && ee <= 1) p = Math.min(1, p + 0.35);
+    }
+    if (rnd() > p) continue;
+    var h = halfDepth(r, x, y), rr = rnd() * 2 - 1, u = 0.5 + 0.5 * (rr < 0 ? -1 : 1) * Math.pow(Math.abs(rr), 0.35);
+    pos[n*3] = x; pos[n*3+1] = y; pos[n*3+2] = h * (2*u - 1);
+    reg[n] = r; ph[n] = rnd() * Math.PI * 2; sz[n] = rnd() < 0.08 ? 1.8 : 0.7 + rnd() * 0.6;
+    // lamp shading: ellipsoid normal · light (upper front), plus a rim light that keeps the silhouette crisp
+    var z = pos[n*3+2], nx, ny, nz;
+    if (r === 1){ nx = (x + 0.60) / (0.31*0.31); ny = (y + 0.45) / (0.19*0.19); nz = z / (0.24*0.24); }
+    else if (r === STEM){ nx = (x + 0.30) / 0.005; ny = 0; nz = z / 0.005; }
+    else { nx = x / (0.97*0.97); ny = (y - 0.10) / (0.66*0.66); nz = z / (0.42*0.42); }
+    var nl = Math.sqrt(nx*nx + ny*ny + nz*nz) || 1; nx /= nl; ny /= nl; nz /= nl;
+    var lam = Math.max(0, nx*LX + ny*LY + nz*LZ), rim = Math.pow(1 - Math.abs(nz), 2.0);
+    sh[n] = clamp((0.22 + 0.78 * lam) * fold + 0.45 * rim, 0, 1.25);
+    n++;
+  }
+  return {pos:pos, reg:reg, ph:ph, sz:sz, sh:sh, n:n};
+}
+var P = genParticles(PCOUNT);
+// region centroids + bounds
+var CENT = [], BBOX = [];
+(function(){
+  var sx = new Float64Array(8), sy = new Float64Array(8), c = new Float64Array(8);
+  for (var i = 0; i < 8; i++) BBOX.push([9, 9, -9, -9]);
+  for (var j = 0; j < P.n; j++){ var r = P.reg[j], x = P.pos[j*3], y = P.pos[j*3+1]; sx[r] += x; sy[r] += y; c[r]++;
+    var b = BBOX[r]; if (x < b[0]) b[0] = x; if (y < b[1]) b[1] = y; if (x > b[2]) b[2] = x; if (y > b[3]) b[3] = y; }
+  for (var k = 0; k < 8; k++){ var cx = sx[k]/c[k], cy = sy[k]/c[k]; CENT.push([cx, cy, 0.9 * halfDepth(k, cx, cy)]); }
+})();
+var BRAIN_C = [0.0, -0.15, 0.0];
+// thought-node positions
+var NPOS = {};
+(function(){
+  var OFF = [[0,0],[0.13,0.07],[-0.13,0.06],[0.11,-0.08],[-0.11,-0.08],[0,0.14]];
+  var SC = {mindset:[0.9,1], ideas:[1,1], current:[0.75,1], experiments:[1,1], projects:[0.85,1], experience:[1,0.6], skills:[0.8,0.6]};
+  BRAIN.compartments.forEach(function(c){
+    var ri = REG.indexOf(c.id), ce = CENT[ri], sc = SC[c.id];
+    c.nodes.forEach(function(n, i){
+      var o = OFF[i % 6], x = ce[0] + o[0]*sc[0], y = ce[1] + o[1]*sc[0]*sc[1];
+      for (var k = 0; k < 20 && classify(x, y, false) !== ri; k++){ x = lerp(x, ce[0], 0.2); y = lerp(y, ce[1], 0.2); }
+      NPOS[n.key] = [x, y, 0.9 * halfDepth(ri, x, y)];
+    });
+  });
+})();
+
+/* =====================================================================
+   5. PATHWAYS — synapses, trunks, trail links
+   ===================================================================== */
+var PATHS = [], PAIR = {};
+function bez(p0, p1, p2, p3, t, o){ var u = 1 - t, a = u*u*u, b = 3*u*u*t, c = 3*u*t*t, d = t*t*t;
+  o[0] = a*p0[0] + b*p1[0] + c*p2[0] + d*p3[0]; o[1] = a*p0[1] + b*p1[1] + c*p2[1] + d*p3[1]; o[2] = a*p0[2] + b*p1[2] + c*p2[2] + d*p3[2]; return o; }
+function resample(raw, n){ // raw: flat array of xyz points; returns arc-length-even Float32Array of n points + length
+  var m = raw.length / 3, cum = new Float64Array(m), L = 0;
+  for (var i = 1; i < m; i++){ var dx = raw[i*3]-raw[i*3-3], dy = raw[i*3+1]-raw[i*3-2], dz = raw[i*3+2]-raw[i*3-1]; L += Math.sqrt(dx*dx+dy*dy+dz*dz); cum[i] = L; }
+  if (!n) n = Math.max(48, Math.ceil(L / 0.012));
+  var out = new Float32Array(n * 3), j = 1;
+  for (var k = 0; k < n; k++){ var s = L * k / (n - 1); while (j < m - 1 && cum[j] < s) j++;
+    var t = (s - cum[j-1]) / Math.max(1e-9, cum[j] - cum[j-1]); t = clamp(t, 0, 1);
+    out[k*3] = lerp(raw[j*3-3], raw[j*3], t); out[k*3+1] = lerp(raw[j*3-2], raw[j*3+1], t); out[k*3+2] = lerp(raw[j*3-1], raw[j*3+2], t); }
+  return {pts:out, n:n, len:L};
+}
+var HUB = [-0.05, 0.12, 0];
+function curve(a, b, same){
+  var p1, p2, lift = 0.30 + 0.15 * Math.abs(a[0] - b[0]);
+  if (same){ var mx = (a[0]+b[0])/2, my = (a[1]+b[1])/2 + 0.16; p1 = [lerp(a[0], mx, .6), lerp(a[1], my, .6), a[2] + 0.22]; p2 = [lerp(b[0], mx, .6), lerp(b[1], my, .6), b[2] + 0.22]; }
+  else { p1 = [lerp(a[0], HUB[0], .55), lerp(a[1], HUB[1], .55), lerp(a[2], HUB[2], .55) + lift]; p2 = [lerp(b[0], HUB[0], .55), lerp(b[1], HUB[1], .55), lerp(b[2], HUB[2], .55) + lift]; }
+  var raw = [], o = [0,0,0];
+  for (var i = 0; i <= 96; i++){ bez(a, p1, p2, b, i / 96, o); raw.push(o[0], o[1], o[2]); }
+  var mid = bez(a, p1, p2, b, 0.5, [0,0,0]);
+  var r = resample(raw); r.mid = mid; return r;
+}
+function addPath(kind, a, b, ra, rb, pa, pb, label){
+  var c = curve(pa, pb, ra === rb);
+  var p = {i:PATHS.length, kind:kind, a:a, b:b, ra:ra, rb:rb, pts:c.pts, n:c.n, len:c.len, mid:c.mid, label:label || '',
+    alpha:0.08, alphaT:0.08, lamp:0, lampT:0, lastUsed:-99};
+  PATHS.push(p);
+  if (kind !== 'trunk'){ PAIR[a + '|' + b] = p; PAIR[b + '|' + a] = p; }
+  return p;
+}
+BRAIN.synapses.forEach(function(s){ var a = NODES[s.from], b = NODES[s.to];
+  addPath('syn', s.from, s.to, REG.indexOf(a.comp), REG.indexOf(b.comp), NPOS[s.from], NPOS[s.to], s.label); });
+[['mindset','ideas'],['ideas','current'],['current','experiments'],['experiments','projects'],['projects','skills'],['skills','experience'],['experience','mindset'],['experience','current'],['ideas','experiments'],['mindset','current'],['projects','experience']].forEach(function(t){
+  var ra = REG.indexOf(t[0]), rb = REG.indexOf(t[1]); addPath('trunk', t[0], t[1], ra, rb, CENT[ra], CENT[rb]); });
+addPath('trunk', 'skills', 'stem', 1, STEM, CENT[1], [-0.30, -0.70, 0.05]);
+BRAIN.trails.forEach(function(t){ for (var i = 1; i < t.steps.length; i++){ var a = t.steps[i-1].node, b = t.steps[i].node;
+  if (!PAIR[a + '|' + b]) addPath('temp', a, b, REG.indexOf(NODES[a].comp), REG.indexOf(NODES[b].comp), NPOS[a], NPOS[b], 'then'); } });
+var SYN_PATHS = PATHS.filter(function(p){ return p.kind === 'syn'; });
+var TRUNK_PATHS = PATHS.filter(function(p){ return p.kind === 'trunk'; });
+// beads layout
+var BEADS = 0; PATHS.forEach(function(p){ p.b0 = BEADS; BEADS += p.n; });
+function polyFrom(points){ var raw = []; points.forEach(function(q){ raw.push(q[0], q[1], q[2]); }); return resample(raw); }
+function stemPoly(from){
+  return polyFrom([from, [lerp(from[0], -0.27, .5), lerp(from[1], -0.45, .5), 0.12], [-0.26, -0.52, 0.06], [-0.32, -0.78, 0.05], [-0.37, -0.98, 0.04], [-0.42, -1.25, 0.03], [-0.48, -1.9, 0.0]]);
+}
+var STEM_POLY = stemPoly(CENT[1]);
+
+/* =====================================================================
+   6. CAMERA (shared by WebGL + 2D renderers)
+   ===================================================================== */
+var FOV = 30, TANH = Math.tan(FOV * Math.PI / 360);
+var cam = {fx:BRAIN_C[0], fy:BRAIN_C[1], fz:0, ppu:300, ox:0, oy:0, yaw:0, pitch:0, s:1};
+var camFrom = null, camTo = null, camT0 = 0, camDur = 0, camPull = 0;
+var camT = [0, 0, 0], camDist = 3;
+var sway = {yaw:0, pitch:0, pyaw:0, ppitch:0, tyaw:0, tpitch:0, regionYaw:0, regionYawT:0};
+function setCam(target, dur, pull){
+  if (RM || !dur){ Object.assign(cam, target); camTo = null; requestRender(); return; }
+  camFrom = {fx:cam.fx, fy:cam.fy, fz:cam.fz, ppu:cam.ppu, ox:cam.ox, oy:cam.oy}; camTo = target; camT0 = now(); camDur = dur; camPull = pull || 0;
+}
+function updateCam(t){
+  if (!camTo) return false;
+  var k = clamp((t - camT0) / camDur, 0, 1), e = easeTravel(k);
+  cam.fx = lerp(camFrom.fx, camTo.fx, e); cam.fy = lerp(camFrom.fy, camTo.fy, e); cam.fz = lerp(camFrom.fz, camTo.fz, e);
+  cam.ox = lerp(camFrom.ox, camTo.ox, e); cam.oy = lerp(camFrom.oy, camTo.oy, e);
+  cam.ppu = lerp(camFrom.ppu, camTo.ppu, e) * (1 - camPull * Math.sin(Math.PI * e));
+  if (k >= 1) camTo = null;
+  return true;
+}
+function computeCamBasis(){
+  var c = Math.cos(cam.yaw), s = Math.sin(cam.yaw), cx = Math.cos(cam.pitch), sx = Math.sin(cam.pitch);
+  var x1 = c*cam.fx + s*cam.fz, z1 = -s*cam.fx + c*cam.fz, y1 = cam.fy;
+  camT[0] = x1 * cam.s; camT[1] = (cx*y1 - sx*z1) * cam.s; camT[2] = (sx*y1 + cx*z1) * cam.s;
+  camDist = H / (2 * TANH * cam.ppu);
+}
+function project(x, y, z, out){
+  var c = Math.cos(cam.yaw), s = Math.sin(cam.yaw), cx = Math.cos(cam.pitch), sx = Math.sin(cam.pitch);
+  var x1 = c*x + s*z, z1 = -s*x + c*z, y2 = cx*y - sx*z1, z2 = sx*y + cx*z1;
+  var vx = x1*cam.s - camT[0], vy = y2*cam.s - camT[1], vz = z2*cam.s - (camT[2] + camDist);
+  var k = 1 / (-vz), asp = W / H;
+  out[0] = W/2 + (vx * k / (TANH * asp)) * W/2 - cam.ox;
+  out[1] = H/2 - (vy * k / TANH) * H/2 - cam.oy;
+  out[2] = -vz; return out;
+}
+function unproject(px, py){ // → brain-space (x,y) on the z=0 sagittal plane
+  var asp = W / H, nx = (px + cam.ox - W/2) / (W/2), ny = -(py + cam.oy - H/2) / (H/2);
+  var dx = nx * TANH * asp, dy = ny * TANH, dz = -1, ox = camT[0], oy = camT[1], oz = camT[2] + camDist;
+  ox /= cam.s; oy /= cam.s; oz /= cam.s;
+  var c = Math.cos(cam.yaw), s = Math.sin(cam.yaw), cx = Math.cos(cam.pitch), sx = Math.sin(cam.pitch);
+  function inv(v){ var p1x = v[0], p1y = cx*v[1] + sx*v[2], p1z = -sx*v[1] + cx*v[2]; return [c*p1x - s*p1z, p1y, s*p1x + c*p1z]; }
+  var o = inv([ox, oy, oz]), d = inv([dx, dy, dz]); if (Math.abs(d[2]) < 1e-6) return null;
+  var t = -o[2] / d[2]; return [o[0] + d[0]*t, o[1] + d[1]*t];
+}
+
+/* =====================================================================
+   7. STATE
+   ===================================================================== */
+var state = {hoverConn:null, route:{type:'overview'}, openRegion:-1, hoverRegion:-1, openNode:null, hoverNode:null, follow:null, trailWalk:[], introDone:false};
+var regionCur = [], regionTgt = [];
+for (var ri = 0; ri < 8; ri++){ regionCur.push({tint:0.42, dim:1, lift:0}); regionTgt.push({tint:0.42, dim:1, lift:0}); }
+regionCur[STEM].tint = regionTgt[STEM].tint = 0.5;
+var nodeVis = {}; Object.keys(NODES).forEach(function(k){ nodeVis[k] = {a:0.45, aT:0.45, ring:0, ringT:0, bloom:-1e9, scale:1}; });
+var flashes = [[0,0,0,-1e9],[0,0,0,-1e9]], flashI = 0;
+function flash(p, t){ var f = flashes[flashI++ % 2]; f[0] = p[0]; f[1] = p[1]; f[2] = p[2]; f[3] = t; }
+var lastAccent = -1e9, pointerBrain = null, needsRender = true;
+function requestRender(){ needsRender = true; if (RM && !rafId && running) rafId = requestAnimationFrame(frame); }
+
+function computeTargets(){
+  var r = state.route, open = state.openRegion, hov = state.hoverRegion, node = state.openNode;
+  for (var i = 0; i < 8; i++){
+    var g = regionTgt[i];
+    g.tint = i === STEM ? 0.5 : (i === open ? 0.9 : (i === hov ? 0.7 : 0.42));
+    g.dim = (open >= 0 && i !== open && i !== STEM && i !== hov) ? 0.38 : 1;
+    if (r.type === 'hello') g.dim = i === STEM ? 1 : 0.6;
+    g.lift = (i === hov || (i === open && i !== STEM)) ? 1 : 0;
+  }
+  var walked = {}; state.trailWalk.forEach(function(p){ walked[p.i] = 1; });
+  PATHS.forEach(function(p){
+    var a = p.kind === 'trunk' ? 0.08 : (p.kind === 'temp' ? 0 : 0.08), l = 0;
+    if (p.kind !== 'trunk' && p.kind !== 'temp'){
+      if ((hov >= 0 && (p.ra === hov || p.rb === hov)) || (open >= 0 && (p.ra === open || p.rb === open))) a = 0.40;
+      if (node && (p.a === node || p.b === node)) a = state.hoverConn ? (PAIR[node + '|' + state.hoverConn] === p ? 0.95 : 0.3) : (r.type === 'trail' ? 0.3 : 0.85);
+    } else if (p.kind === 'trunk' && open >= 0 && (p.ra === open || p.rb === open)) a = 0.15;
+    if (walked[p.i]){ a = 0.85; l = 1; }
+    if (state.follow){ a = p === state.follow ? 0.95 : (walked[p.i] ? 0.5 : 0.05); }
+    p.alphaT = a; p.lampT = l;
+  });
+  Object.keys(NODES).forEach(function(k){
+    var n = NODES[k], ri = REG.indexOf(n.comp), v = nodeVis[k];
+    v.aT = open < 0 ? 0.5 : (ri === open ? 1 : 0.18);
+    if (r.type === 'hello') v.aT = 0.2;
+    v.ringT = (k === node) ? 1 : (k === state.hoverNode ? 0.7 : (ri === open && open >= 0 ? 0.35 : 0));
+  });
+  requestRender();
+}
+
+/* =====================================================================
+   8. SIGNALS
+   ===================================================================== */
+var sigs = []; for (var si = 0; si < SIG_POOL; si++) sigs.push({on:false, poly:null, rev:false, t0:0, dur:1, c0:0, c1:0, head:7, trail:10, ease:easeSine, cb:null, lamp:0, done:true});
+var ambientOn = 0;
+function fireOnPoly(slot, poly, rev, dur, r0, r1, opts){
+  var s = sigs[slot]; opts = opts || {};
+  s.on = true; s.done = false; s.poly = poly; s.rev = rev; s.t0 = now(); s.dur = dur; s.c0 = r0; s.c1 = r1;
+  s.head = opts.head || 7; s.trail = opts.trail || 10; s.ease = opts.ease || easeSine; s.cb = opts.cb || null; s.lamp = opts.lamp || 0; s.amb = !!opts.amb;
+  return s;
+}
+function freeAmbientSlot(){ var active = 0, free = -1; for (var i = 4; i < SIG_POOL; i++){ if (sigs[i].on) active++; else if (free < 0) free = i; } return active >= SIG_AMBIENT_CAP ? -1 : free; }
+var userSlot = 0; function nextUserSlot(){ userSlot = (userSlot + 1) % 4; return userSlot; }
+function pathEnds(p, rev){ var a = p.kind === 'trunk' ? p.ra : REG.indexOf(NODES[p.a].comp), b = p.kind === 'trunk' ? p.rb : REG.indexOf(NODES[p.b].comp); return rev ? [b, a] : [a, b]; }
+function fireAmbient(p, rev){
+  var slot = freeAmbientSlot(); if (slot < 0) return null;
+  var e = pathEnds(p, rev); p.lastUsed = barIdx;
+  return fireOnPoly(slot, p, rev, (p.len / 0.55) * 1000, e[0], e[1], {amb:true, ease:easeSine});
+}
+var recentBars = 2;
+function pickPath(){
+  var open = state.openRegion;
+  if (open >= 0 && open !== STEM && Math.random() < 0.75){
+    var touching = SYN_PATHS.filter(function(p){ return (p.ra === open || p.rb === open) && barIdx - p.lastUsed > 1; });
+    if (touching.length){ var p = touching[(Math.random() * touching.length) | 0]; return [p, p.rb === open && p.ra !== open]; }
+  }
+  var pool = Math.random() < 0.7 ? SYN_PATHS : TRUNK_PATHS;
+  for (var k = 0; k < 8; k++){ var q = pool[(Math.random() * pool.length) | 0]; if (barIdx - q.lastUsed > recentBars || k === 7) return [q, Math.random() < 0.5]; }
+}
+var barIdx = 0, lastCount = -1, clockT0 = 0, BEAT = 652, lastInput = 0, surfacing = false, ghostTimer = 0;
+function onCount(count, t){
+  if (RM || !state.introDone || docEl.classList.contains('is-plain')) return;
+  if (count === 1){ barIdx++; pulseHint(); if (barIdx % 2 === 0) fireStem();
+    surfacing = state.route.type === 'overview' && t - lastInput > 8000 && barIdx % 4 === 0; }
+  if (count === 4 || count === 8) return;
+  var n = (count === 1 || count === 5) ? (surfacing ? 4 : 2) : 1;
+  if (count === 1 || count === 5) lastAccent = t;
+  var last = null;
+  for (var i = 0; i < n; i++){ var pr = pickPath(); if (pr) { var s = fireAmbient(pr[0], pr[1]); if (s) last = s; } }
+  if (surfacing && count === 7 && last && last.poly.kind === 'syn'){ var key = last.rev ? last.poly.a : last.poly.b; showGhost(key, last.dur); }
+}
+function fireStem(from, cb, dur){
+  var poly = from ? stemPoly(from) : STEM_POLY;
+  var slot = from ? nextUserSlot() : freeAmbientSlot(); if (slot < 0) return;
+  fireOnPoly(slot, poly, false, dur || 1500, from ? REG.indexOf('skills') : 1, STEM, {lamp:1, head: from ? 10 : 7, trail: from ? 16 : 10, ease: from ? easeTravel : easeSine, cb:cb});
+}
+
+/* =====================================================================
+   9. RENDERERS
+   ===================================================================== */
+var R = null; // active renderer: {render(t), resize(), kind}
+var VS_CORTEX = [
+'attribute float aRegion; attribute float aPhase; attribute float aSize; attribute float aShade;',
+'uniform float uTime; uniform float uBreath; uniform float uBeat; uniform float uWave; uniform float uPx; uniform float uRef; uniform float uMax; uniform float uMotion;',
+'uniform vec3 uHue[8]; uniform float uTint[8]; uniform float uDim[8]; uniform float uLift[8]; uniform vec3 uChalk;',
+'uniform vec4 uFlash0; uniform vec4 uFlash1; uniform vec3 uPointer;',
+'varying vec3 vColor; varying float vAlpha;',
+'void main(){',
+'  int r = int(aRegion + 0.5);',
+'  float tint = uTint[0]; float dim = uDim[0]; float lift = uLift[0]; vec3 hue = uHue[0];',
+'  for (int i = 1; i < 8; i++){ if (i == r){ tint = uTint[i]; dim = uDim[i]; lift = uLift[i]; hue = uHue[i]; } }',
+'  vec3 p = position; float sg = p.z >= 0.0 ? 1.0 : -1.0;',
+'  p.z += lift * 0.035 * sg;',
+'  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+'  float tw = mix(1.0, 0.86 + 0.14 * sin(uTime * 0.8 + aPhase), uMotion);',
+'  float wf = 1.15 - uWave * 2.6; float lit = smoothstep(wf - 0.18, wf + 0.18, position.x);',
+'  float bright = mix(0.6, 1.0, lit);',
+'  float f0 = uFlash0.w * (1.0 - smoothstep(0.0, 0.16, distance(position, uFlash0.xyz)));',
+'  float f1 = uFlash1.w * (1.0 - smoothstep(0.0, 0.16, distance(position, uFlash1.xyz)));',
+'  float pg = uPointer.z * (1.0 - smoothstep(0.0, 0.09, distance(position.xy, uPointer.xy)));',
+'  float depth = mix(0.16, 1.0, smoothstep(-0.30, 0.34, position.z)) * aShade;',
+'  vColor = mix(uChalk, hue, tint);',
+'  vAlpha = (0.66 * tw * uBreath * bright * depth + 0.10 * uBeat) * dim + 0.30 * (f0 + f1) + 0.20 * pg;',
+'  float sz = aSize * (1.0 + 0.15 * lift);',
+'  gl_PointSize = clamp(sz * uPx * uRef / -mv.z, 1.0, uMax);',
+'  gl_Position = projectionMatrix * mv;',
+'}'].join('\n');
+var FS_SOFT = [
+'varying vec3 vColor; varying float vAlpha;',
+'void main(){ vec2 c = gl_PointCoord - 0.5; float d = length(c) * 2.0; if (d > 1.0) discard;',
+'  float a = 1.0 - smoothstep(0.25, 1.0, d);',
+'  gl_FragColor = vec4(vColor, vAlpha * a); }'].join('\n');
+var VS_BEAD = [
+'attribute vec3 aColor; attribute float aAlpha; attribute float aLamp;',
+'uniform float uDpr; uniform float uRef; uniform vec3 uLampC; uniform float uBreath;',
+'varying vec3 vColor; varying float vAlpha;',
+'void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+'  vColor = mix(aColor, uLampC, aLamp); vAlpha = aAlpha * (0.85 + 0.15 * uBreath);',
+'  gl_PointSize = clamp((1.5 + 1.6 * aAlpha) * uDpr * sqrt(uRef / -mv.z), 1.0, 8.0 * uDpr);',
+'  gl_Position = projectionMatrix * mv; }'].join('\n');
+var VS_SIG = [
+'attribute vec3 aColor; attribute float aAlpha; attribute float aSize;',
+'uniform float uDpr;',
+'varying vec3 vColor; varying float vAlpha;',
+'void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+'  vColor = aColor; vAlpha = aAlpha;',
+'  gl_PointSize = aSize * uDpr * 2.2;',
+'  gl_Position = projectionMatrix * mv; }'].join('\n');
+var FS_GLOW = [
+'varying vec3 vColor; varying float vAlpha;',
+'void main(){ vec2 c = gl_PointCoord - 0.5; float d = length(c) * 2.0; if (d > 1.0) discard;',
+'  float core = 1.0 - smoothstep(0.0, 0.42, d); float halo = exp(-d * d * 5.0) * 0.55;',
+'  vec3 col = mix(vColor, vec3(1.0, 0.97, 0.92), core * 0.6);',
+'  gl_FragColor = vec4(col, vAlpha * (core + halo)); }'].join('\n');
+var VS_NODE = [
+'attribute vec3 aColor; attribute float aAlpha; attribute float aRing; attribute float aBloom;',
+'uniform float uDpr;',
+'varying vec3 vColor; varying float vAlpha; varying float vRing; varying float vBloom;',
+'void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+'  vColor = aColor; vAlpha = aAlpha; vRing = aRing; vBloom = aBloom;',
+'  gl_PointSize = 64.0 * uDpr; gl_Position = projectionMatrix * mv; }'].join('\n');
+var FS_NODE = [
+'varying vec3 vColor; varying float vAlpha; varying float vRing; varying float vBloom;',
+'void main(){ vec2 c = (gl_PointCoord - 0.5) * 64.0; float r = length(c);',
+'  float core = 1.0 - smoothstep(2.9, 4.1, r);',
+'  float halo = exp(-r * r / 70.0) * (0.25 + 0.45 * vRing);',
+'  float ring = vRing * (1.0 - smoothstep(0.5, 1.4, abs(r - 7.5)));',
+'  float b = 0.0; if (vBloom >= 0.0 && vBloom < 1.0){ float br = mix(3.5, 28.0, vBloom); b = (1.0 - vBloom) * 0.9 * (1.0 - smoothstep(0.6, 2.0, abs(r - br))); }',
+'  vec3 col = mix(vColor, vec3(1.0, 0.98, 0.94), core * 0.55);',
+'  float a = (core + halo + ring * 0.9) * vAlpha + b;',
+'  if (a < 0.004) discard;',
+'  gl_FragColor = vec4(col, a); }'].join('\n');
+var VS_HALO = ['varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'].join('\n');
+var FS_HALO = ['varying vec2 vUv; uniform float uBreath; uniform float uI;',
+'void main(){ vec2 c = (vUv - 0.5) * vec2(2.0, 1.6); float d = length(c);',
+'  float g = exp(-d * d * 3.2) * 0.075 * uI * (0.92 + 0.08 * uBreath) + exp(-d * d * 14.0) * 0.03 * uI;',
+'  gl_FragColor = vec4(vec3(0.949, 0.702, 0.369), g); }'].join('\n');
+
+function makeGL(){
+  if (!window.THREE) throw new Error('three.js not loaded');
+  var probe = document.createElement('canvas'), pctx = null;
+  try { pctx = probe.getContext('webgl2') || probe.getContext('webgl') || probe.getContext('experimental-webgl'); } catch(e){}
+  if (!pctx) throw new Error('webgl unavailable');
+  try { var lc = pctx.getExtension('WEBGL_lose_context'); if (lc) lc.loseContext(); } catch(e){}
+  var T = window.THREE, canvas = $('#gl');
+  var renderer = new T.WebGLRenderer({canvas:canvas, antialias:false, alpha:false, powerPreference:'high-performance', preserveDrawingBuffer:false});
+  if (!renderer.getContext()) throw new Error('no gl');
+  renderer.setClearColor(0x14110F, 1);
+  var dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP);
+  renderer.setPixelRatio(dpr);
+  var scene = new T.Scene(), group = new T.Group(); scene.add(group);
+  var camera = new T.PerspectiveCamera(FOV, W / H, 0.05, 50);
+  // halo
+  var halo = new T.Mesh(new T.PlaneGeometry(4.6, 3.6), new T.ShaderMaterial({vertexShader:VS_HALO, fragmentShader:FS_HALO, transparent:true, depthWrite:false, depthTest:false,
+    uniforms:{uBreath:{value:0}, uI:{value:1}}}));
+  halo.position.set(0, -0.12, -0.7); halo.renderOrder = 0; group.add(halo);
+  // cortex
+  var g = new T.BufferGeometry();
+  g.setAttribute('position', new T.BufferAttribute(P.pos.subarray(0, P.n * 3), 3));
+  g.setAttribute('aRegion', new T.BufferAttribute(P.reg.subarray(0, P.n), 1));
+  g.setAttribute('aPhase', new T.BufferAttribute(P.ph.subarray(0, P.n), 1));
+  g.setAttribute('aSize', new T.BufferAttribute(P.sz.subarray(0, P.n), 1));
+  g.setAttribute('aShade', new T.BufferAttribute(P.sh.subarray(0, P.n), 1));
+  var hues = HUE.map(function(h){ return new T.Vector3(h[0], h[1], h[2]); });
+  var U = {uTime:{value:0}, uBreath:{value:1}, uBeat:{value:0}, uWave:{value:1}, uPx:{value:3.0 * dpr}, uRef:{value:3}, uMax:{value:6 * dpr}, uMotion:{value:RM ? 0 : 1},
+    uHue:{value:hues}, uTint:{value:[0,0,0,0,0,0,0,0]}, uDim:{value:[1,1,1,1,1,1,1,1]}, uLift:{value:[0,0,0,0,0,0,0,0]}, uChalk:{value:new T.Vector3(CHALK[0], CHALK[1], CHALK[2])},
+    uFlash0:{value:new T.Vector4(0,0,0,0)}, uFlash1:{value:new T.Vector4(0,0,0,0)}, uPointer:{value:new T.Vector3(0,0,0)}};
+  var cortex = new T.Points(g, new T.ShaderMaterial({vertexShader:VS_CORTEX, fragmentShader:FS_SOFT, uniforms:U, transparent:true, depthWrite:false, depthTest:false, blending:T.AdditiveBlending}));
+  cortex.renderOrder = 1; cortex.frustumCulled = false; group.add(cortex);
+  // beads (pathways)
+  var bPos = new Float32Array(BEADS * 3), bCol = new Float32Array(BEADS * 3), bA = new Float32Array(BEADS), bL = new Float32Array(BEADS);
+  PATHS.forEach(function(p){ for (var i = 0; i < p.n; i++){ var j = p.b0 + i, t = i / (p.n - 1);
+    bPos[j*3] = p.pts[i*3]; bPos[j*3+1] = p.pts[i*3+1]; bPos[j*3+2] = p.pts[i*3+2];
+    var ca = HUE[p.ra], cb = HUE[p.rb]; bCol[j*3] = lerp(ca[0], cb[0], t); bCol[j*3+1] = lerp(ca[1], cb[1], t); bCol[j*3+2] = lerp(ca[2], cb[2], t); } });
+  var bg = new T.BufferGeometry();
+  bg.setAttribute('position', new T.BufferAttribute(bPos, 3)); bg.setAttribute('aColor', new T.BufferAttribute(bCol, 3));
+  var bAttrA = new T.BufferAttribute(bA, 1), bAttrL = new T.BufferAttribute(bL, 1); bAttrA.setUsage(T.DynamicDrawUsage); bAttrL.setUsage(T.DynamicDrawUsage);
+  bg.setAttribute('aAlpha', bAttrA); bg.setAttribute('aLamp', bAttrL);
+  var BU = {uDpr:{value:dpr}, uRef:{value:3}, uLampC:{value:new T.Vector3(LAMP3[0], LAMP3[1], LAMP3[2])}, uBreath:{value:0}};
+  var beads = new T.Points(bg, new T.ShaderMaterial({vertexShader:VS_BEAD, fragmentShader:FS_SOFT, uniforms:BU, transparent:true, depthWrite:false, depthTest:false, blending:T.AdditiveBlending}));
+  beads.renderOrder = 2; beads.frustumCulled = false; group.add(beads);
+  // nodes
+  var keys = Object.keys(NODES), nN = keys.length;
+  var nPos = new Float32Array(nN * 3), nCol = new Float32Array(nN * 3), nA = new Float32Array(nN), nR = new Float32Array(nN), nB = new Float32Array(nN);
+  keys.forEach(function(k, i){ var p = NPOS[k], c = HUE[REG.indexOf(NODES[k].comp)]; nPos.set(p, i*3); nCol.set(c, i*3); nB[i] = -1; });
+  var ng = new T.BufferGeometry(); ng.setAttribute('position', new T.BufferAttribute(nPos, 3)); ng.setAttribute('aColor', new T.BufferAttribute(nCol, 3));
+  var nAA = new T.BufferAttribute(nA, 1), nRA = new T.BufferAttribute(nR, 1), nBA = new T.BufferAttribute(nB, 1);
+  [nAA, nRA, nBA].forEach(function(a){ a.setUsage(T.DynamicDrawUsage); });
+  ng.setAttribute('aAlpha', nAA); ng.setAttribute('aRing', nRA); ng.setAttribute('aBloom', nBA);
+  var NU = {uDpr:{value:dpr}};
+  var nodesObj = new T.Points(ng, new T.ShaderMaterial({vertexShader:VS_NODE, fragmentShader:FS_NODE, uniforms:NU, transparent:true, depthWrite:false, depthTest:false, blending:T.AdditiveBlending}));
+  nodesObj.renderOrder = 3; nodesObj.frustumCulled = false; group.add(nodesObj);
+  // signals
+  var SN = SIG_POOL * (SIG_TRAIL + 1);
+  var sPos = new Float32Array(SN * 3), sCol = new Float32Array(SN * 3), sA = new Float32Array(SN), sS = new Float32Array(SN);
+  var sg = new T.BufferGeometry();
+  var sPA = new T.BufferAttribute(sPos, 3), sCA = new T.BufferAttribute(sCol, 3), sAA = new T.BufferAttribute(sA, 1), sSA = new T.BufferAttribute(sS, 1);
+  [sPA, sCA, sAA, sSA].forEach(function(a){ a.setUsage(T.DynamicDrawUsage); });
+  sg.setAttribute('position', sPA); sg.setAttribute('aColor', sCA); sg.setAttribute('aAlpha', sAA); sg.setAttribute('aSize', sSA);
+  var SU = {uDpr:{value:dpr}};
+  var sigObj = new T.Points(sg, new T.ShaderMaterial({vertexShader:VS_SIG, fragmentShader:FS_GLOW, uniforms:SU, transparent:true, depthWrite:false, depthTest:false, blending:T.AdditiveBlending}));
+  sigObj.renderOrder = 4; sigObj.frustumCulled = false; group.add(sigObj);
+
+  var lost = false;
+  canvas.addEventListener('webglcontextlost', function(e){ e.preventDefault(); lost = true; switchTo2D(); }, false);
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP * qualityScale);
+    renderer.setPixelRatio(dpr); renderer.setSize(W, H, false);
+    U.uPx.value = 3.0 * dpr; U.uMax.value = 7 * dpr; BU.uDpr.value = dpr; NU.uDpr.value = dpr; SU.uDpr.value = dpr;
+  }
+  function render(t){
+    if (lost) return;
+    computeCamBasis();
+    group.rotation.set(cam.pitch, cam.yaw, 0); group.scale.setScalar(cam.s);
+    camera.aspect = W / H; camera.position.set(camT[0], camT[1], camT[2] + camDist); camera.lookAt(camT[0], camT[1], camT[2]);
+    camera.setViewOffset(W, H, cam.ox, cam.oy, W, H); camera.updateProjectionMatrix();
+    var ts = t / 1000;
+    U.uTime.value = ts;
+    var br = RM ? 0 : Math.sin(ts * Math.PI * 2 / 10);
+    U.uBreath.value = 0.94 + 0.06 * br; BU.uBreath.value = br; halo.material.uniforms.uBreath.value = br;
+    U.uBeat.value = RM ? 0 : Math.exp(-(t - lastAccent) / 180);
+    U.uWave.value = waveV; U.uRef.value = refDist; BU.uRef.value = refDist;
+    for (var i = 0; i < 8; i++){ U.uTint.value[i] = regionCur[i].tint; U.uDim.value[i] = regionCur[i].dim; U.uLift.value[i] = regionCur[i].lift; }
+    var f0 = flashes[0], f1 = flashes[1], k0 = Math.max(0, 1 - (t - f0[3]) / 300), k1 = Math.max(0, 1 - (t - f1[3]) / 300);
+    U.uFlash0.value.set(f0[0], f0[1], f0[2], k0); U.uFlash1.value.set(f1[0], f1[1], f1[2], k1);
+    if (pointerBrain && canHover && !RM) U.uPointer.value.set(pointerBrain[0], pointerBrain[1], 1); else U.uPointer.value.z = 0;
+    // beads
+    if (pathsDirty){ PATHS.forEach(function(p){ for (var i = p.b0, e = p.b0 + p.n; i < e; i++){ bA[i] = p.alpha; bL[i] = p.lamp; } }); bAttrA.needsUpdate = true; bAttrL.needsUpdate = true; pathsDirty = false; }
+    // nodes
+    keys.forEach(function(k, i){ var v = nodeVis[k]; nA[i] = v.a; nR[i] = v.ring; var b = (t - v.bloom) / 420; nB[i] = (b >= 0 && b < 1) ? b : -1; });
+    nAA.needsUpdate = true; nRA.needsUpdate = true; nBA.needsUpdate = true;
+    // signals
+    writeSignals(t, sPos, sCol, sA, sS); sPA.needsUpdate = true; sCA.needsUpdate = true; sAA.needsUpdate = true; sSA.needsUpdate = true;
+    renderer.render(scene, camera);
+  }
+  return {kind:'gl', render:render, resize:resize, dispose:function(){ try { renderer.dispose(); } catch(e){} }};
+}
+var waveV = 1, refDist = 3, pathsDirty = true, qualityScale = 1;
+
+function writeSignals(t, pos, col, al, sz){
+  var stride = SIG_TRAIL + 1;
+  for (var i = 0; i < SIG_POOL; i++){
+    var s = sigs[i], base = i * stride;
+    if (!s.on){ if (!s.done){ for (var q = 0; q < stride; q++) al[base + q] = 0; s.done = true; } continue; }
+    var k = (t - s.t0) / s.dur;
+    if (k >= 1 + s.trail * 0.02){ s.on = false; continue; }
+    if (k >= 1 && s.cb){ var cb = s.cb; s.cb = null; cb(); }
+    var u = s.ease(clamp(k, 0, 1)), poly = s.poly, n = poly.n, spacing = 0.016 / Math.max(0.2, poly.len);
+    var tailK = k > 1 ? Math.max(0, 1 - (k - 1) / (s.trail * 0.02)) : 1;
+    var ca = HUE[s.c0], cbb = HUE[s.c1];
+    for (var j = 0; j < stride; j++){
+      var o = base + j, uu = u - j * spacing * tailK; // after arrival the tail collapses into the target
+      if (uu < 0){ al[o] = 0; continue; }
+      uu = clamp(uu, 0, 1);
+      var f = (s.rev ? 1 - uu : uu) * (n - 1), i0 = Math.floor(f), i1 = Math.min(n - 1, i0 + 1), fr = f - i0;
+      pos[o*3] = lerp(poly.pts[i0*3], poly.pts[i1*3], fr); pos[o*3+1] = lerp(poly.pts[i0*3+1], poly.pts[i1*3+1], fr); pos[o*3+2] = lerp(poly.pts[i0*3+2], poly.pts[i1*3+2], fr);
+      var cr = lerp(ca[0], cbb[0], uu), cg = lerp(ca[1], cbb[1], uu), cbl = lerp(ca[2], cbb[2], uu);
+      if (s.lamp){ cr = lerp(cr, LAMP3[0], s.lamp); cg = lerp(cg, LAMP3[1], s.lamp); cbl = lerp(cbl, LAMP3[2], s.lamp); }
+      col[o*3] = cr; col[o*3+1] = cg; col[o*3+2] = cbl;
+      if (j === 0){ al[o] = k > 1 ? Math.max(0, 1 - (k - 1) * 4) : 1; sz[o] = s.head; }
+      else { if (j > s.trail){ al[o] = 0; continue; } var fall = 1 - j / s.trail; al[o] = 0.9 * fall * fall; sz[o] = s.head * (1 - j / (s.trail + 4)); }
+    }
+  }
+}
+
+function make2D(){
+  var cv = $('#c2d'); cv.hidden = false; $('#gl').style.display = 'none';
+  var ctx = cv.getContext('2d'); if (!ctx) throw new Error('no 2d');
+  var dpr = Math.min(window.devicePixelRatio || 1, 2), N = Math.min(P.n, 7000), o = [0,0,0], byReg = [[],[],[],[],[],[],[],[]];
+  for (var j0 = 0; j0 < N; j0++){ var i0 = Math.floor(j0 * P.n / N); byReg[P.reg[i0]].push(i0); }
+  var hueCss = HUE.map(function(h){ return h.map(function(v){ return Math.round(v * 255); }); });
+  function resize(){ cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  function rgba(c, a){ return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')'; }
+  var chalk = [241,234,223];
+  function render(t){
+    computeCamBasis();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    for (var r = 0; r < 8; r++){
+      var rc = regionCur[r], c = hueCss[r], tn = rc.tint, list = byReg[r];
+      ctx.fillStyle = 'rgb(' + Math.round(lerp(chalk[0], c[0], tn)) + ',' + Math.round(lerp(chalk[1], c[1], tn)) + ',' + Math.round(lerp(chalk[2], c[2], tn)) + ')';
+      var base = 0.85 * rc.dim * (0.6 + 0.4 * waveV), sc = 1.7 * Math.sqrt(cam.ppu / 300);
+      for (var q = 0; q < list.length; q++){ var i = list[q];
+        project(P.pos[i*3], P.pos[i*3+1], P.pos[i*3+2], o);
+        ctx.globalAlpha = clamp(base * (0.2 + 0.8 * clamp((P.pos[i*3+2] + 0.3) / 0.64, 0, 1)) * P.sh[i], 0, 1);
+        var sz = P.sz[i] * sc; ctx.fillRect(o[0] - sz/2, o[1] - sz/2, sz, sz); }
+    }
+    ctx.globalAlpha = 1;
+    PATHS.forEach(function(p){ if (p.alpha < 0.12) return; ctx.beginPath();
+      for (var i = 0; i < p.n; i += 3){ project(p.pts[i*3], p.pts[i*3+1], p.pts[i*3+2], o); if (i === 0) ctx.moveTo(o[0], o[1]); else ctx.lineTo(o[0], o[1]); }
+      ctx.strokeStyle = rgba(p.lamp > 0.5 ? hueCss[7] : hueCss[p.ra], p.alpha * 0.8); ctx.lineWidth = 1.2; ctx.stroke(); });
+    Object.keys(NODES).forEach(function(k){ var v = nodeVis[k], p = NPOS[k]; project(p[0], p[1], p[2], o);
+      var c = hueCss[REG.indexOf(NODES[k].comp)]; ctx.fillStyle = rgba(c, v.a); ctx.beginPath(); ctx.arc(o[0], o[1], 3.5, 0, 6.3); ctx.fill();
+      if (v.ring > 0.05){ ctx.strokeStyle = rgba(c, v.ring * v.a); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(o[0], o[1], 7.5, 0, 6.3); ctx.stroke(); } });
+    sigs.forEach(function(s){ if (!s.on) return; var k = (t - s.t0) / s.dur; if (k >= 1){ s.on = false; if (s.cb){ var cb = s.cb; s.cb = null; cb(); } return; }
+      var u = s.ease(k), poly = s.poly, f = (s.rev ? 1 - u : u) * (poly.n - 1), i0 = Math.floor(f);
+      project(poly.pts[i0*3], poly.pts[i0*3+1], poly.pts[i0*3+2], o);
+      var g = ctx.createRadialGradient(o[0], o[1], 0, o[0], o[1], s.head * 1.6); var c = s.lamp ? hueCss[7] : hueCss[s.c1];
+      g.addColorStop(0, 'rgba(255,248,235,0.95)'); g.addColorStop(0.4, rgba(c, 0.6)); g.addColorStop(1, rgba(c, 0));
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o[0], o[1], s.head * 1.6, 0, 6.3); ctx.fill(); });
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  return {kind:'2d', render:render, resize:resize, dispose:function(){}};
+}
+function switchTo2D(){
+  try { R = make2D(); docEl.setAttribute('data-fallback', '2d'); R.resize(); requestRender(); }
+  catch(e){ R = null; docEl.setAttribute('data-fallback', 'plain'); if (!/^#plain/.test(location.hash)) go('plain', {replace:true}); }
+}
+
+/* =====================================================================
+   10. DOM BUILD
+   ===================================================================== */
+var clist = $('#clist'), leaders = $('#leaders'), stage = $('#stage'), panel = $('#panel'), pinner = $('#pinner'), pscroll = $('#pscroll');
+var hero = BRAIN.hero;
+(function header(){
+  var rec = hero.recommended, cut = rec.indexOf('. ') + 1;
+  $('#pos').innerHTML = esc(rec.slice(0, cut)) + ' <em>' + esc(rec.slice(cut).trim()) + '</em>';
+  var st = hero.status, ci = st.indexOf(':');
+  $('#status').textContent = (st.slice(0, ci) + ' · ' + st.slice(ci + 1).trim()).toUpperCase().replace('IOS', 'iOS');
+})();
+var LBL = {
+  ideas:       {a:[0.50, 0.50], d:[0.6, -1],  pd:[0.5, -1]},
+  current:     {a:[0.03, 0.62], d:[0, -1],    pd:[0, -1]},
+  experiments: {a:[-0.45, 0.50], d:[-0.6, -1], pd:[-0.5, -1]},
+  projects:    {a:[-0.93, 0.10], d:[-1, 0],   pd:[-0.4, -1]},
+  skills:      {a:[-0.75, -0.58], d:[-0.6, 1], pd:[-0.3, 1]},
+  experience:  {a:[0.15, -0.44], d:[0.2, 1],   pd:[0.4, 1]},
+  mindset:     {a:[0.93, 0.06], d:[1, 0],     pd:[0.3, -1]},
+  stem:        {a:[-0.355, -0.93], d:[1, 0.15], pd:[1, 0.1]}
+};
+var labels = [];
+DOM_ORDER.concat(['stem']).forEach(function(id){
+  var li = document.createElement('li'), b = document.createElement('button'), isStem = id === 'stem';
+  var hue = isStem ? LAMP : META[id].hue; b.type = 'button'; b.style.setProperty('--c', hue);
+  if (isStem){
+    b.className = 'clabel out'; b.setAttribute('aria-label', 'Signal out: say hello');
+    b.innerHTML = '<span class="dot"></span><span class="txt">Signal out</span><span class="sub">say hello</span>';
+  } else {
+    var c = BRAIN.comp[id], m = META[id], n = c.nodes.length;
+    b.className = 'clabel'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-controls', 'panel'); b.setAttribute('aria-describedby', 'd-' + id);
+    var lbl = m.label === m.short ? esc(m.label) : esc(m.short) + '<span class="long">' + esc(m.label.slice(m.short.length)) + '</span>';
+    b.innerHTML = '<span class="dot"></span><span class="txt">' + lbl + '</span><span class="n">' + n + '<span class="sr-only"> thoughts</span></span>' +
+      '<span class="preview" aria-hidden="true">' + esc(c.line) + ' · ' + n + ' thoughts</span>';
+    var d = document.createElement('span'); d.id = 'd-' + id; d.hidden = true; d.textContent = m.region + '. ' + c.line; li.appendChild(d);
+  }
+  b.dataset.id = id; li.appendChild(b); clist.appendChild(li);
+  var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.style.setProperty('--c', hue);
+  var ln = document.createElementNS('http://www.w3.org/2000/svg', 'line'), dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); dot.setAttribute('r', '2.5');
+  g.appendChild(ln); g.appendChild(dot); leaders.appendChild(g);
+  labels.push({id:id, ri:isStem ? STEM : REG.indexOf(id), li:li, btn:b, g:g, ln:ln, dot:dot, w:100, h:36, x:0, y:0, cfg:LBL[id]});
+});
+function measureLabels(){ labels.forEach(function(L){ L.w = L.btn.offsetWidth; L.h = L.btn.offsetHeight; }); }
+
+// hint (desktop) + peek content (phone)
+var trail0 = BRAIN.trails[0];
+$('#hint').innerHTML = '<p class="l1"><span class="pulse" id="pulse"></span><span id="hintTxt">' + (canHover ? 'Hover a region to wake it. Click to look inside.' : 'Tap a region to look inside.') + '</span></p>' +
+  '<p class="l2"><a href="#projects--bothhomes">' + esc(hero.ctas[0].label) + ' →</a><a href="#trail--' + trail0.id + '--1">or follow a thought: <i>' + esc(trail0.title) + '</i> →</a></p>';
+function pulseHint(){ var p = $('#pulse'); if (!p) return; p.classList.remove('beat'); void p.offsetWidth; p.classList.add('beat'); }
+
+/* =====================================================================
+   11. LABEL LAYOUT (every frame the camera moves)
+   ===================================================================== */
+var tmp3 = [0,0,0], obstacles = [];
+function uncovered(){
+  var top = isPhone() ? headerH() + 8 : 0, bottom = H, left = 0, right = W;
+  if (isPhone()) bottom = H - sheetPx();
+  else if (panel.classList.contains('open')) right = W - (panelW() + 32);
+  return {l:left, t:top, r:right, b:bottom, w:right - left, h:bottom - top, cx:(left + right)/2, cy:(top + bottom)/2};
+}
+var _hh = 0; function headerH(){ return _hh; }
+function panelW(){ return W >= 1024 ? 440 : 380; }
+function layoutLabels(){
+  var rect = uncovered(), phone = isPhone(), lead = phone ? 12 : 26, gap = 8;
+  var minY = phone ? headerH() + 4 : 8, maxY = rect.b - 4, minX = 8, maxX = rect.r - 8;
+  var boxes = [];
+  labels.forEach(function(L){
+    var a = L.cfg.a, z = L.id === 'stem' ? 0.07 : halfDepth(L.ri, a[0], a[1]) * 0.9;
+    project(a[0], a[1], z, tmp3); L.ax = tmp3[0]; L.ay = tmp3[1];
+    var d = phone ? L.cfg.pd : L.cfg.d, dl = Math.sqrt(d[0]*d[0] + d[1]*d[1]), dx = d[0]/dl, dy = d[1]/dl;
+    var ex = L.ax + dx * lead, ey = L.ay + dy * lead;
+    var sx = Math.abs(d[0]) > 0.3 ? Math.sign(d[0]) : 0, sy = Math.abs(d[1]) > 0.3 ? Math.sign(d[1]) : 0;
+    var x = ex - L.w/2 + sx * L.w/2, y = ey - L.h/2 + sy * L.h/2;
+    if (sx === 0) x = ex - L.w/2; if (sy === 0) y = ey - L.h/2;
+    L.x = x; L.y = y; L.vert = Math.abs(d[1]) >= Math.abs(d[0]); L.sy = sy || 1; L.sx = sx || 1;
+    boxes.push(L);
+  });
+  function cl(L){ L.x = clamp(L.x, minX, Math.max(minX, maxX - L.w)); L.y = clamp(L.y, minY, Math.max(minY, maxY - L.h)); }
+  function hits(x, y, L, placed){
+    for (var q = 0; q < placed.length; q++){ var o = placed[q]; if (x < o.x + o.w + gap && x + L.w + gap > o.x && y < o.y + o.h + gap && y + L.h + gap > o.y) return true; }
+    for (var k = 0; k < obstacles.length; k++){ var O = obstacles[k]; if (x < O.r && x + L.w > O.l && y < O.b && y + L.h > O.t) return true; }
+    return false;
+  }
+  // greedy: priority order = DOM order; each label tries its preferred spot, then spots stepped away along its side, then sideways
+  var placed = [];
+  boxes.forEach(function(L){
+    cl(L); var bx = L.x, by = L.y, stepY = L.h + gap, stepX = Math.min(L.w, 60);
+    var cands = [[0,0]];
+    for (var s = 1; s <= 6; s++){ var vy = L.vert ? L.sy : (L.ay > H/2 ? 1 : -1);
+      cands.push([0, vy * s * stepY * 0.5], [0, -vy * s * stepY * 0.5], [L.sx * s * stepX * 0.5, 0], [-L.sx * s * stepX * 0.5, 0], [L.sx * s * stepX * 0.5, vy * s * stepY * 0.5]); }
+    if (L.lastC != null && L.lastC < cands.length){ var lc = cands.splice(L.lastC, 1)[0]; cands.unshift(lc); L._m = 1; } else L._m = 0;
+    var chosen = -1;
+    for (var c = 0; c < cands.length; c++){
+      var x = clamp(bx + cands[c][0], minX, Math.max(minX, maxX - L.w)), y = clamp(by + cands[c][1], minY, Math.max(minY, maxY - L.h));
+      if (!hits(x, y, L, placed)){ L.x = x; L.y = y; chosen = c; break; }
+    }
+    // remember the candidate index in the original ordering (hysteresis against sway jitter)
+    if (chosen >= 0){ if (L._m){ L.lastC = chosen === 0 ? L.lastC : (chosen <= L.lastC ? chosen - 1 : chosen); } else L.lastC = chosen; if (L.lastC === 0) L.lastC = null; }
+    placed.push({x:L.x, y:L.y, w:L.w, h:L.h});
+  });
+  boxes.forEach(function(L){
+    L.li.style.transform = 'translate3d(' + Math.round(L.x) + 'px,' + Math.round(L.y) + 'px,0)';
+    L.li.classList.toggle('r', L.x + L.w / 2 > W * 0.6); L.li.classList.toggle('up', L.y + L.h / 2 > L.ay + 4 && L.ay > H * 0.55);
+    var nx = clamp(L.ax, L.x, L.x + L.w), ny = clamp(L.ay, L.y, L.y + L.h);
+    var dd = Math.hypot(nx - L.ax, ny - L.ay);
+    L.ln.setAttribute('x1', L.ax.toFixed(1)); L.ln.setAttribute('y1', L.ay.toFixed(1)); L.ln.setAttribute('x2', nx.toFixed(1)); L.ln.setAttribute('y2', ny.toFixed(1));
+    L.ln.style.opacity = dd < 3 ? 0 : 1;
+    L.dot.setAttribute('cx', L.ax.toFixed(1)); L.dot.setAttribute('cy', L.ay.toFixed(1));
+  });
+}
+function updateObstacles(){
+  obstacles = [];
+  if (isPhone()) return;
+  var r1 = $('#ident').getBoundingClientRect(), r2 = $('#sitenav').getBoundingClientRect();
+  obstacles.push({l:r1.left - 8, t:0, r:r1.right + 8, b:r1.bottom + 6, side:'top'});
+  obstacles.push({l:r2.left - 8, t:0, r:r2.right + 8, b:r2.bottom + 6, side:'top'});
+  var hint = $('#hint'); if (!hint.classList.contains('gone')){ var r3 = hint.getBoundingClientRect(); obstacles.push({l:r3.left - 8, t:r3.top - 6, r:r3.right + 8, b:H, side:'bottom'}); }
+}
+
+/* node buttons, labels, chips */
+var nodeBtns = $('#nodebtns'), nlabel = $('#nlabel'), ghost = $('#ghost'), chipsEl = $('#chips');
+var nodeBtnList = [], chipList = [];
+function buildNodeButtons(cid){
+  nodeBtns.innerHTML = ''; nodeBtnList = [];
+  if (!cid || cid === 'stem') return;
+  var c = BRAIN.comp[cid];
+  nodeBtns.setAttribute('aria-hidden', 'true');
+  c.nodes.forEach(function(n){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'nodebtn'; b.tabIndex = -1;
+    b.setAttribute('aria-label', n.title + ', thought in ' + c.label); b.dataset.go = keyToHash(n.key); b.dataset.key = n.key;
+    b.addEventListener('mouseenter', function(){ setHoverNode(n.key); }); b.addEventListener('mouseleave', function(){ setHoverNode(null); });
+    nodeBtns.appendChild(b); nodeBtnList.push({b:b, key:n.key});
+  });
+}
+function buildChips(){
+  chipsEl.innerHTML = ''; chipList = [];
+  var k = state.openNode; if (!k || isPhone() || !state.hoverConn) return;
+  NODES[k].links2.filter(function(l){ return l.other === state.hoverConn; }).forEach(function(l){
+    var p = PAIR[k + '|' + l.other]; if (!p) return;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.tabIndex = -1;
+    b.textContent = l.label + ' →';
+    b.style.setProperty('--c', META[NODES[l.other].comp].hue);
+    b.addEventListener('click', function(){ followTo(l.other); });
+    chipsEl.appendChild(b); chipList.push({b:b, p:p, w:0, h:0});
+  });
+  chipList.forEach(function(c){ c.w = c.b.offsetWidth; c.h = c.b.offsetHeight; });
+}
+function layoutNodesAndChips(){
+  nodeBtnList.forEach(function(nb){ var p = NPOS[nb.key]; project(p[0], p[1], p[2], tmp3); nb.b.style.transform = 'translate3d(' + tmp3[0].toFixed(1) + 'px,' + tmp3[1].toFixed(1) + 'px,0)'; });
+  var lk = state.hoverNode || state.openNode;
+  var ur = uncovered();
+  if (lk && state.openRegion >= 0 && (project(NPOS[lk][0], NPOS[lk][1], NPOS[lk][2], tmp3), tmp3[1] > ur.t + 30 && tmp3[1] < ur.b - 10 && tmp3[0] < ur.r - 40)){ var p = NPOS[lk]; project(p[0], p[1], p[2], tmp3);
+    nlabel.textContent = NODES[lk].title; nlabel.style.transform = 'translate3d(' + Math.round(tmp3[0] + 14) + 'px,' + Math.round(tmp3[1] - 34) + 'px,0)'; nlabel.classList.add('on'); }
+  else nlabel.classList.remove('on');
+  if (ghostKey){ var g = NPOS[ghostKey]; project(g[0], g[1], g[2], tmp3); ghost.style.transform = 'translate3d(' + Math.round(tmp3[0] + 12) + 'px,' + Math.round(tmp3[1] - 30) + 'px,0)'; }
+  if (chipList.length){
+    var placed = [];
+    chipList.forEach(function(c){ var m = c.p.mid; project(m[0], m[1], m[2], tmp3); var x = tmp3[0] - c.w/2, y = tmp3[1] - c.h/2;
+      for (var t = 0; t < 8; t++){ var hit = false; for (var q = 0; q < placed.length; q++){ var o = placed[q]; if (x < o.x + o.w && x + c.w > o.x && y < o.y + o.h + 4 && y + c.h + 4 > o.y){ y = o.y + o.h + 6; hit = true; } } if (!hit) break; }
+      var rr = uncovered(); x = clamp(x, 8, rr.r - c.w - 8); y = clamp(y, 8, rr.b - c.h - 8);
+      placed.push({x:x, y:y, w:c.w, h:c.h}); c.b.style.transform = 'translate3d(' + Math.round(x) + 'px,' + Math.round(y) + 'px,0)'; c.b.style.opacity = state.follow ? 0 : 1; });
+  }
+}
+var ghostKey = null;
+function showGhost(key, delay){
+  clearTimeout(ghostTimer);
+  ghostTimer = setTimeout(function(){ ghostKey = key; ghost.textContent = NODES[key].title; ghost.classList.add('on');
+    ghostTimer = setTimeout(function(){ ghost.classList.remove('on'); setTimeout(function(){ ghostKey = null; }, 320); }, 1800); }, Math.max(0, delay - 200));
+}
+function setHoverNode(k){
+  if (state.hoverNode === k) return; state.hoverNode = k;
+  Array.prototype.forEach.call(pinner.querySelectorAll('.row'), function(r){ r.classList.toggle('hot', r.dataset.key === k); });
+  computeTargets();
+}
+
+/* =====================================================================
+   12. PANEL CONTENT
+   ===================================================================== */
+function crumbs(parts){
+  return '<nav aria-label="Breadcrumb"><ol class="crumbs">' + parts.map(function(p, i){
+    var last = i === parts.length - 1;
+    return '<li>' + (last ? '<span aria-current="page">' + esc(p[0]) + '</span>' : '<button type="button" data-go="' + p[1] + '">' + esc(p[0]) + '</button><span class="sep" aria-hidden="true"> / </span>') + '</li>';
+  }).join('') + '</ol></nav>';
+}
+function closeBtn(label){ return '<button type="button" class="close" data-esc="1">' + label + ' <span class="kbd" aria-hidden="true">ESC</span></button>'; }
+function confirmTag(){ return '<span class="confirm" title="Observed in Bryan’s workspace; to confirm before going public">To confirm</span>'; }
+function compHTML(cid){
+  var c = BRAIN.comp[cid], m = META[cid], linked = compLinks(cid);
+  var h = '<div class="ptop">' + crumbs([['Brain', ''], [c.label]]) + closeBtn('Close') + '</div>';
+  h += '<p class="eyebrow">' + esc(m.region) + ' · ' + esc(c.label) + '</p><h2 class="ph" id="panel-h" tabindex="-1">' + esc(c.label) + '</h2><p class="line">' + esc(c.line) + '</p>';
+  h += '<ul class="rows">' + c.nodes.map(function(n){
+    return '<li><button type="button" class="row" data-go="' + keyToHash(n.key) + '" data-key="' + n.key + '"><span class="t">' + esc(n.title) + (n.provenance === 'observed' ? confirmTag() : '') + '</span>' +
+      '<span class="s">' + esc(n.summary) + '</span><span class="c" aria-label="' + n.links2.length + ' connections">' + n.links2.length + ' →</span></button></li>';
+  }).join('') + '</ul>';
+  if (linked.length) h += '<p class="sec">Connected regions</p><div class="regchips">' + linked.map(function(r){
+    return '<button type="button" class="regchip" style="--c:' + META[r].hue + '" data-go="' + r + '"><i></i>' + esc(META[r].label) + '</button>'; }).join('') + '</div>';
+  h += '<p class="foot">Every thought here links to others across the brain. <a class="lnk" href="#hello">Say hello →</a></p>';
+  return h;
+}
+function nodeBody(n, inTrail){
+  var c = BRAIN.comp[n.comp], h = '';
+  h += '<div class="kickrow"><p class="eyebrow">' + esc(c.label) + ' · ' + (n.idx + 1) + ' of ' + c.nodes.length + '</p>' + (n.provenance === 'observed' ? confirmTag() : '') + '</div>';
+  h += '<h2 class="ph" id="panel-h" tabindex="-1">' + esc(n.title) + '</h2>';
+  if (!inTrail) h += '<p class="dek">' + esc(n.summary) + '</p>';
+  h += '<div class="body">' + n.body.map(function(p){ return '<p>' + esc(p) + '</p>'; }).join('') + '</div>';
+  if (n.facts.length) h += '<ul class="facts" aria-label="Facts">' + n.facts.map(function(f){ return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>';
+  if (n.links.length) h += '<p class="links">' + n.links.map(function(l){ return '<a href="' + esc(l.href) + '" target="_blank" rel="noopener noreferrer">' + esc(l.label) + ' ↗</a>'; }).join('') + '</p>';
+  if (n.links2.length){
+    h += '<p class="sec" id="ct-h">Connected thoughts</p><ul class="conns" aria-labelledby="ct-h">' + n.links2.map(function(l){
+      var o = NODES[l.other], oc = BRAIN.comp[o.comp];
+      return '<li><button type="button" class="conn" style="--c:' + META[o.comp].hue + '" data-follow="' + o.key + '" aria-label="' + esc(l.label) + ': ' + esc(o.title) + ', in ' + esc(oc.label) + '. Follow this connection.">' +
+        '<span class="d" aria-hidden="true"></span><span class="lab">' + esc(l.label) + '</span><span class="ar" aria-hidden="true">→</span><span class="to">' + esc(o.title) + '<small>' + esc(oc.label) + '</small></span></button></li>';
+    }).join('') + '</ul>';
+  }
+  return h;
+}
+function cameFromHTML(cf){
+  if (!cf) return '';
+  var o = NODES[cf.from];
+  return '<button type="button" class="came" data-follow="' + cf.from + '"><span aria-hidden="true">←</span><span>from ' + esc(o.title) + ' · ' + esc(cf.label) + '</span></button>';
+}
+function nodeHTML(key, cf){
+  var n = NODES[key], c = BRAIN.comp[n.comp];
+  var h = '<div class="ptop">' + crumbs([['Brain', ''], [c.label, n.comp], [n.title]]) + closeBtn('Back') + '</div>';
+  return h + cameFromHTML(cf) + nodeBody(n, false) + '<p class="foot">Want to talk about this? <a class="lnk" href="#hello">Say hello →</a></p>';
+}
+function trailHTML(t, step, cf){
+  var s = t.steps[step - 1], n = NODES[s.node], last = step === t.steps.length;
+  var h = '<div class="trailbar"><p class="tt" style="margin:0"><span>Trail · <b>' + esc(t.title) + '</b></span><span>' + step + ' / ' + t.steps.length + '</span></p>' +
+    '<div class="prog" role="img" aria-label="Step ' + step + ' of ' + t.steps.length + '">' + t.steps.map(function(_, i){ return '<i class="' + (i < step ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
+    '<div class="tbtns"><button type="button" class="pill" data-go="trail--' + t.id + '--' + (step - 1) + '"' + (step === 1 ? ' disabled' : '') + '>← Back</button>' +
+    (last ? '' : '<button type="button" class="pill pri" data-go="trail--' + t.id + '--' + (step + 1) + '">Next thought →</button>') +
+    '<button type="button" class="pill ghostp" data-esc="1">Exit trail</button></div></div>';
+  h += '<p class="note">' + esc(s.note) + '</p>' + nodeBody(n, true);
+  if (last){
+    h += '<div class="endt"><h3>End of trail: the whole thought</h3><p>' + esc(t.intro) + ' Every step you walked is still lit on the brain.</p><div class="tlist">' +
+      BRAIN.trails.filter(function(x){ return x.id !== t.id; }).map(function(x){ return '<button type="button" class="tcard" data-go="trail--' + x.id + '--1"><b>' + esc(x.title) + '</b><span>' + esc(x.intro) + '</span><small>' + x.steps.length + ' thoughts · Start →</small></button>'; }).join('') +
+      '<a class="cta" href="#hello" style="justify-self:start;margin:6px 0 0">Say hello</a></div></div>';
+  }
+  return h;
+}
+function helloHTML(){
+  return '<div class="ptop"><span class="crumbs">Signal out</span>' + closeBtn('Close') + '</div>' +
+    '<p class="eyebrow" style="color:#F2B35E">Brainstem · Signal out</p><h2 class="ph" id="panel-h" tabindex="-1">Say hello</h2>' +
+    '<p class="line">I’m looking for junior or product-minded developer roles, and people building calm tools.</p>' +
+    '<div class="hello-links"><a class="biglink" href="https://www.linkedin.com/in/bryanagas/" target="_blank" rel="noopener noreferrer"><span><b>LinkedIn</b><small>linkedin.com/in/bryanagas</small></span><span class="ar" aria-hidden="true">↗</span></a>' +
+    '<a class="biglink" href="https://github.com/BryanAgas" target="_blank" rel="noopener noreferrer"><span><b>GitHub</b><small>github.com/BryanAgas</small></span><span class="ar" aria-hidden="true">↗</span></a></div>' +
+    '<p class="overline">The full site will have a contact form here too.</p>';
+}
+function overviewPeekHTML(){
+  return '<div class="peek"><p class="eyebrow" style="color:#BDB2A3">' + esc(hero.eyebrow) + '</p><h2 class="ph" id="panel-h" tabindex="-1" style="font-size:1.5rem">Tap a region to look in.</h2>' +
+    '<p class="overline" style="margin-top:8px"><a class="lnk" href="#projects--bothhomes">' + esc(hero.ctas[0].label) + ' →</a> &nbsp; <a class="lnk" href="#trail--' + trail0.id + '--1">Follow a trail →</a></p>' +
+    '<p class="overline">' + esc(hero.sub.replace(' in the plain list below.', ' in the plain view.')) + '</p>' +
+    '<p class="sec">Trails</p>' + BRAIN.trails.map(function(x){ return '<button type="button" class="tcard" data-go="trail--' + x.id + '--1"><b>' + esc(x.title) + '</b><span>' + esc(x.intro) + '</span><small>' + x.steps.length + ' thoughts · Start →</small></button>'; }).join('') +
+    '<p class="overline"><a class="lnk" href="#plain">Read it all as a plain list →</a></p></div>';
+}
+function setPanel(html, hue, opts){
+  opts = opts || {};
+  state.hoverConn = null; pinner.innerHTML = html; panel.style.setProperty('--hue', hue);
+  pinner.classList.remove('travel'); pinner.classList.remove('enter'); void pinner.offsetWidth; if (!RM && !opts.noAnim) pinner.classList.add('enter');
+  pscroll.scrollTop = 0;
+  Array.prototype.forEach.call(pinner.querySelectorAll('.conn'), function(r){
+    var on = function(){ state.hoverConn = r.dataset.follow; computeTargets(); buildChips(); }, off = function(){ state.hoverConn = null; computeTargets(); buildChips(); };
+    r.addEventListener('mouseenter', on); r.addEventListener('mouseleave', off); r.addEventListener('focus', on); r.addEventListener('blur', off);
+  });
+  Array.prototype.forEach.call(pinner.querySelectorAll('.row'), function(r){
+    r.addEventListener('mouseenter', function(){ setHoverNode(r.dataset.key); }); r.addEventListener('mouseleave', function(){ setHoverNode(null); });
+    r.addEventListener('focus', function(){ setHoverNode(r.dataset.key); }); r.addEventListener('blur', function(){ setHoverNode(null); });
+  });
+}
+
+/* =====================================================================
+   13. PHONE SHEET
+   ===================================================================== */
+var sheet = 'peek';
+function snapPx(s){ var sab = 0; return s === 'peek' ? 112 + safeBottom() : s === 'half' ? Math.round(H * 0.56) : Math.round(H * 0.92); }
+var _sab = 0; function safeBottom(){ return _sab; }
+function sheetPx(){ return dragPx != null ? dragPx : snapPx(sheet); }
+var dragPx = null;
+function applySheet(){
+  if (!isPhone()){ panel.style.transform = ''; stage.classList.remove('sheet-full'); return; }
+  var full = Math.round(H * 0.92);
+  panel.style.transform = 'translateY(' + (full - sheetPx()) + 'px)';
+  stage.classList.toggle('sheet-full', sheetPx() > H * 0.8);
+  $('#handle').setAttribute('aria-label', sheet === 'full' ? 'Collapse panel' : 'Expand panel');
+}
+function setSheet(s, reframe){ if (sheet === s && !reframe) return; sheet = s; applySheet(); if (reframe !== false) frameRoute(true); }
+(function sheetDrag(){
+  var h = $('#handle'), y0 = 0, p0 = 0, t0 = 0, moved = false, lastY = 0, lastT = 0, v = 0;
+  function down(e){ if (!isPhone()) return; y0 = lastY = e.clientY; p0 = sheetPx(); t0 = lastT = now(); moved = false; v = 0; panel.classList.add('dragging'); h.setPointerCapture && h.setPointerCapture(e.pointerId); }
+  function move(e){ if (!panel.classList.contains('dragging')) return; var dy = e.clientY - y0; if (Math.abs(dy) > 4) moved = true;
+    var t = now(); v = (e.clientY - lastY) / Math.max(1, t - lastT); lastY = e.clientY; lastT = t;
+    dragPx = clamp(p0 - dy, snapPx('peek'), snapPx('full')); applySheet(); }
+  function up(){ if (!panel.classList.contains('dragging')) return; panel.classList.remove('dragging');
+    var cur = dragPx; dragPx = null;
+    var order = ['peek', 'half', 'full'], idx = order.indexOf(sheet);
+    if (!moved){ setSheet(sheet === 'full' ? 'half' : 'full'); return; }
+    var target;
+    if (Math.abs(v) > 0.5) target = order[clamp(idx + (v < 0 ? 1 : -1), 0, 2)];
+    else { var best = 1e9; order.forEach(function(o){ var d = Math.abs(snapPx(o) - cur); if (d < best){ best = d; target = o; } }); }
+    if (target === 'peek' && state.route.type !== 'overview') target = 'half';
+    sheet = ''; setSheet(target);
+  }
+  h.addEventListener('pointerdown', down); window.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+})();
+
+/* =====================================================================
+   14. ROUTER
+   ===================================================================== */
+function parseHash(){
+  var h = ''; try { h = decodeURIComponent((location.hash || '').replace(/^#/, '')); } catch(e){ h = ''; }
+  if (!h) return {type:'overview'};
+  if (h === 'plain') return {type:'plain'};
+  if (h.indexOf('plain--') === 0) return {type:'plain', comp:h.slice(7)};
+  if (h === 'hello') return {type:'hello'};
+  var m = /^trail--(.+?)(?:--(\d+))?$/.exec(h);
+  if (m && TRAIL[m[1]]){ var t = TRAIL[m[1]], st = clamp(parseInt(m[2] || '1', 10) || 1, 1, t.steps.length); return {type:'trail', trail:m[1], step:st, key:t.steps[st - 1].node}; }
+  if (BRAIN.comp[h]) return {type:'comp', comp:h};
+  var parts = h.split('--');
+  if (parts.length === 2 && NODES[parts[0] + '/' + parts[1]]) return {type:'node', comp:parts[0], key:parts[0] + '/' + parts[1]};
+  return {type:'overview', unknown:true};
+}
+function go(hash, opts){
+  opts = opts || {};
+  var target = '#' + hash;
+  if (location.hash === target || (!hash && (location.hash === '' || location.hash === '#'))){ applyRoute(); return; }
+  if (opts.replace){ try { history.replaceState(null, '', target); applyRoute(); return; } catch(e){} }
+  location.hash = hash;
+}
+window.addEventListener('hashchange', function(){ applyRoute(); });
+var firstRoute = true, prevNonPlain = '', openerFor = {}, lastOpenedLabel = null, hintGone = false, followPending = null;
+
+function linkBetween(a, b){ return PAIR[a + '|' + b] || null; }
+function routeKey(r){ return r.type === 'node' || r.type === 'trail' ? r.key : null; }
+
+function frameRoute(animate){
+  var r = state.route, rect = uncovered(), phone = isPhone();
+  if (!phone){ rect.t = 96; rect.b = H - (r.type === 'overview' ? 78 : 16); rect.h = rect.b - rect.t; rect.cy = (rect.t + rect.b) / 2; }
+  var ov = overviewRect(), ppuOv = fitPPU(ov);
+  var ppu0 = fitPPU(rect, r.type !== 'overview');
+  var f = BRAIN_C, ppu = ppu0;
+  if (r.type === 'comp' || r.type === 'node' || r.type === 'trail'){
+    var ri = REG.indexOf(r.type === 'comp' ? r.comp : NODES[r.key].comp), c = CENT[ri];
+    f = [lerp(BRAIN_C[0], c[0], 0.4), lerp(BRAIN_C[1], c[1], 0.4), c[2] * 0.4]; ppu = ppu0 * (phone ? 1.25 : 1.12);
+    if (r.type !== 'comp'){ var np = NPOS[r.key]; f = [lerp(BRAIN_C[0], np[0], 0.5), lerp(BRAIN_C[1], np[1], 0.5), np[2] * 0.5]; ppu = ppu0 * 1.12 * 1.15; }
+    sway.regionYawT = (c[0] > 0 ? -6 : 6) * Math.PI / 180;
+  } else sway.regionYawT = 0;
+  // the projected focus should sit in the centre of the uncovered rect
+  var target = {fx:f[0], fy:f[1], fz:f[2], ppu:ppu, ox:W/2 - rect.cx, oy:H/2 - rect.cy};
+  refDist = H / (2 * TANH * ppuOv);
+  if (animate && !RM) { if (!(followPending)) setCam(target, 900); else followPending.camTarget = target; }
+  else { Object.assign(cam, target); camTo = null; }
+  requestRender();
+}
+
+var curHash = '';
+function fitPPU(rect, deep){ var phone = isPhone(), lx = phone ? 16 : 170, ly = phone ? (deep ? 14 : 40) : 50;
+  return clamp(Math.min((rect.w - 2*lx) / 2.0, (rect.h - 2*ly) / 1.72), 60, 470); }
+function overviewRect(){ if (isPhone()){ var t = headerH() + 8, b = H - snapPx('peek'); return {w:W, h:b - t}; } return {w:W, h:H - 96 - 78}; }
+function applyRoute(){
+  var r = parseHash(), from = state.route, initial = firstRoute; firstRoute = false;
+  var prevHash = curHash; curHash = (location.hash || '').replace(/^#/, '');
+  if (r.type === 'plain' && from.type !== 'plain' && !initial) prevNonPlain = prevHash;
+  if (r.type === 'hello' && from.type !== 'hello') prevHelloFrom = initial ? '' : prevHash;
+  cancelFollow();
+  var isPlain = r.type === 'plain';
+  setPlain(isPlain, r.comp);
+  if (isPlain){ state.route = r; announce('Plain view. Everything in the brain as a list.'); return; }
+  if (r.type !== 'overview' && !hintGone){ hintGone = true; $('#hint').classList.add('gone'); }
+  if (!initial) endIntro();
+  // trail walk
+  state.trailWalk = [];
+  if (r.type === 'trail'){ var t = TRAIL[r.trail]; for (var i = 1; i < r.step; i++){ var p = linkBetween(t.steps[i-1].node, t.steps[i].node); if (p) state.trailWalk.push(p); } }
+  var fk = routeKey(from), tk = routeKey(r), link = fk && tk && fk !== tk ? linkBetween(fk, tk) : null;
+  if (link && link.kind === 'temp' && !(r.type === 'trail' && from.type === 'trail')) link = null;
+  var cf = link ? {from:fk, label:link.label} : null;
+  state.route = r;
+  if (link && !initial){ startFollow(from, r, link, cf); return; }
+  if (r.type === 'hello' && from.type !== 'hello' && !initial && !RM){
+    var fp = from.type === 'node' || from.type === 'trail' ? NPOS[from.key] : from.type === 'comp' ? CENT[REG.indexOf(from.comp)] : CENT[1];
+    state.openRegion = STEM; state.openNode = null; computeTargets(); syncLabels();
+    fireStem(fp, null, 700);
+    setTimeout(function(){ if (state.route.type === 'hello') renderRoute(r, from, null, false); }, 700);
+    return;
+  }
+  renderRoute(r, from, cf, initial);
+}
+function renderRoute(r, from, cf, initial){
+  var phone = isPhone();
+  state.openRegion = r.type === 'comp' ? REG.indexOf(r.comp) : (r.type === 'node' || r.type === 'trail') ? REG.indexOf(NODES[r.key].comp) : r.type === 'hello' ? STEM : -1;
+  state.openNode = (r.type === 'node' || r.type === 'trail') ? r.key : null;
+  state.hoverNode = null;
+  var opened = r.type !== 'overview';
+  if (docEl.classList.contains('deep') !== opened){ docEl.classList.toggle('deep', opened); measureLabels(); labels.forEach(function(L){ L.lastC = null; }); _hh = isPhone() ? Math.ceil($('#top').getBoundingClientRect().bottom) : 0; }
+  panel.classList.toggle('open', opened || phone);
+  stage.classList.toggle('has-open', opened);
+  var hue = r.type === 'hello' || r.type === 'trail' ? LAMP : opened ? META[NODES[r.key] ? NODES[r.key].comp : r.comp].hue : LAMP;
+  if (r.type === 'comp'){ setPanel(compHTML(r.comp), hue); }
+  else if (r.type === 'node'){ setPanel(nodeHTML(r.key, cf), META[NODES[r.key].comp].hue); }
+  else if (r.type === 'trail'){ setPanel(trailHTML(TRAIL[r.trail], r.step, cf), LAMP); }
+  else if (r.type === 'hello'){ setPanel(helloHTML(), LAMP); }
+  else { setPanel(phone ? overviewPeekHTML() : '', LAMP, {noAnim:true}); }
+  if (phone) sheet = r.type === 'overview' ? 'peek' : (r.type === 'comp' || r.type === 'hello') ? 'half' : 'full';
+  applySheet();
+  buildNodeButtons(state.openRegion >= 0 && state.openRegion !== STEM ? REG[state.openRegion] : null);
+  buildChips();
+  syncLabels(); computeTargets(); updateObstacles();
+  frameRoute(!initial);
+  if (r.type === 'trail' && r.step === TRAIL[r.trail].steps.length && !RM && state.trailWalk.length) setTimeout(function(){ replayTrail(r); }, initial ? 400 : 950);
+  // announce + focus
+  var msg = '';
+  if (r.unknown) msg = 'That part of the brain wasn’t found, showing the whole brain.';
+  else if (r.type === 'comp'){ var c = BRAIN.comp[r.comp]; msg = c.label + ' opened. ' + META[r.comp].region + '. ' + c.nodes.length + ' thoughts.'; }
+  else if (r.type === 'node'){ var n = NODES[r.key]; msg = (cf ? 'Followed “' + cf.label + '” to ' : '') + n.title + (cf ? ', in ' + BRAIN.comp[n.comp].label + '.' : '. ' + BRAIN.comp[n.comp].label + '. ' + n.links2.length + ' connections.'); }
+  else if (r.type === 'trail'){ var t = TRAIL[r.trail]; msg = 'Trail: ' + t.title + '. Step ' + r.step + ' of ' + t.steps.length + ': ' + NODES[r.key].title + '. ' + t.steps[r.step-1].note; }
+  else if (r.type === 'hello') msg = 'Say hello. Links to LinkedIn and GitHub.';
+  else if (from && from.type !== 'overview') msg = 'Showing the whole brain.';
+  if (msg) announce(msg);
+  if (r.unknown){ curHash = ''; try { history.replaceState(null, '', location.pathname + location.search); } catch(e){} }
+  if (!initial || r.type !== 'overview'){
+    if (r.type === 'overview'){
+      var lid = from && from.type === 'comp' ? from.comp : from && (from.type === 'node' || from.type === 'trail') ? NODES[from.key].comp : null;
+      var L = labels.filter(function(x){ return x.id === lid; })[0];
+      if (L && !initial) L.btn.focus({preventScroll:true});
+    } else if (!(phone && initial)) {
+      var hEl = $('#panel-h'); if (hEl) hEl.focus({preventScroll:true});
+    }
+  }
+}
+function syncLabels(){
+  labels.forEach(function(L){ if (L.id === 'stem') return; var on = state.openRegion === L.ri; L.btn.setAttribute('aria-pressed', on ? 'true' : 'false'); L.g.classList.toggle('on', on); L.g.classList.toggle('dim', state.openRegion >= 0 && !on); });
+}
+
+/* follow a synapse */
+var followTimer = 0;
+function followTo(key){ var r = state.route; if (r.type === 'trail'){ go(keyToHash(key)); return; } go(keyToHash(key)); }
+function startFollow(from, r, link, cf){
+  var a = from.key, b = r.key, rev = link.a !== a;
+  state.follow = link; state.hoverNode = null;
+  computeTargets();
+  pinner.classList.add('travel');
+  nodeBtns.innerHTML = ''; nodeBtnList = []; chipsEl.innerHTML = ''; chipList = [];
+  var phone = isPhone();
+  if (phone){ sheet = 'half'; applySheet(); }
+  followPending = {r:r, from:from, cf:cf};
+  // temporarily frame destination to compute camera target, then animate with pull-back
+  state.route = r;
+  frameRoute(true);
+  var target = followPending.camTarget;
+  if (RM){ finishFollow(); return; }
+  setCam(target, 900, 0.12);
+  var e = pathEnds(link, rev);
+  fireOnPoly(nextUserSlot(), link, rev, 900, e[0], e[1], {head:10, trail:16, ease:easeTravel, lamp:r.type === 'trail' ? 0.6 : 0});
+  followTimer = setTimeout(finishFollow, 900);
+}
+function finishFollow(){
+  if (!followPending) return;
+  var fp = followPending; followPending = null; clearTimeout(followTimer);
+  var t = now(), b = fp.r.key;
+  nodeVis[b].bloom = t; flash(NPOS[b], t);
+  state.follow = RM ? state.follow : null;
+  renderRoute(fp.r, fp.from, fp.cf, false);
+  if (RM){ state.follow = null; var link = linkBetween(fp.from.key, b); if (link){ link.alphaT = 0.95; link.alpha = 0.95; pathsDirty = true; } }
+}
+function cancelFollow(){ if (followPending){ clearTimeout(followTimer); followPending = null; state.follow = null; pinner.classList.remove('travel'); } }
+function replayTrail(r){
+  if (state.route.type !== 'trail' || state.route.step !== r.step) return;
+  var t = TRAIL[r.trail], pts = [];
+  for (var i = 1; i < t.steps.length; i++){ var a = t.steps[i-1].node, b = t.steps[i].node, p = linkBetween(a, b); if (!p) continue;
+    var rev = p.a !== a; for (var k = 0; k < p.n; k++){ var j = rev ? p.n - 1 - k : k; pts.push([p.pts[j*3], p.pts[j*3+1], p.pts[j*3+2]]); } }
+  var poly = polyFrom(pts);
+  fireOnPoly(nextUserSlot(), poly, false, 1800, REG.indexOf(NODES[t.steps[0].node].comp), REG.indexOf(NODES[t.steps[t.steps.length-1].node].comp), {head:10, trail:16, ease:easeSine, lamp:0.85,
+    cb:function(){ var k = t.steps[t.steps.length-1].node; nodeVis[k].bloom = now(); flash(NPOS[k], now()); }});
+}
+
+/* Escape / up one level */
+function up(){
+  var r = state.route;
+  if (!$('#trails').hidden){ closeTrails(); return; }
+  if (r.type === 'node') go(r.comp);
+  else if (r.type === 'comp') go('');
+  else if (r.type === 'trail') go(keyToHash(r.key));
+  else if (r.type === 'hello') go(prevHelloFrom || '');
+  else if (r.type === 'plain') go(prevNonPlain || '');
+}
+var prevHelloFrom = '';
+
+/* =====================================================================
+   15. PLAIN VIEW
+   ===================================================================== */
+var plainBuilt = false;
+function buildPlain(){
+  if (plainBuilt) return; plainBuilt = true;
+  var h = '<div class="wrap"><p class="meta">' + esc(hero.eyebrow) + '</p><h1 id="plain-h" tabindex="-1">Bryan Agas</h1><p class="lead">' + esc(hero.recommended) + '</p><p class="meta">' + esc(hero.status) + '</p>';
+  h += '<p class="lead" style="font-size:1rem">' + esc(hero.sub.replace(' Everything here is also in the plain list below.', '')) + ' This is the same content as the brain, as a plain list.</p>';
+  h += '<nav aria-label="Compartments"><ol>' + BRAIN.compartments.map(function(c){ return '<li><a style="--c:' + META[c.id].hue + '" href="#plain--' + c.id + '"><i></i>' + esc(c.label) + '</a></li>'; }).join('') +
+    '<li><a style="--c:#F2B35E" href="#plain--trails"><i></i>Trails</a></li><li><a style="--c:#F2B35E" href="#plain--hello"><i></i>Say hello</a></li></ol></nav>';
+  h += '<p class="about-confirm"><span class="confirm">To confirm</span> marks thoughts drawn from Bryan’s own workspace that he still needs to confirm before this goes public. Everything else is verified.</p>';
+  BRAIN.compartments.forEach(function(c){
+    h += '<section class="pc" id="pl-' + c.id + '" style="--c:' + META[c.id].hue + '" aria-labelledby="plh-' + c.id + '"><p class="reg">' + esc(META[c.id].region) + '</p><h2 id="plh-' + c.id + '">' + esc(c.label) + '</h2><p class="tl">' + esc(c.line) + '</p>';
+    c.nodes.forEach(function(n){
+      h += '<article id="pl-' + c.id + '--' + n.id + '"><h3>' + esc(n.title) + (n.provenance === 'observed' ? ' <span class="confirm">To confirm</span>' : '') + '</h3><p class="hk">' + esc(n.summary) + '</p>' +
+        n.body.map(function(p){ return '<p class="b">' + esc(p) + '</p>'; }).join('') +
+        (n.facts.length ? '<p class="pf">' + n.facts.map(esc).join(' · ') + '</p>' : '') +
+        (n.links.length ? '<p class="pl">' + n.links.map(function(l){ return '<a href="' + esc(l.href) + '" target="_blank" rel="noopener noreferrer">' + esc(l.label) + ' ↗</a>'; }).join(' ') + '</p>' : '') +
+        (n.links2.length ? '<div class="ct">Connects to:<ul>' + n.links2.map(function(l){ var o = NODES[l.other]; return '<li>' + esc(l.label) + ': <a href="#plain--' + o.comp + '--' + o.id + '">' + esc(o.title) + '</a> (' + esc(BRAIN.comp[o.comp].label) + ')</li>'; }).join('') + '</ul></div>' : '') +
+        '</article>';
+    });
+    h += '</section>';
+  });
+  h += '<section class="pc trs" id="pl-trails" aria-labelledby="plh-trails"><h2 id="plh-trails">Trails</h2><p class="tl">Three thoughts that run across the brain.</p>' + BRAIN.trails.map(function(t){
+    return '<h3>' + esc(t.title) + '</h3><p class="tl" style="font-size:.9375rem">' + esc(t.intro) + '</p><ol>' + t.steps.map(function(s){ var n = NODES[s.node]; return '<li><a href="#plain--' + n.comp + '--' + n.id + '">' + esc(n.title) + '</a>: ' + esc(s.note) + '</li>'; }).join('') + '</ol>';
+  }).join('') + '</section>';
+  h += '<section class="pc" id="pl-hello" aria-labelledby="plh-hello"><h2 id="plh-hello">Say hello</h2><p class="tl">I’m looking for junior or product-minded developer roles, and people building calm tools.</p>' +
+    '<div class="hello-links" style="max-width:420px"><a class="biglink" href="https://www.linkedin.com/in/bryanagas/" target="_blank" rel="noopener noreferrer"><span><b>LinkedIn</b><small>linkedin.com/in/bryanagas</small></span><span class="ar" aria-hidden="true">↗</span></a>' +
+    '<a class="biglink" href="https://github.com/BryanAgas" target="_blank" rel="noopener noreferrer"><span><b>GitHub</b><small>github.com/BryanAgas</small></span><span class="ar" aria-hidden="true">↗</span></a></div><p class="tl" style="font-size:.9375rem">The full site will have a contact form here too.</p></section></div>';
+  $('#plainview').innerHTML = h;
+}
+function setPlain(on, comp){
+  var was = docEl.classList.contains('is-plain');
+  docEl.classList.toggle('is-plain', on);
+  $('#plainLink').textContent = on ? 'Brain view' : 'Plain view';
+  $('#plainLink').setAttribute('href', on ? '#' + (prevNonPlain || '') : '#plain');
+  if (on){
+    buildPlain(); running = false; if (rafId){ cancelAnimationFrame(rafId); rafId = 0; }
+    var target = comp ? document.getElementById('pl-' + comp) : null;
+    if (target) target.scrollIntoView(); else if (!was) window.scrollTo(0, 0);
+    var focusEl = target ? target.querySelector('h2,h3') : $('#plain-h');
+    if (focusEl){ if (!focusEl.hasAttribute('tabindex')) focusEl.setAttribute('tabindex', '-1'); focusEl.focus({preventScroll:true}); }
+  } else if (was){ window.scrollTo(0, 0); startLoop(); }
+}
+
+/* =====================================================================
+   16. TRAILS PICKER
+   ===================================================================== */
+var trailsEl = $('#trails'), trailsBtn = $('#trailsBtn'), scrim = $('#scrim');
+function openTrails(){
+  trailsEl.innerHTML = '<h2 id="trails-h">Follow a thought</h2><p class="sub">Each trail walks one idea across the brain, a step at a time.</p>' +
+    BRAIN.trails.map(function(t){ return '<button type="button" class="tcard" data-go="trail--' + t.id + '--1"><b>' + esc(t.title) + '</b><span>' + esc(t.intro) + '</span><small>' + t.steps.length + ' thoughts · Start →</small></button>'; }).join('') +
+    '<button type="button" class="close x" data-close-trails="1">Close <span class="kbd" aria-hidden="true">ESC</span></button>';
+  trailsEl.hidden = false; scrim.hidden = !isPhone(); trailsBtn.setAttribute('aria-expanded', 'true');
+  trailsEl.querySelector('.tcard').focus();
+}
+function closeTrails(noFocus){ if (trailsEl.hidden) return; trailsEl.hidden = true; scrim.hidden = true; trailsBtn.setAttribute('aria-expanded', 'false'); if (!noFocus) trailsBtn.focus(); }
+trailsBtn.addEventListener('click', function(){ trailsEl.hidden ? openTrails() : closeTrails(); });
+scrim.addEventListener('click', function(){ closeTrails(); });
+trailsEl.addEventListener('keydown', function(e){
+  if (e.key !== 'Tab') return;
+  var f = trailsEl.querySelectorAll('button'), first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+});
+document.addEventListener('pointerdown', function(e){ if (!trailsEl.hidden && !trailsEl.contains(e.target) && e.target !== trailsBtn) closeTrails(true); });
+
+/* =====================================================================
+   17. INPUT
+   ===================================================================== */
+var announceTimer = 0;
+function announce(msg){ clearTimeout(announceTimer); announceTimer = setTimeout(function(){ var a = $('#announce'); a.textContent = ''; setTimeout(function(){ a.textContent = msg; }, 30); }, 150); }
+document.addEventListener('click', function(e){
+  var t = e.target.closest ? e.target.closest('[data-go],[data-follow],[data-esc],[data-close-trails],.clabel') : null;
+  if (!t) return;
+  if (t.matches('[data-close-trails]')){ closeTrails(); return; }
+  if (t.matches('.clabel')){
+    var id = t.dataset.id; lastOpenedLabel = t;
+    if (id === 'stem'){ go('hello'); return; }
+    if (state.route.type === 'comp' && state.route.comp === id) { go(''); return; }
+    go(id); return;
+  }
+  if (t.matches('[data-esc]')){ up(); return; }
+  if (t.matches('[data-follow]')){ followTo(t.dataset.follow); return; }
+  if (t.matches('[data-go]')){ if (t.closest('#trails')) closeTrails(true); go(t.dataset.go); return; }
+});
+document.addEventListener('keydown', function(e){
+  lastInput = now();
+  if (!state.introDone && e.key !== 'Tab' && e.key !== 'Shift') endIntro();
+  if (e.key === 'Escape'){ e.preventDefault(); up(); return; }
+  var t = e.target;
+  if (t && t.classList && t.classList.contains('clabel') && /^Arrow/.test(e.key)){
+    e.preventDefault();
+    var order = RING.concat(['stem']), i = order.indexOf(t.dataset.id), d = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+    var nid = order[(i + d + order.length) % order.length];
+    labels.filter(function(L){ return L.id === nid; })[0].btn.focus();
+  }
+});
+// label hover → wake region
+labels.forEach(function(L){
+  L.btn.addEventListener('mouseenter', function(){ setHoverRegion(L.ri); });
+  L.btn.addEventListener('mouseleave', function(){ setHoverRegion(-1); });
+  L.btn.addEventListener('focus', function(){ setHoverRegion(L.ri); L.btn.classList.add('hot'); });
+  L.btn.addEventListener('blur', function(){ setHoverRegion(-1); L.btn.classList.remove('hot'); });
+});
+function setHoverRegion(ri){ if (state.hoverRegion === ri) return; state.hoverRegion = ri; computeTargets();
+  labels.forEach(function(L){ L.btn.classList.toggle('hot', L.ri === ri && ri >= 0 && L.ri !== state.openRegion || (document.activeElement === L.btn)); }); }
+// pointer on canvas
+var canvasEls = [$('#gl'), $('#c2d')], downP = null;
+function regionAt(px, py){ var b = unproject(px, py); if (!b) return -1; pointerBrain = b; return classify(b[0], b[1], false); }
+canvasEls.forEach(function(cv){
+  cv.addEventListener('pointermove', function(e){
+    lastInput = now();
+    if (e.pointerType === 'mouse'){
+      var r = regionAt(e.clientX, e.clientY); stage.classList.toggle('over-brain', r >= 0); setHoverRegion(r >= 0 ? r : -1);
+      sway.tyaw = ((e.clientX / W) - 0.5) * 2 * 6 * Math.PI / 180; sway.tpitch = ((e.clientY / H) - 0.5) * 2 * 3 * Math.PI / 180;
+    }
+  });
+  cv.addEventListener('pointerleave', function(){ setHoverRegion(-1); pointerBrain = null; stage.classList.remove('over-brain'); sway.tyaw = 0; sway.tpitch = 0; });
+  cv.addEventListener('pointerdown', function(e){ lastInput = now(); endIntro(); downP = {x:e.clientX, y:e.clientY, t:now()}; });
+  cv.addEventListener('pointerup', function(e){
+    if (!downP) return; var dx = e.clientX - downP.x, dy = e.clientY - downP.y, dt = now() - downP.t; downP = null;
+    if (Math.abs(dx) >= 48 && dt < 400 && Math.abs(dx) > 1.5 * Math.abs(dy) && isPhone()){ swipe(dx < 0 ? 1 : -1); return; }
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) return;
+    // node discs (touch: 22px radius)
+    if (state.openRegion >= 0 && state.openRegion !== STEM){
+      var best = null, bd = 22;
+      BRAIN.comp[REG[state.openRegion]].nodes.forEach(function(n){ var p = NPOS[n.key]; project(p[0], p[1], p[2], tmp3); var d = Math.hypot(tmp3[0] - e.clientX, tmp3[1] - e.clientY); if (d < bd){ bd = d; best = n; } });
+      if (best){ go(keyToHash(best.key)); return; }
+    }
+    var r = regionAt(e.clientX, e.clientY);
+    if (r === STEM){ go('hello'); }
+    else if (r >= 0){ var id = REG[r]; if (!(state.route.type === 'comp' && state.route.comp === id)) go(id); }
+    else if (state.route.type === 'comp' || state.route.type === 'hello') up();
+  });
+});
+function swipe(d){
+  var cur = state.openRegion >= 0 && state.openRegion !== STEM ? REG[state.openRegion] : null;
+  var i = cur ? RING.indexOf(cur) : (d > 0 ? -1 : 0);
+  go(RING[(i + d + RING.length) % RING.length]);
+}
+$('#homeLink').addEventListener('click', function(e){ e.preventDefault(); go(''); });
+
+/* =====================================================================
+   18. INTRO — "First breath"
+   ===================================================================== */
+var introT0 = 0, introOn = false, introTimers = [];
+function startIntro(){
+  introOn = true; introT0 = now(); waveV = 0; stage.classList.add('intro');
+  var sk = $('#skipIntro'); sk.hidden = false; sk.onclick = function(){ endIntro(); };
+  // labels wake front → back
+  ['mindset','ideas','current','experiments','projects','experience','skills','stem'].forEach(function(id, i){
+    introTimers.push(setTimeout(function(){ var L = labels.filter(function(x){ return x.id === id; })[0]; L.li.style.opacity = '1'; }, 150 + i * 120));
+  });
+  var pairs = [['mindset','ideas'],['ideas','current'],['current','experiments'],['experiments','projects'],['projects','skills'],['skills','experience']];
+  var counts = [0, 1, 2, 4, 5, 6];
+  pairs.forEach(function(pr, i){ introTimers.push(setTimeout(function(){
+    var p = TRUNK_PATHS.filter(function(q){ return (q.a === pr[0] && q.b === pr[1]) || (q.a === pr[1] && q.b === pr[0]); })[0];
+    if (p){ var rev = p.a !== pr[0], e = pathEnds(p, rev); fireOnPoly(4 + i, p, rev, 520, e[0], e[1], {ease:easeSine}); if (i === 0 || i === 3) lastAccent = now(); }
+  }, 1300 + counts[i] * 200)); });
+  introTimers.push(setTimeout(function(){ fireStem(CENT[1], null, 700); }, 1300 + 7 * 200));
+  introTimers.push(setTimeout(endIntro, 2700));
+}
+function endIntro(){
+  if (state.introDone) return;
+  state.introDone = true; introOn = false; waveV = 1;
+  introTimers.forEach(clearTimeout); introTimers = [];
+  stage.classList.remove('intro'); labels.forEach(function(L){ L.li.style.opacity = ''; });
+  var sk = $('#skipIntro'); if (document.activeElement === sk) $('#homeLink').focus(); sk.hidden = true;
+  ss('brainIntro', '1'); clockT0 = now(); lastCount = -1; requestRender();
+}
+['wheel', 'touchstart'].forEach(function(ev){ window.addEventListener(ev, function(){ lastInput = now(); if (!state.introDone) endIntro(); }, {passive:true}); });
+
+/* =====================================================================
+   19. LOOP
+   ===================================================================== */
+var rafId = 0, running = true, lastT = 0, frameTimes = [], adaptDone = 0, adaptT0 = 0, lastFrameDrawn = 0;
+function lerpTo(cur, tgt, k){ return cur + (tgt - cur) * k; }
+function frame(t){
+  rafId = 0;
+  if (!running) return;
+  if (!RM) rafId = requestAnimationFrame(frame);
+  var dt = lastT ? Math.min(100, t - lastT) : 16; lastT = t;
+  // phone full sheet → 30fps
+  if (!RM && isPhone() && sheet === 'full' && !followPending && t - lastFrameDrawn < 30) return;
+  lastFrameDrawn = t;
+  var moving = updateCam(t);
+  if (!RM){
+    // intro wave
+    if (introOn){ waveV = clamp((t - introT0) / 1300, 0, 1); }
+    // salsa clock
+    if (state.introDone){ var c = Math.floor((t - clockT0) / BEAT) % 8 + 1; if (c !== lastCount){ lastCount = c; onCount(c, t); } }
+    // sway + parallax
+    var ts = t / 1000;
+    sway.pyaw = lerpTo(sway.pyaw, canHover ? sway.tyaw : 0, 0.06); sway.ppitch = lerpTo(sway.ppitch, canHover ? sway.tpitch : 0, 0.06);
+    sway.regionYaw = lerpTo(sway.regionYaw, sway.regionYawT, 0.05);
+    var lim = 14 * Math.PI / 180;
+    cam.yaw = clamp(7 * Math.PI / 180 * Math.sin(ts * 2 * Math.PI / 26) + sway.pyaw + sway.regionYaw, -lim, lim);
+    cam.pitch = clamp(2 * Math.PI / 180 * Math.sin(ts * 2 * Math.PI / 19) + sway.ppitch, -lim, lim);
+    cam.s = 1 + 0.004 * Math.sin(ts * 2 * Math.PI / 10);
+  } else { cam.yaw = sway.regionYawT * 0.5; cam.pitch = 0; cam.s = 1; }
+  // region + path lerps
+  var k = RM ? 1 : 1 - Math.exp(-dt / 70);
+  for (var i = 0; i < 8; i++){ var c0 = regionCur[i], g = regionTgt[i]; c0.tint = lerpTo(c0.tint, g.tint, k); c0.dim = lerpTo(c0.dim, g.dim, k); c0.lift = lerpTo(c0.lift, g.lift, RM ? 1 : 1 - Math.exp(-dt / 90)); }
+  var kp = RM ? 1 : 1 - Math.exp(-dt / 90);
+  for (var j = 0; j < PATHS.length; j++){ var p = PATHS[j]; if (Math.abs(p.alpha - p.alphaT) > 0.002 || Math.abs(p.lamp - p.lampT) > 0.002){ p.alpha = lerpTo(p.alpha, p.alphaT, kp); p.lamp = lerpTo(p.lamp, p.lampT, kp); pathsDirty = true; } }
+  for (var key in nodeVis){ var v = nodeVis[key]; v.a = lerpTo(v.a, v.aT, k); v.ring = lerpTo(v.ring, v.ringT, k); }
+  if (R) R.render(t);
+  layoutLabels(); layoutNodesAndChips();
+  needsRender = false;
+  // adaptive quality (once or twice)
+  if (!RM && state.introDone && adaptDone < 2 && R && R.kind === 'gl'){
+    if (!adaptT0) adaptT0 = t; frameTimes.push(dt);
+    if (t - adaptT0 > 2000){ var mean = frameTimes.reduce(function(a, b){ return a + b; }, 0) / frameTimes.length; frameTimes = []; adaptT0 = t; adaptDone++;
+      if (mean > 19 && qualityScale > 0.5){ qualityScale = Math.max(0.5, qualityScale - 0.125); R.resize(); } }
+  }
+  if (RM && (moving || needsRender)) rafId = requestAnimationFrame(frame);
+}
+function startLoop(){ running = true; lastT = 0; if (!rafId) rafId = requestAnimationFrame(frame); }
+document.addEventListener('visibilitychange', function(){ if (document.hidden){ running = false; if (rafId){ cancelAnimationFrame(rafId); rafId = 0; } } else if (!docEl.classList.contains('is-plain')) { clockT0 = now(); startLoop(); } });
+if (window.IntersectionObserver){ /* plain view hides the stage via display:none; loop is stopped in setPlain */ }
+
+/* =====================================================================
+   20. RESIZE + BOOT
+   ===================================================================== */
+var resizeTimer = 0;
+function onResize(){
+  W = window.innerWidth; H = window.innerHeight;
+  _hh = isPhone() ? Math.ceil($('#top').getBoundingClientRect().bottom) : 0;
+  var probe = document.createElement('div'); probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);visibility:hidden'; document.body.appendChild(probe); _sab = probe.offsetHeight; probe.remove();
+  if (R) R.resize();
+  measureLabels(); updateObstacles(); applySheet(); buildChips();
+  if (state.route.type !== 'plain'){ panel.classList.toggle('open', state.route.type !== 'overview' || isPhone()); if (isPhone() && state.route.type === 'overview' && !pinner.innerHTML) setPanel(overviewPeekHTML(), LAMP, {noAnim:true}); if (!isPhone() && state.route.type === 'overview') pinner.innerHTML = ''; }
+  frameRoute(false); requestRender();
+}
+window.addEventListener('resize', function(){ clearTimeout(resizeTimer); resizeTimer = setTimeout(onResize, 120); });
+mqRM.addEventListener && mqRM.addEventListener('change', function(){ location.reload(); });
+
+function boot(){
+  W = window.innerWidth; H = window.innerHeight;
+  try { R = makeGL(); }
+  catch(e){ try { R = make2D(); docEl.setAttribute('data-fallback', '2d'); } catch(e2){ R = null; docEl.setAttribute('data-fallback', 'plain'); } }
+  stage.classList.toggle('can-hover', canHover);
+  onResize();
+  var hasDeep = !!(location.hash && location.hash !== '#');
+  if (docEl.getAttribute('data-fallback') === 'plain' && !/^#plain/.test(location.hash)) { try { history.replaceState(null, '', '#plain'); } catch(e){} }
+  applyRoute();
+  if (!hasDeep && !RM && !ss('brainIntro') && R) startIntro(); else endIntro();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ measureLabels(); updateObstacles(); buildChips(); requestRender(); });
+  startLoop();
+  window.__brain = {state:state, cam:cam, P:P, paths:PATHS, renderer:function(){ return R && R.kind; }, sigs:sigs};
+}
+boot();
+})();
+</script>
+</body>
+</html>
