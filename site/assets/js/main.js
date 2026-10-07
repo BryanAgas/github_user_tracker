@@ -202,7 +202,12 @@ function initTracker() {
   const promptUser = document.getElementById('term-user');
   const status = document.getElementById('tracker-status');
   // Announce a short summary only; the result list itself stays out of the live region.
-  const announce = (text) => { if (status) status.textContent = text; };
+  const announce = (text) => {
+    if (!status) return;
+    // Clear first so a repeated message (e.g. two invalid submits) is announced again.
+    status.textContent = '';
+    requestAnimationFrame(() => { status.textContent = text; });
+  };
   if (!form || !output || !input) return;
   form.noValidate = true;
 
