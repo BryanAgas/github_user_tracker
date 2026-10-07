@@ -103,3 +103,11 @@ test('relativeTime handles Date objects, future times and bad input', () => {
   assert.equal(relativeTime('not a date', now), '');
   assert.equal(relativeTime(undefined, now), '');
 });
+
+test('relativeTime returns an empty string for missing or non-string times', () => {
+  const now = Date.parse('2026-10-07T12:00:00Z');
+  assert.equal(relativeTime(null, now), '');
+  assert.equal(relativeTime(undefined, now), '');
+  assert.equal(relativeTime('', now), '');
+  assert.equal(relativeTime(0, now), '');
+});

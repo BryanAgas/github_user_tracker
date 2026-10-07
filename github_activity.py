@@ -12,10 +12,13 @@ def fetch_github_activity(username):
     
     # Send GET request to fetch events
     headers = {'User-Agent': 'PythonApp'}  # GitHub API requires a User-Agent header
-    conn.request("GET", url, headers=headers)
-    
-    # Get the response
-    response = conn.getresponse()
+    try:
+        conn.request("GET", url, headers=headers)
+        response = conn.getresponse()
+    except OSError as error:
+        print(f"Error: Could not reach GitHub ({error}).")
+        conn.close()
+        return
     
     # Check if the request was successful
     if response.status != 200:
@@ -25,7 +28,12 @@ def fetch_github_activity(username):
     
     # Parse the response data
     data = response.read()
-    events = json.loads(data.decode("utf-8"))
+    try:
+        events = json.loads(data.decode("utf-8"))
+    except ValueError:
+        print("Error: GitHub returned a response that could not be read.")
+        conn.close()
+        return
     
     # Close the connection
     conn.close()
@@ -40,7 +48,7 @@ def fetch_github_activity(username):
 # Function to display each event in a readable format
 def display_event(event):
     event_type = event.get("type")
-    repo_name = event["repo"]["name"]
+    repo_name = (event.get("repo") or {}).get("name", "an unknown repository")
     
     payload = event.get("payload") or {}
 

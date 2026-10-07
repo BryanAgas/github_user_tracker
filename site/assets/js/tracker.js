@@ -88,6 +88,7 @@ export function describeEvent(event) {
  * `now` may be a Date or a millisecond timestamp. Returns "" for bad input.
  */
 export function relativeTime(iso, now = Date.now()) {
+  if (typeof iso !== 'string' || iso === '') return '';
   const then = new Date(iso).getTime();
   const at = now instanceof Date ? now.getTime() : Number(now);
   if (!Number.isFinite(then) || !Number.isFinite(at)) return '';

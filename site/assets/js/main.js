@@ -37,6 +37,10 @@ function initNav() {
   document.addEventListener('click', (e) => {
     if (isOpen() && !e.target.closest('.site-header')) setOpen(false);
   });
+  const header = toggle.closest('.site-header');
+  header?.addEventListener('focusout', (e) => {
+    if (isOpen() && e.relatedTarget && !header.contains(e.relatedTarget)) setOpen(false);
+  });
   // Reset if the viewport grows past the mobile breakpoint.
   const mq = window.matchMedia('(min-width: 721px)');
   mq.addEventListener('change', (e) => { if (e.matches) setOpen(false); });
@@ -75,7 +79,7 @@ function initScrollSpy() {
 }
 
 /* ---------- Contact form ---------- */
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const EMAIL = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)*\.[^\s@.]{2,}$/;
 const FORM_COPY = {
   name: 'Please add your name.',
   emailMissing: 'Please add an email address I can reply to.',
@@ -185,6 +189,8 @@ const TRACKER_COPY = {
   notFound: (u) => `There’s no GitHub user called @${u}. Check the spelling?`,
   rateLimit: 'GitHub’s limit for anonymous requests has been reached from your network. It resets within the hour.',
   network: 'Couldn’t reach GitHub. Check your connection and try again.',
+  server: 'GitHub sent back an error. Please try again in a minute.',
+  found: (n, u) => `${n} recent public event${n === 1 ? '' : 's'} for @${u}.`,
   invalid: 'GitHub usernames use letters, numbers and single hyphens, up to 39 characters.',
 };
 const MAX_STAGGER = 12;
@@ -194,6 +200,9 @@ function initTracker() {
   const output = document.getElementById('tracker-output');
   const input = document.getElementById('gh-user');
   const promptUser = document.getElementById('term-user');
+  const status = document.getElementById('tracker-status');
+  // Announce a short summary only; the result list itself stays out of the live region.
+  const announce = (text) => { if (status) status.textContent = text; };
   if (!form || !output || !input) return;
   form.noValidate = true;
 
@@ -205,9 +214,10 @@ function initTracker() {
     p.className = `term__msg${variant ? ` term__msg--${variant}` : ''}`;
     p.textContent = text;
     output.replaceChildren(p);
+    announce(text);
   };
 
-  const renderEvents = (events) => {
+  const renderEvents = (events, username) => {
     const list = document.createElement('ol');
     list.className = 'term__list';
     const now = Date.now();
@@ -245,6 +255,7 @@ function initTracker() {
     count.className = 'term__count';
     count.textContent = `${events.length} event${events.length === 1 ? '' : 's'}`;
     output.replaceChildren(list, count);
+    announce(TRACKER_COPY.found(events.length, username));
   };
 
   const run = async (raw) => {
@@ -279,12 +290,19 @@ function initTracker() {
       } else if (res.status === 403 || res.status === 429) {
         message(TRACKER_COPY.rateLimit, 'error');
       } else if (!res.ok) {
-        message(TRACKER_COPY.network, 'error');
+        message(TRACKER_COPY.server, 'error');
       } else {
-        const data = await res.json();
+        let data;
+        try {
+          data = await res.json();
+        } catch (err) {
+          if (err && err.name === 'AbortError') throw err;
+          data = undefined;
+        }
         if (ctrl !== controller) return;
-        if (!Array.isArray(data) || data.length === 0) message(TRACKER_COPY.empty(username));
-        else renderEvents(data.slice(0, 30));
+        if (!Array.isArray(data)) message(TRACKER_COPY.server, 'error');
+        else if (data.length === 0) message(TRACKER_COPY.empty(username));
+        else renderEvents(data.slice(0, 30), username);
       }
     } catch (err) {
       if (err && err.name === 'AbortError') return;

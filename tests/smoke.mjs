@@ -7,7 +7,6 @@
 //   --shots <dir>   also save full-page screenshots (home + case study,
 //                   390 and 1440 wide, light and dark) into <dir>
 //   --shots-only    skip the checks (with --shots)
-//   --real-fonts    let Google Fonts load (default: stubbed, so the run is hermetic)
 //
 // It serves site/ on a local port with the CSP from netlify.toml applied, so
 // CSP violations surface as console errors.
@@ -24,7 +23,6 @@ const root = path.resolve(here, '..');
 const siteDir = path.join(root, 'site');
 const args = process.argv.slice(2);
 const shotsDir = args.includes('--shots') ? path.resolve(args[args.indexOf('--shots') + 1]) : null;
-const realFonts = args.includes('--real-fonts');
 const shotsOnly = args.includes('--shots-only'); // skip checks, just take screenshots
 
 /* ---------- Resolve Playwright without making it a repo dependency ---------- */
@@ -95,25 +93,8 @@ const widths = [320, 360, 768, 1280, 1600];
 
 const browser = await chromium.launch();
 
-// --real-fonts: fetch Google Fonts with curl (which honours the shell's proxy
-// and CA settings) and hand them to the browser, so local traffic stays direct.
-const fontCache = new Map();
-function fetchFont(url, ua) {
-  if (!fontCache.has(url)) {
-    const body = execSync(`curl -sSL --fail -A ${JSON.stringify(ua)} ${JSON.stringify(url)}`, { maxBuffer: 1 << 26 });
-    const contentType = url.includes('googleapis') ? 'text/css' : 'font/woff2';
-    fontCache.set(url, { body, contentType });
-  }
-  return fontCache.get(url);
-}
-
 async function newPage(width, opts = {}) {
   const context = await browser.newContext({ viewport: { width, height: 900 }, ...opts });
-  await context.route(/fonts\.(googleapis|gstatic)\.com/, (route) => {
-    if (!realFonts) return route.fulfill({ status: 200, contentType: 'text/css', body: '' });
-    const { body, contentType } = fetchFont(route.request().url(), route.request().headers()['user-agent']);
-    return route.fulfill({ status: 200, contentType, body, headers: { 'Access-Control-Allow-Origin': '*' } });
-  });
   const page = await context.newPage();
   const errors = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -294,12 +275,15 @@ if (!shotsOnly) {
   });
   await page.goto(base + '/#tracker', { waitUntil: 'networkidle' });
   const out = page.locator('#tracker-output');
-  ok((await out.getAttribute('aria-live')) === 'polite', '[tracker] output is not aria-live polite');
+  const status = page.locator('#tracker-status');
+  ok((await status.getAttribute('role')) === 'status', '[tracker] status line is not role=status');
+  ok((await out.getAttribute('aria-live')) === null, '[tracker] result list should stay out of the live region');
   ok((await out.textContent()).trim() === 'Results will appear here.', '[tracker] idle copy wrong');
 
   await page.fill('#gh-user', 'mockuser');
   await page.click('#tracker-form button[type=submit]');
   await page.waitForSelector('#tracker-output li.term__row');
+  ok(/recent public event/.test(await status.textContent()), '[tracker] status line did not announce the result count');
   const rows = await page.$$eval('#tracker-output li.term__row', (lis) => lis.map((li) => ({
     text: li.querySelector('.term__text').textContent,
     href: li.querySelector('a')?.getAttribute('href'),

@@ -29,10 +29,10 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&amp;display=swap">
+  <link rel="preload" href="/assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/hanken-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="modulepreload" href="/assets/js/tracker.js">
   <script type="module" src="/assets/js/main.js"></script>
 
   <script type="application/ld+json">
@@ -193,7 +193,7 @@
                 </li>
                 <li>
                   <h3>A free tier that’s genuinely useful.</h3>
-                  <p>One calendar, two homes, templates and a few shared requests a month are free, and so is viewing and responding. Plus (£3.99 a month or £34.99 a year) adds calendars and lets a decision-maker sponsor a child’s calendar. The 14-day trial asks for no payment details and doesn’t auto-renew.</p>
+                  <p>One calendar, two homes, templates and a few shared requests a month are free, and so is viewing and responding. Plus (£3.99 a month or £34.99 a year) adds calendars and lets a decision-maker sponsor a child’s calendar. The 14-day trial asks for no payment details and doesn’t auto-renew. (Prices as of October 2026.)</p>
                 </li>
               </ol>
             </div>
@@ -207,7 +207,7 @@
             <p class="note">04</p>
             <div class="ledger__body prose">
               <h2 id="built-title">How it’s built and shipped</h2>
-              <p>The public site is React and TypeScript on Vite and Tailwind, with unit tests in Vitest and browser tests in Playwright. Publishing goes through a script that refuses to push unless the branch, working tree and checks are clean, and every release is verified on the live routes afterwards. The terms, privacy policy and data-choices pages were written alongside the product, not after it.</p>
+              <p>The public site is React and TypeScript on Vite and Tailwind, with unit tests in Vitest and browser tests in Playwright. Publishing goes through a script that refuses to push unless the branch, working tree and checks are clean, and the release checklist ends with checking the deployed commit and the live routes. Terms, a privacy policy and a page for exporting or deleting your data ship with the product.</p>
             </div>
           </div>
         </div>

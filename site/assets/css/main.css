@@ -3,6 +3,36 @@
    One stylesheet, mobile-first. Breakpoints: 480, 720, 900, 1200.
    ========================================================================== */
 
+/* ---------- Fonts (self-hosted, latin subset, SIL OFL — see assets/fonts/README.md) ---------- */
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/newsreader-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/newsreader-italic-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("../fonts/hanken-grotesk-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("../fonts/jetbrains-mono-latin.woff2") format("woff2");
+}
+
 /* ---------- Tokens ---------- */
 :root {
   --paper: #F5F2EB;
@@ -404,6 +434,9 @@ main:focus { outline: none; }
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.2;
+  text-align: center;
+  max-width: 100%;
+  padding-block: var(--s-2);
   text-decoration: none;
   cursor: pointer;
   transition: background-color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
@@ -818,6 +851,9 @@ main:focus { outline: none; }
   row-gap: var(--s-2);
 }
 .site-footer__cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-family: var(--font-display);
   font-size: var(--fs-h2);
   line-height: 1.1;
@@ -841,7 +877,8 @@ main:focus { outline: none; }
 .site-footer__col a {
   display: inline-flex;
   align-items: center;
-  gap: 0.35em;
+  flex-wrap: wrap;
+  gap: 0 0.35em;
   min-height: 44px;
   color: var(--ink);
   text-decoration: none;
@@ -990,6 +1027,7 @@ main:focus { outline: none; }
   --bh-gap: clamp(3px, 0.8vw, 6px);
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-5);
   padding: clamp(14px, 3.2vw, 28px);
   background: var(--bh-cream);
@@ -1067,7 +1105,8 @@ main:focus { outline: none; }
   border: 1px solid var(--bh-line);
   border-radius: 6px;
   font-family: var(--font-mono);
-  font-size: clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem);
+  /* Capped by viewport width so text-only zoom cannot clip two-digit dates in narrow cells. */
+  font-size: min(clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem), 3.4vw);
   font-variant-numeric: tabular-nums;
   line-height: 1;
   color: var(--bh-muted);
@@ -1126,7 +1165,7 @@ main:focus { outline: none; }
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 500;
-  white-space: nowrap;
+  max-width: 100%;
 }
 .bh__note { background: var(--bh-card); border: 1px solid var(--bh-line); }
 .bh__note-dot {
@@ -1179,7 +1218,7 @@ main:focus { outline: none; }
   border-radius: 3px;
   background: repeating-linear-gradient(-45deg, var(--bh-b) 0 3px, color-mix(in srgb, var(--bh-a) 85%, white) 3px 6px);
 }
-.bh__side-foot { font-size: 0.75rem; color: var(--bh-muted); font-style: italic; font-family: var(--font-display); font-size: 0.9375rem; }
+.bh__side-foot { color: var(--bh-muted); font-style: italic; font-family: var(--font-display); font-size: 0.9375rem; }
 
 @media (min-width: 900px) {
   .bh--wide {

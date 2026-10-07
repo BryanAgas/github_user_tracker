@@ -19,8 +19,8 @@ system and copy are settled here; the build follows this document.
 
 | Area | Fact |
 |---|---|
-| Product | **Both Homes** — "A calm shared calendar for separated parents." Answers one question: *where is my child tonight?* Set the pattern once, nights laid out months ahead, one colour per home. Changes are requested and answered; nothing moves without agreement. Notes on days. Invite-only sharing: one email, works once, expires after seven days. Free tier + Plus (£3.99/mo, £34.99/yr, 14-day trial with no payment details). iOS via public TestFlight (App Store listing pending), web app at app.bothhomes.co.uk, site at bothhomes.co.uk. Publisher: Bryan Agas. Data export and account deletion available to users. |
-| Both Homes site stack | React, TypeScript, Vite, Tailwind CSS; unit tests (Vitest) and browser tests (Playwright); deployed on Netlify with a publish script that checks the branch, clean tree and validation before pushing. |
+| Product | **Both Homes** — "A calm shared calendar for separated parents." Answers one question: *where is my child tonight?* Set the pattern once, nights laid out months ahead, one colour per home. Changes are requested and answered; nothing moves without agreement. Notes on days. Invite-only sharing: one email, works once, expires after seven days. Free tier (first own calendar, two homes, six templates, three shared requests per person per child per month; viewing and responding free) + Plus (£3.99/mo, £34.99/yr; extra calendars; a decision-maker can sponsor a child calendar; one 14-day trial with no payment details, no automatic renewal). Source: bothhomes.co.uk homepage source, `web/src/pages/Index.tsx`, `web/src/site.ts`. iOS via public TestFlight (App Store listing pending), web app at app.bothhomes.co.uk, site at bothhomes.co.uk. Publisher: Bryan Agas. Data export and account deletion available to users. |
+| Both Homes site stack | React, TypeScript, Vite, Tailwind CSS; unit tests (Vitest) and browser tests (Playwright); deployed on Netlify with a publish script that checks the branch, clean tree and validation before pushing. README checklist: verify the deployed commit and public routes after publishing. Web app is "for Android and computers" (`site.ts`). |
 | github_user_tracker (2024) | Python CLI, standard library only (`http.client`, `json`), reads the public GitHub events API, prints readable activity, handles bad usernames and failed requests. |
 | data-dictionary-app (2024) | Python + pandas + Tkinter desktop search over a Redshift data dictionary spreadsheet (columns → description, table, schema, database), plus a browser version in plain HTML/JS. |
 | MyCV (Jan 2022) | First hand-coded website: a multi-page HTML CV. |
@@ -201,7 +201,7 @@ description: `Bryan Agas builds Both Homes, a calm shared calendar for separated
 **About**
 - Note: `Off the clock`
 - H2: `The rest of the week`
-- Body: `I'm a dad of two, so most of what I build gets tested against a school run. I learnt to code in the evenings, the same way I learnt salsa and tennis: badly at first, then a little every week.`
+- Body: `I'm a dad of two, so most of what I build gets tested against a busy family week. I taught myself to code, and I treat it the way I treat salsa and tennis: you get better by turning up every week.`
 - Facts list: `Salsa — ran the university Salsa Society as president.` · `Tennis — once a week, every week.` · `Meditation — a daily habit, and the reason I value calm software.` · `Studied — PR, advertising and business at Sheffield Hallam.`
 
 **Contact**
@@ -226,8 +226,8 @@ description: `Bryan Agas builds Both Homes, a calm shared calendar for separated
   1. `Nothing moves without agreement.` `A change is a request that the other parent answers. The calendar only updates once the required decisions are made, so neither parent wakes up to a surprise.`
   2. `Notes live on the day.` `Swimming kit, a passport, a dentist appointment. A short note attached to a night means both homes see it in context, not lost in a chat thread.`
   3. `Private by default.` `No public links. An invitation goes to one email address, works once and expires after seven days. People can export their data or ask for deletion from the site.`
-  4. `A free tier that's genuinely useful.` `One calendar, two homes, templates and a few shared requests a month are free, and so is viewing and responding. Plus (£3.99 a month or £34.99 a year) adds calendars and lets a decision-maker sponsor a child's calendar. The 14-day trial asks for no payment details and doesn't auto-renew.`
-- Section `How it's built and shipped` — `The public site is React and TypeScript on Vite and Tailwind, with unit tests in Vitest and browser tests in Playwright. Publishing goes through a script that refuses to push unless the branch, working tree and checks are clean, and every release is verified on the live routes afterwards. The terms, privacy policy and data-choices pages were written alongside the product, not after it.`
+  4. `A free tier that's genuinely useful.` `One calendar, two homes, templates and a few shared requests a month are free, and so is viewing and responding. Plus (£3.99 a month or £34.99 a year) adds calendars and lets a decision-maker sponsor a child's calendar. The 14-day trial asks for no payment details and doesn't auto-renew. (Prices as of October 2026.)`
+- Section `How it's built and shipped` — `The public site is React and TypeScript on Vite and Tailwind, with unit tests in Vitest and browser tests in Playwright. Publishing goes through a script that refuses to push unless the branch, working tree and checks are clean, and the release checklist ends with checking the deployed commit and the live routes. Terms, a privacy policy and a page for exporting or deleting your data ship with the product.`
 - Section `What I'd tell the next person building in this space` — `Tone is a feature. Every label and notification is read by someone who may already be upset, so the copy is short, neutral and never takes a side.`
 - CTA block: `Visit bothhomes.co.uk ↗` · `Get in touch about Both Homes →` (→ /#contact)
 - Next: `← Back to all work`

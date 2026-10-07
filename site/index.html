@@ -29,10 +29,10 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&amp;display=swap">
+  <link rel="preload" href="/assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/hanken-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="modulepreload" href="/assets/js/tracker.js">
   <script type="module" src="/assets/js/main.js"></script>
 
   <script type="application/ld+json">
@@ -287,7 +287,8 @@
 
             <div class="term">
               <p class="term__prompt"><span class="term__dollar" aria-hidden="true">$</span> github-activity <span class="term__user" id="term-user">&lt;username&gt;</span></p>
-              <div class="term__out" id="tracker-output" aria-live="polite" aria-busy="false">
+              <p class="visually-hidden" id="tracker-status" role="status"></p>
+              <div class="term__out" id="tracker-output">
                 <p class="term__msg">Results will appear here.</p>
               </div>
             </div>
@@ -304,7 +305,7 @@
           <p class="note">Off the clock</p>
           <div class="ledger__body">
             <h2 id="about-title">The rest of the week</h2>
-            <p class="section__intro">I’m a dad of two, so most of what I build gets tested against a school run. I learnt to code in the evenings, the same way I learnt salsa and tennis: badly at first, then a little every week.</p>
+            <p class="section__intro">I’m a dad of two, so most of what I build gets tested against a busy family week. I taught myself to code, and I treat it the way I treat salsa and tennis: you get better by turning up every week.</p>
           </div>
         </div>
         <div class="ledger">
