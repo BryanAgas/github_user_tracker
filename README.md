@@ -49,5 +49,5 @@ Add `--shots <dir>` to save screenshots.
 
 ### Deploy
 
-Live at https://bryan-agas.netlify.app. Netlify publishes `site/` as-is (see `netlify.toml`, which also sets the
+Deploys to https://bryan-agas.netlify.app. Netlify publishes `site/` as-is (see `netlify.toml`, which also sets the
 security and caching headers). The contact form uses Netlify Forms.
