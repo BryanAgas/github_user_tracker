@@ -1,5 +1,7 @@
 # Studio spec: bryan agas portfolio
 
+> Creative direction superseded by `BRAIN_BRIEF.md` (Brief v2, "My Brain"). Facts and do-not-publish rules below still apply.
+
 Single source of truth for the portfolio site in `site/`. Strategy, IA, design
 system and copy are settled here; the build follows this document.
 
