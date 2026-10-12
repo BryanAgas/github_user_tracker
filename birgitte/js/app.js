@@ -241,7 +241,7 @@ function onWall(id) {
       '<image href="' + w.img + '" x="' + (cx - iw / 2) + '" y="' + (floor - eye - imgH / 2) + '" width="' + iw + '" height="' + imgH + '" filter="url(#sh)"/></svg>';
   }
   var L = $('#layer');
-  var tone = 'plaster', close = false;
+  var tone = 'plaster', close = window.innerWidth < 700;
   function paint() { var c = tones[tone]; L.innerHTML = '<div class="wallview" style="--wallc:' + c[0] + ';--wallink:' + c[1] + '" role="dialog" aria-modal="true" aria-label="' + t('onWall') + '">' + svg(tone, close) + '<div class="bar"><span>' + esc(title(w)) + ' · ' + w.size + ' · ' + t('onWallNote') + '</span><div class="tones">' +
     ['plaster', 'clay', 'ink'].map(function (k) { return '<button data-tone="' + k + '" aria-pressed="' + (k === tone) + '">' + t('wall' + k[0].toUpperCase() + k.slice(1)) + '</button>'; }).join('') + '<button data-zoom aria-pressed="' + close + '">' + t('closer') + '</button><button data-close>' + t('close') + '</button></div></div></div>'; }
   paint();
