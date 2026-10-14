@@ -1,0 +1,11 @@
+// Level metadata owned by Mrs Anne (curriculum architecture). Lesson content lives in l0.js … l7.js.
+export default [
+  { n: 0, title: 'AI Foundations', short: 'Foundations', glyph: '🌱', hue: '#2f9e6b', blurb: 'What AI really is, how it learns, and why it sometimes gets things confidently wrong.', outcome: 'You can explain how modern AI works in plain language and spot its limits.' },
+  { n: 1, title: 'Using AI Well', short: 'Using AI', glyph: '🧭', hue: '#3b82c4', blurb: 'Get dependable results for writing, research, analysis and everyday work, and know when to double-check.', outcome: 'You get consistently good results and verify what matters.' },
+  { n: 2, title: 'Advanced AI Use', short: 'Advanced use', glyph: '🧩', hue: '#7c5cd6', blurb: 'Tools, workflows, memory, context and agents: designing work that AI and humans do together.', outcome: 'You can design, evaluate and supervise multi-step AI workflows.' },
+  { n: 3, title: 'AI Development', short: 'Development', glyph: '🛠️', hue: '#d9822b', blurb: 'Call models from code: structured outputs, tools, embeddings, retrieval and streaming.', outcome: 'You can build a working AI feature with retrieval and tools.' },
+  { n: 4, title: 'Advanced AI Engineering', short: 'Engineering', glyph: '🏗️', hue: '#c2485f', blurb: 'Make AI systems reliable, safe, observable, fast and affordable in production.', outcome: 'You can operate an AI system in production and prove it works.' },
+  { n: 5, title: 'Models & Machine Learning', short: 'Models & ML', glyph: '🧠', hue: '#0e8f9e', blurb: 'Transformers, attention, training, fine-tuning and how to choose and run models.', outcome: 'You understand how models are built, adapted, evaluated and selected.' },
+  { n: 6, title: 'Expert Topics', short: 'Expert', glyph: '🔭', hue: '#8a5a2b', blurb: 'Advanced RAG, agents at scale, voice, vision, reasoning, infrastructure, safety and research literacy.', outcome: 'You can reason about frontier systems and their risks.' },
+  { n: 7, title: 'AI Builder', short: 'Builder', glyph: '🚀', hue: '#b8860b', blurb: 'Build real products and prove it with evidence: assistants, agents, RAG, voice, automation and a production app.', outcome: 'You have shipped real, evaluated AI work.' },
+];
