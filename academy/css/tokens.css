@@ -1,0 +1,45 @@
+/* Theme tokens: shared by the app and every widget. Light by default, dark via OS or [data-theme]. */
+:root {
+  --bg: #fbf7f0;
+  --surface: #ffffff;
+  --surface-2: #f4eee3;
+  --ink: #1f1b2e;
+  --ink-soft: #5b566b;
+  --line: #e4dccd;
+  --brand: #4b3fd6;
+  --brand-ink: #ffffff;
+  --brand-soft: #e9e6fb;
+  --accent: #e8590c;
+  --accent-soft: #fde9dc;
+  --good: #1b7f4b;
+  --good-soft: #dff3e8;
+  --warn: #a15c00;
+  --warn-soft: #fcefd2;
+  --bad: #c0352b;
+  --bad-soft: #fbe3e0;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(31,27,46,.06), 0 8px 24px rgba(31,27,46,.08);
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14121d; --surface: #1d1a2b; --surface-2: #272339; --ink: #f1eefb; --ink-soft: #b4aecb;
+    --line: #38334d; --brand: #9a90ff; --brand-ink: #14121d; --brand-soft: #2b2650;
+    --accent: #ff8f4d; --accent-soft: #3a2619; --good: #5fd596; --good-soft: #17301f;
+    --warn: #f0b34a; --warn-soft: #3a2d12; --bad: #ff7b70; --bad-soft: #3b1b19;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14121d; --surface: #1d1a2b; --surface-2: #272339; --ink: #f1eefb; --ink-soft: #b4aecb;
+  --line: #38334d; --brand: #9a90ff; --brand-ink: #14121d; --brand-soft: #2b2650;
+  --accent: #ff8f4d; --accent-soft: #3a2619; --good: #5fd596; --good-soft: #17301f;
+  --warn: #f0b34a; --warn-soft: #3a2d12; --bad: #ff7b70; --bad-soft: #3b1b19;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
