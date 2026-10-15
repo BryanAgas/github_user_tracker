@@ -24,10 +24,12 @@ const STOP = new Set('the a an and or but of to in on for with as is are was wer
 const norm = (l) => l.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
 // Sections = blocks starting at a '#' heading or 'Section:' line. Table rows (|) and code don't count as prose.
 function sectionsOf(text) {
-  const out = []; let cur = { title: '(start)', words: 0 };
+  const out = []; let cur = { title: '(start)', words: 0 }; let fenced = false;
   for (const line of text.split('\n')) {
+    if (/^\s*```/.test(line)) { fenced = !fenced; continue; }
+    if (fenced) { cur.words += (line.match(/[A-Za-z0-9']+/g) || []).length; continue; } // a '# comment' in a code block is not a heading; the code still counts as content
     if (/^\s*(#{1,4}\s|Section:)/i.test(line)) { out.push(cur); cur = { title: line.replace(/^\s*#+\s*|^\s*Section:\s*/i, '').trim().slice(0, 60), words: 0 }; }
-    else if (!/^\s*\|/.test(line)) cur.words += (line.match(/[A-Za-z0-9']+/g) || []).length;
+    else cur.words += (line.replace(/\|/g, ' ').match(/[A-Za-z0-9']+/g) || []).length; // table cells count: a real table is real content
   }
   out.push(cur); return out.filter((x) => x.title !== '(start)' || x.words > 0);
 }
@@ -38,7 +40,9 @@ export function qualityChecks(text) {
   const diversity = new Set(words).size / n;
   const stopShare = words.filter((w) => STOP.has(w)).length / n;
   const lines = text.split('\n').map(norm).filter((l) => l.length > 25);
-  const dupLines = lines.length ? 1 - new Set(lines).size / lines.length : 0;
+  // repeated lines AND repeated sentences (padding by doubling every sentence inside a line)
+  const sents = text.split(/(?<=[.!?])\s+|\n/).map(norm).filter((l) => l.length > 25);
+  const dupLines = Math.max(lines.length ? 1 - new Set(lines).size / lines.length : 0, sents.length ? 1 - new Set(sents).size / sents.length : 0);
   const secs = sectionsOf(text).filter((x) => x.title !== '(start)');
   const thin = secs.filter((x) => x.words < 25);
   return [

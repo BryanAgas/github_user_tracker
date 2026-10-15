@@ -85,7 +85,7 @@ export default function onboarding() {
         ask();
         if (i < queue.length) box.querySelector('#cal-q')?.focus();
       };
-      append(box, [h('p', { class: 'muted small' }, `Question ${asked + 1} (no marks, no pressure: it only helps me choose where to start)`), h('p', { class: 'qtext', id: 'cal-q', tabindex: '-1' }, inline(q.q)), q.code ? h('pre', { class: 'codeblock' }, h('code', {}, q.code)) : null, group,
+      append(box, [h('p', { class: 'muted small' }, `Question ${asked + 1} (no marks, no pressure: it only helps me choose where to start)`), h('p', { class: 'qtext', id: 'cal-q', tabindex: '-1', dataset: { qid: q.id } }, inline(q.q)), q.code ? h('pre', { class: 'codeblock' }, h('code', {}, q.code)) : null, group,
         h('div', { class: 'row' }, h('button', { class: 'btn primary', type: 'button', onclick: () => { const c = group.querySelector('input:checked'); if (c) answer(+c.value); else box.querySelector('input')?.focus(); } }, 'Answer'), h('button', { class: 'btn', type: 'button', onclick: () => answer(-1) }, 'I don’t know'))]);
     };
     if (!queue.length) { queueMicrotask(finish); }

@@ -41,7 +41,7 @@ export default {
         'Finish with a reusable template with [BLANKS], a "when to use" note and a CHECK line.'
       ],
       guidance: [
-        { title: 'Choose the task', md: "Pick something you really do, ideally weekly. A real task gives real evidence. Write two sentences: who the output is for and what it is for." },
+        { title: 'Choose the task', md: "**How the checker reads your work.** Every section that starts with a # heading needs at least 25 words of ordinary sentences. Table rows and code lines do not count as sentences, so write a sentence or two under each table. Lines may not repeat, and the whole text has to read like real writing, not a list of keywords.\n\nPick something you really do, ideally weekly. A real task gives real evidence. Write two sentences: who the output is for and what it is for." },
         { title: 'Record a naive BEFORE', md: "Write the quick, vague prompt you would normally type. Run it with an assistant and paste the output. Do not polish it: the point is an honest comparison." },
         { title: 'Build the AFTER', md: "Use the parts from this level: task, audience, purpose, context (anonymised), labelled constraints that can be tested, a format, and one or two examples. Run it and paste the output." },
         { title: 'Check it properly', md: "List every checkable item in the AFTER output: names, dates, numbers, quotations, references. Check each against the source or by recomputing. Record claim, method, result. Include at least one thing you corrected or rejected." },
@@ -50,7 +50,7 @@ export default {
       ],
       hints: [
         'Use clear headings: ## Task, ## Before, ## After, ## What changed, ## Privacy, ## Verification log, ## Template.',
-        'A verification log can be a simple list: Claim | Checked against | Result (correct / corrected / could not verify).',
+        'A verification log can be a simple list or table, one checked item per line: Claim | Checked against | Result (correct / corrected / rejected / could not verify). You need five lines; then write a sentence or two under it saying what the log showed.',
         'If you cannot run an assistant, describe a realistic output and mark it as an example you wrote; but be honest about it.',
         'Your template should name the reader, the purpose and the limits in testable words, and end with a CHECK line saying what a human must verify every time.'
       ],
@@ -64,13 +64,13 @@ export default {
       checks: [
         { id: 'sections', label: 'Has at least 6 headed sections', type: 'sections', n: 6, hint: 'Use lines starting with # for Task, Before, After, What changed, Privacy, Verification log, Template.' },
         { id: 'words', label: 'At least 400 words', type: 'minWords', n: 400, hint: 'Include both prompts, outputs, your analysis, the log and the template.' },
-        { id: 'before', label: 'Includes a BEFORE prompt', type: 'regex', pattern: '\\bbefore\\b', hint: 'Label your first, naive prompt as Before.' },
-        { id: 'after', label: 'Includes an AFTER prompt', type: 'regex', pattern: '\\bafter\\b', hint: 'Label your improved prompt as After.' },
-        { id: 'verify', label: 'Has a verification log', type: 'regex', pattern: 'verif(y|ication|ied)', hint: 'Add a verification log section listing claims, sources and results.' },
+        { id: 'before', label: 'Has a section for the BEFORE prompt', type: 'regex', flags: 'im', pattern: '^#+[ \\t]*[^\\n]*\\bbefore\\b', hint: 'Give your first, naive prompt its own heading containing the word Before, for example \"## Before\".' },
+        { id: 'after', label: 'Has a section for the AFTER prompt', type: 'regex', flags: 'im', pattern: '^#+[ \\t]*[^\\n]*\\bafter\\b', hint: 'Give your improved prompt its own heading containing the word After, for example \"## After\".' },
+        { id: 'verify', label: 'Verification log with five checked items, each with a result', type: 'regex', flags: 'im', pattern: '^#+[ \\t]*[^\\n]*verif[^\\n]*\\n(?=(?:(?:(?!^#)[\\s\\S])*?^[^\\n]*\\b(?:correct\\w*|rejected|wrong|incorrect|could not verify|unverif\\w*|confirmed|mismatch\\w*|removed|changed)\\b[^\\n]*$){5})', hint: 'Under a heading containing \"verification\", put one checked item per line (a list item or table row), each naming its result with a word such as correct, corrected, rejected, confirmed or could not verify. You need five lines.' },
         { id: 'privacy', label: 'Has a privacy note', type: 'regex', pattern: '(privacy|personal data|anonymi[sz]|confidential|redact)', hint: 'State what you removed or never paste.' },
         { id: 'audience', label: 'Names an audience or reader', type: 'regex', pattern: '(audience|reader|for (parents|staff|students|customers|a ))', hint: 'Say who the output is for.' },
         { id: 'blanks', label: 'Template has [BLANKS] to fill', type: 'regex', pattern: '\\[[A-Za-z][^\\]]{1,40}\\]', hint: 'Use square-bracket placeholders such as [DATE] in the template.' },
-        { id: 'check', label: 'Template includes a CHECK line', type: 'regex', pattern: '\\bcheck\\b', hint: 'Add a line saying what a human must verify each time.' }
+        { id: 'check', label: 'Template includes a CHECK line', type: 'regex', flags: 'im', pattern: '^[ \\t]*(?:[-*>][ \\t]*)?\\**[ \\t]*check\\b[^\\n]{0,15}[:\\-\\u2013][^\\n]{15,}', hint: 'Add a line that starts with the word CHECK and a colon, followed by what a human must verify every time, for example \"CHECK: confirm every date against my planner\".' }
       ],
       rubric: [
         { criterion: 'Prompt quality', lookFor: 'AFTER names task, audience, purpose, context, testable constraints, format and an example; clear improvement over BEFORE.' },

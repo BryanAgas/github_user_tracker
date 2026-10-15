@@ -579,5 +579,115 @@ export default [
    "prompt": "Answer using only the sources below. Cite sources like [1]. If the sources do not contain the answer, say \"I don't know\".\n\nSources:\n[1] (other:0) Refunds at Globex take 90 days. Nothing else applies.\n\nQuestion: How long do Globex refunds take?"
   },
   "label": "no tenant in opts searches all documents"
+ },
+ {
+  "args": [
+   "refund",
+   [
+    {
+     "id": "d",
+     "tenant": "acme",
+     "text": "alpha beta gamma delta epsilon zeta"
+    }
+   ],
+   {
+    "size": 4,
+    "overlap": 1,
+    "k": 5,
+    "minScore": 0,
+    "tenant": "acme"
+   }
+  ],
+  "expect": {
+   "answerable": false,
+   "refs": [],
+   "scores": [],
+   "prompt": null
+  },
+  "label": "a chunk that matches no question term is never kept, even when minScore is 0"
+ },
+ {
+  "args": [
+   "refund",
+   [
+    {
+     "id": "refunds",
+     "tenant": "acme",
+     "text": "Refunds are available within 30 days of purchase. Digital items are refunded only if unused. Contact support to start a refund."
+    }
+   ],
+   {
+    "size": 12,
+    "overlap": -1,
+    "k": 2,
+    "minScore": 0.5,
+    "tenant": "acme"
+   }
+  ],
+  "expect": {
+   "answerable": false,
+   "refs": [],
+   "scores": [],
+   "prompt": null
+  },
+  "label": "invalid chunk settings (negative overlap) means not answerable"
+ },
+ {
+  "args": [
+   "cat",
+   [
+    {
+     "id": "d",
+     "tenant": "acme",
+     "text": "The category list is long and the catalogue is longer."
+    }
+   ],
+   {
+    "size": 12,
+    "overlap": 3,
+    "k": 2,
+    "minScore": 0.5,
+    "tenant": "acme"
+   }
+  ],
+  "expect": {
+   "answerable": false,
+   "refs": [],
+   "scores": [],
+   "prompt": null
+  },
+  "label": "terms match whole tokens, not parts of words (\"cat\" is not inside \"category\")"
+ },
+ {
+  "args": [
+   "gamma delta",
+   [
+    {
+     "id": "d",
+     "tenant": "acme",
+     "text": "alpha  beta\ngamma\tdelta   epsilon"
+    }
+   ],
+   {
+    "size": 3,
+    "overlap": 1,
+    "k": 2,
+    "minScore": 0.5,
+    "tenant": "acme"
+   }
+  ],
+  "expect": {
+   "answerable": true,
+   "refs": [
+    "d:1",
+    "d:0"
+   ],
+   "scores": [
+    1,
+    0.5
+   ],
+   "prompt": "Answer using only the sources below. Cite sources like [1]. If the sources do not contain the answer, say \"I don't know\".\n\nSources:\n[1] (d:1) gamma delta epsilon\n[2] (d:0) alpha beta gamma\n\nQuestion: gamma delta"
+  },
+  "label": "chunks are split on any whitespace and rejoined with single spaces"
  }
 ];

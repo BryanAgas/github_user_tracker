@@ -159,6 +159,12 @@ t('projects: filler + keywords is caught by the quality gate; genuine prose pass
   const real = '# Architecture\nThe workflow starts when a late-shipment email arrives in the shared inbox. A first model call classifies the message as a delay, a damage claim or something else, and only delays continue automatically. We keep the customer record out of the prompt until the classification is done, because the record contains addresses that the classifier does not need.\n# Failure modes\nThe most likely failure is a misclassified damage claim being answered as a delay, which could cost us a customer, so every message below ninety percent confidence goes to a human. A second failure is a stale tracking number; we handle that by refusing to quote a date unless the carrier lookup succeeded in the last hour.\n# Evaluation\nWe will keep forty real emails with the right answer written by the team lead, run the workflow on all of them every time the prompt changes, and block a release if accuracy on damage claims drops below the previous version, because that is the costly mistake.';
   const ok = B.qualityChecks(real); assert.ok(ok.every((c) => c.pass), 'genuine prose should pass: ' + JSON.stringify(ok.filter((c) => !c.pass)));
   const r = B.localReview({ rubric: [] }, real); assert.ok(r.next.length + r.strengths.length > 0);
+  const doubled = real.split('\n').map((l) => (/^#/.test(l) ? l : l + ' ' + l)).join('\n');
+  assert.ok(B.qualityChecks(doubled).some((c) => !c.pass), 'repeating every sentence inside its line must be caught');
+  const withCode = real + '\n# Scorer\n```python\n# compute the score for every case in the suite and compare it with the pass mark we agreed\nscore = passed_cases / total_cases\nverdict = "ship" if score >= threshold else "hold"\n```\n';
+  const qs = B.qualityChecks(withCode).find((c) => c.id === 'q-sections'); assert.ok(qs.pass, 'code in a fence counts as content and its # comments are not headings: ' + qs.hint);
+  const tableOnly = '# Results\n| case | expected | actual | verdict |\n| refund over limit | escalate to a human | escalated to a human | pass |\n| duplicate refund request | refuse the second one | refused the second one | pass |\n| missing order number | ask for the number | asked for the number | pass |\n';
+  assert.ok(B.qualityChecks(real + '\n' + tableOnly).find((c) => c.id === 'q-sections').pass, 'a real results table counts as content');
 });
 await Promise.all(pending);
 console.log(`${pass} unit tests passed`);

@@ -149,6 +149,11 @@ await step('regression: no stray "null" text inside any quiz card (lesson + revi
   await page.goto(url + '/index.html#/lesson/l0-05'); await page.waitForSelector('.qcard');
   const bad = await page.evaluate(() => [...document.querySelectorAll('.qcard')].filter((c) => /\bnull\b/.test(c.textContent)).length); assert.equal(bad, 0);
 });
+await step('regression: the explain/answer buttons stay hidden until earned (hidden attribute respected)', async () => {
+  await page.goto(url + '/index.html#/lesson/l0-05'); await page.waitForSelector('.qcard');
+  const vis = await page.evaluate(() => [...document.querySelectorAll('.qcard .qactions button')].filter((b) => /Explain it to me/.test(b.textContent) && b.offsetParent !== null).length);
+  assert.equal(vis, 0, 'Explain it to me must not be visible before an attempt');
+});
 await step('regression: the skip link moves focus without changing the route', async () => {
   await page.goto(url + '/index.html#/learn'); await page.waitForSelector('h1'); await page.focus('#skip'); await page.keyboard.press('Enter');
   assert.match(page.url(), /#\/learn$/); assert.equal(await page.evaluate(() => document.activeElement.id), 'main');

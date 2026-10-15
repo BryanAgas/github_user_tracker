@@ -14,15 +14,15 @@ node academy/tests/serve.mjs 8124           # same, but with the production CSP 
 | Area | What it does |
 |---|---|
 | **Home** | Continue where you left off, weekly goal, streak, reviews due |
-| **Learn** | Eight levels (0 Foundations → 7 Builder), ~77 lessons, personalised paths |
+| **Learn** | Eight levels (0 Foundations → 7 Builder), 79 lessons (~27 h), 107 skills, 489 questions, personalised paths |
 | **Explore** | Every topic (skill) searchable, with mastery and the lessons that teach it |
 | **Lab** | 22 interactive experiments + a sandboxed JavaScript playground |
-| **Build** | 15 projects with requirements, scaffolded guidance, hint ladder, automated checks, review, extensions |
+| **Build** | 16 projects with requirements, scaffolded guidance, hint ladder, automated checks, review, extensions |
 | **Mrs Anne** | The tutor: offline teaching engine; optional model-backed brain (bring your own key) |
 | **Progress** | Mastery per skill (Strong / Needs practice / Not yet learned), projects, milestones, level certificates |
 | **Library** | Glossary, curated resources, cheat sheets, and *Current practice* notes |
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how and why it works, [`docs/CONTENT_SPEC.md`](docs/CONTENT_SPEC.md) to write or edit lessons, [`docs/WIDGETS.md`](docs/WIDGETS.md) for the experiment contract, and [`docs/review/`](docs/review) for the independent review reports.
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how and why it works, [`docs/CONTENT_SPEC.md`](docs/CONTENT_SPEC.md) to write or edit lessons, [`docs/WIDGETS.md`](docs/WIDGETS.md) for the experiment contract, [`docs/QUALITY_REPORT.md`](docs/QUALITY_REPORT.md) for what the independent reviewers found and what's still open, and [`docs/review/`](docs/review) for their full reports.
 
 ## Tests
 
@@ -30,7 +30,8 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how and why it works, [`d
 node academy/tools/validate-content.mjs                  # content contract (also runs every reference solution)
 node academy/tests/unit.mjs                              # mastery, paths, tutor, content integrity
 NODE_PATH=$(npm root -g) node academy/tests/smoke.mjs    # every lesson/project/widget route under the production CSP
-NODE_PATH=$(npm root -g) node academy/tests/flows.mjs    # end-to-end learner flows, mobile layout, mock model stream
+NODE_PATH=$(npm root -g) node academy/tests/flows.mjs    # end-to-end learner flows, a11y/security regressions, mobile layout, mock model stream
+NODE_PATH=$(npm root -g) node academy/tests/placement.mjs # onboarding placement for realistic personas
 ```
 
 Playwright is not a dependency of the repo; point `NODE_PATH` (or `PLAYWRIGHT_DIR`) at any install.
