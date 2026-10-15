@@ -52,7 +52,7 @@ export const current = {
 export const project = {
   id: 'p0', level: 0,
   title: 'Explain AI to someone, then check an AI',
-  objective: 'Show you have a correct mental model of AI by explaining it in your own words, then prove you can verify an AI answer instead of just trusting it.',
+  objective: 'Do this after finishing lesson 10. Show you have a correct mental model of AI by explaining it in your own words, then prove you can check an AI answer instead of just trusting it.',
   skills: ['l0.what-is-ai', 'l0.next-token', 'l0.context-window', 'l0.training-inference', 'l0.hallucination', 'l0.limits', 'l0.responsible-ai'],
   kind: 'text',
   requirements: [
@@ -64,13 +64,15 @@ export const project = {
     'Finish with three personal rules for using AI responsibly.'
   ],
   guidance: [
+    { title: 'Before you start', md: "This project uses everything from lessons 1 to 10, so do it after lesson 10. You write in a plain text box. To make a section title, start its line with a hash sign and a space, like `# Audience`. The hash is just a marker that says “this line is a heading”; the checker uses it to find your sections. You will need access to any free AI chat assistant for step 4." },
     { title: 'Step 1: choose your listener', md: "Pick one real person and write one line about them under a heading `# Audience`. Someone who thinks AI is either magic or a fraud is perfect. Writing for a specific person stops you reaching for buzzwords." },
-    { title: 'Step 2: write the explanation (about 150 words)', md: "Under `# How it works`, explain a chat assistant using what you learned. You need: it learned patterns from lots of text (training); when you chat it predicts the next token, over and over; it only sees what is in its context window; and chatting does not change the model. Use one analogy of your own, and say where the analogy breaks down." },
+    { title: 'Step 2: write the explanation (about 150 words)', md: "Under `# How it works`, write a few sentences (aim for 100 to 150 words; the whole project will come to roughly 300 to 600) explaining a chat assistant using what you learned. You need: it learned patterns from lots of text (training); when you chat it predicts the next token, over and over; it only sees what is in its context window; and chatting does not change the model. Use one analogy of your own, and say where the analogy breaks down." },
     { title: 'Step 3: bust a myth', md: "Under `# Myth busted`, pick one: “AI looks things up”, “AI understands like we do”, “it is always learning from my chat”, “bigger is always better”. State the myth, then the correction in two or three sentences." },
     { title: 'Step 4: run your own fact check', md: "Under `# AI said / I checked`, ask an AI assistant three questions with answers you can verify from a reliable source (a school textbook, an official website, a dictionary, an encyclopaedia). Good choices: a date, a specific number, a quote with its author, and one very obscure question. For each, write three lines: **AI said:** …, **I checked:** (what source you used), **Verdict:** correct, partly correct, wrong, or could not verify." },
     { title: 'Step 5: set your rules', md: "Under `# My rules`, write three rules you will follow, each with a reason. Think about what you will never paste into an AI, when you will always check, and how you will be honest about using it." }
   ],
   hints: [
+    'Section titles are lines that start with # and a space, for example: # My rules. Write them on their own line.',
     'If you do not have an AI assistant, use any free chat assistant, or ask a friend to share one of its answers with you. You are checking the answer, not the product.',
     'Questions where the AI is most likely to slip: a niche local fact, an exact quotation, a statistic with a year, or a book or article by a lesser-known author.',
     'A strong “I checked” line names the source, not just “I googled it”. If two reliable sources disagree, say so; that is a result too.',

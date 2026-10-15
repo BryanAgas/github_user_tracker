@@ -1,7 +1,7 @@
 // Mastery is earned from EVIDENCE (answers, exercises, projects) — never from opening a page.
 //   not yet learned : no evidence
 //   needs practice  : some evidence, but weak, thin, or stale
-//   strong          : recency-weighted score ≥ 0.8 from ≥ 3 weighted evidence points across ≥ 2 sources, and not stale
+//   strong          : recency-weighted score ≥ 0.8, weighted evidence ≥ 3, evidence on ≥ 2 different days (spacing), and not stale
 import { state, save, touchDay } from './store.js';
 import { today, daysBetween } from './util.js';
 import { skillById, lessons, lessonById, skillsOfLevel, projectsOfLevel, projectById, questionsForSkill, levels } from './content.js';
@@ -22,10 +22,10 @@ export function skillStatus(skill) {
   let num = 0, den = 0, wsum = 0;
   ev.forEach((e, i) => { const k = Math.pow(DECAY, ev.length - 1 - i) * e.w; num += e.s * k; den += k; wsum += e.w; });
   const score = den ? num / den : 0;
-  const sources = new Set(ev.map((e) => e.src.split(':')[0] + ':' + (e.src.split(':')[1] || ''))).size;
+  const days = new Set(ev.map((e) => e.t)).size;
   const lastAge = daysBetween(ev[ev.length - 1].t, today());
   const stale = lastAge > STALE_DAYS;
-  const strong = score >= 0.8 && wsum >= 3 && sources >= 2 && !stale;
+  const strong = score >= 0.8 && wsum >= 3 && days >= 2 && !stale;
   return strong
     ? { status: 'strong', score, n: ev.length, label: 'Strong', glyph: '●' }
     : { status: 'practice', score, n: ev.length, stale, label: stale && score >= 0.8 ? 'Review due' : 'Needs practice', glyph: '◐' };
@@ -88,6 +88,12 @@ export function weakSkills(limit = 6) {
 }
 export function reviewDueCount() { return weakSkills(50).filter((w) => w.st.score < 0.7 || w.st.stale).length; }
 
+// Skills the learner has actually met: evidence on them, or a lesson that teaches them has been opened.
+export function studiedSkills() {
+  const out = new Set(Object.keys(state.evidence).filter((k) => skillById.has(k)));
+  for (const id of Object.keys(state.lessons)) lessonById.get(id)?.skills.forEach((s) => out.add(s));
+  return [...out];
+}
 // Adaptive difficulty: stronger skills get harder questions.
 export function pickQuestions({ skills, count = 6, level, exclude = [] }) {
   let pool = [];

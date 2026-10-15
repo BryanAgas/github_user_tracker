@@ -60,6 +60,16 @@ export const current = {
     md: "The shapes below are one provider's (Anthropic's Messages API); other providers differ in details. The concepts are shared: a model name, a list of turns, a limit on output length, optional system instructions, and sampling settings.\n\nAnthropic's Messages endpoint is a POST to `/v1/messages` with a JSON body. Required fields are `model`, `max_tokens` and `messages`. The `system` prompt is a separate top-level field, not a message role. `messages` alternates `user` and `assistant` turns, and `content` is either a string or an array of typed blocks (text, image, document, tool_use, tool_result and more). Headers carry your key and an API-version string.\n\nThe response holds a `content` array of blocks, a `stop_reason` (for example `end_turn`, `max_tokens`, `tool_use`) and a `usage` object with token counts. Always read `stop_reason`: `max_tokens` means the answer was cut off.\n\nOther providers differ: some put the system prompt inside the messages array, some name the length limit differently, and some offer more than one API style for the same models. Do not copy parameter names from memory. Open the provider's reference page, and prefer its official SDK, which tracks these changes for you.\n\nLikely to go stale: model names, parameter names, which sampling settings are still accepted on newer models, and the available block types.",
     sources: [SRC_MSG, { label: 'Anthropic API errors', url: 'https://platform.claude.com/docs/en/api/errors' }]
   },
+  'l3-sdk-quickstart': {
+    title: 'Running a real call: SDK basics (one provider)',
+    asOf: '2026-10',
+    md: "The code in this level that is marked provider-specific uses Anthropic's official SDKs, because their documentation could be checked while writing. The same ideas apply to any provider's SDK; only names and shapes differ.\n\nSetup: install the package (`pip install anthropic` for Python, `npm install @anthropic-ai/sdk` for Node), create a key in the provider's console, and export it as the environment variable `ANTHROPIC_API_KEY`. The client reads it from the environment, so the key never appears in your source. Never paste a key into code you will commit.\n\nThe pieces you will see: a client object; `messages.create` with a model name, a required `max_tokens`, an optional `system` string and a `messages` list; a response whose `content` is a list of typed blocks, plus `stop_reason` and `usage`. The SDK retries some transient failures by itself (twice by default at the time of checking) and exposes a request id for support tickets.\n\nThe model name in the examples is a placeholder from the provider's documentation and will go stale. Look up the current list on the provider's models page, put the choice in configuration, and re-run your own tests when you change it. SDK versions also move: pin a version and read release notes before upgrading.",
+    sources: [
+      { label: 'Anthropic Messages API reference (verified 2026-10)', url: 'https://platform.claude.com/docs/en/api/messages' },
+      { label: 'Anthropic API errors, retries and request ids (verified 2026-10)', url: 'https://platform.claude.com/docs/en/api/errors' },
+      { label: 'Anthropic streaming (verified 2026-10)', url: 'https://platform.claude.com/docs/en/build-with-claude/streaming' }
+    ]
+  },
   'l3-error-handling-practice': {
     title: 'Error codes and retry guidance, as one provider documents them',
     asOf: '2026-10',
@@ -107,7 +117,8 @@ const starter = `function ragCore(question, docs, opts) {
   const norm = (w) => (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w);
   const tok = (s) => (String(s).toLowerCase().match(/[a-z0-9]+/g) || []).map(norm);
 
-  // 1. question terms: unique tokens that are not stop words
+  // 1. question terms: the UNIQUE tokens of tok(question) that are not in STOP.
+  //    Filter AFTER tok(), as written here: tok() stems, so 'does' becomes 'doe' and is NOT removed by STOP.
   // 2. guard: no terms, or size <= 0, or overlap < 0, or overlap >= size  -> not answerable
   // 3. for each doc (skip docs whose tenant differs when opts.tenant is set):
   //      chunk its words (split on whitespace) with the given size and overlap
@@ -131,21 +142,22 @@ export const projects = [
       'Only searches documents belonging to opts.tenant when a tenant is given',
       'Returns answerable:false with prompt:null when nothing relevant is found, or when settings are invalid',
       'Builds a prompt with numbered sources [1], [2] ... and a refusal instruction',
-      'Passes every test, including the edge cases'
+      'Passes every test, including the edge cases (the test labels name the rule each one protects)'
     ],
     guidance: [
       { title: 'Read the contract first', md: "Inputs: a question string, an array of docs `{id, tenant, text}`, and `opts` with `size`, `overlap`, `k`, `minScore` and optionally `tenant`. Output: `{answerable, refs, scores, prompt}`. `refs` are chunk references such as `refunds:0` (document id, colon, chunk index), in the order they appear as sources [1], [2]." },
-      { title: 'Terms and guards', md: "Tokenise with the helper in the starter, remove stop words, and de-duplicate. If there are no terms, or `size <= 0`, or `overlap < 0`, or `overlap >= size`, return the not-answerable result straight away. An overlap as large as the chunk would never move forward, which is a classic infinite-loop bug." },
-      { title: 'Chunk with overlap', md: "Split each document on whitespace. The window start moves by `size - overlap`. Push the window `words.slice(i, i + size)` joined by single spaces, and stop after the window that reaches the end, so you never emit a chunk that is just a tail already covered." },
-      { title: 'Tenant filter before scoring', md: "If `opts.tenant` is defined, skip documents whose `tenant` is different, before any scoring. Filtering after ranking is how data leaks happen: the top-k could be filled by other tenants' text and then removed, or worse, not removed." },
-      { title: 'Score and select', md: "Score is matched terms divided by total terms, rounded with `Math.round(x * 100) / 100`. Keep chunks with `score > 0` and `score >= minScore`. Sort by score descending; ties keep original order (document order, then chunk index). Take the first `k`." },
+      { title: 'Terms and guards', md: "Tokenise with the helper in the starter, remove stop words, and de-duplicate. **Order trap:** `tok` stems words (a trailing `s` is dropped from words longer than three letters, so `does` becomes `doe`), so filter stop words *after* tokenising, exactly as the starter comment says. That means `does` is never actually removed, and a version that strips stop words from the raw question first scores differently and fails test 2. Repeated words in the question count once. If there are no terms, or `size <= 0`, or `overlap < 0`, or `overlap >= size`, return the not-answerable result straight away. An overlap as large as the chunk would never move forward, which is a classic infinite-loop bug." },
+      { title: 'Chunk with overlap', md: "Split each document on whitespace. The window start moves by `size - overlap`. Push the window `words.slice(i, i + size)` joined by single spaces, and stop after the window that reaches the end, so you never emit a chunk that is just a tail already covered (with 6 words, size 4 and overlap 2 you get exactly two chunks)." },
+      { title: 'Tenant filter before scoring', md: "If `opts.tenant` is defined (an empty string counts as defined: it is a real tenant), skip documents whose `tenant` is different, before any scoring. If `opts.tenant` is missing, search every document. Filtering after ranking is how data leaks happen: the top-k could be filled by other tenants' text and then removed, or worse, not removed." },
+      { title: 'Score and select', md: "Score is matched terms divided by total terms, rounded with `Math.round(x * 100) / 100` (so one match out of three terms is 0.33, and two is 0.67). Keep chunks with `score > 0` and `score >= minScore`: a score exactly equal to `minScore` is kept. Sort by score descending; ties keep original order (document order, then chunk index). Take the first `k`." },
       { title: 'Build the prompt', md: "Exactly: the line `Answer using only the sources below. Cite sources like [1]. If the sources do not contain the answer, say \"I don't know\".`, a blank line, `Sources:`, then one line per chunk `[n] (ref) text`, a blank line, and `Question: ` plus the original question. Join lines with `\\n`. Return refs and scores in the same order as the sources." }
     ],
     hints: [
       'Do the work in the order of the comments in the starter; return early for the guard cases.',
       'Build one flat array of candidate chunks (with ref, text, score and an order number) before sorting; the order number gives you stable tie-breaking.',
       'The chunk loop is: for (let i = 0, n = 0; i < words.length; i += step, n++) { push window; if (i + size >= words.length) break; }',
-      'Prompt: header + "\\n\\nSources:\\n" + lines.join("\\n") + "\\n\\nQuestion: " + question.'
+      'Prompt: header + "\\n\\nSources:\\n" + lines.join("\\n") + "\\n\\nQuestion: " + question.',
+      'Check `tenant !== undefined`, not truthiness; and round with Math.round(x * 100) / 100 only when you compute the score.'
     ],
     success: [
       'All hidden-style tests pass, including tenant isolation, no-evidence, stop-word-only and invalid-settings cases',

@@ -38,35 +38,6 @@ export default [
     { style: 'simple', md: "Let it explain, suggest and summarise. Recompute numbers yourself. Ask what it actually looked at. For pictures, ask it to quote or point to what it sees, and don't use it for high-stakes judgements." },
     { style: 'step-by-step', md: "1. Say what you want from the file. 2. Ask how many rows or pages it used. 3. Request the formula or method. 4. Recompute the headline figure. 5. Spot-check three examples against the source. 6. Only then use the result." }
   ],
-  quiz: [
-    { id: 'l1-08-q1', skill: 'l1.analysis', type: 'mcq', difficulty: 2,
-      q: "An assistant reports that “sales rose steadily through the year” from your spreadsheet. Which is the best response?",
-      options: ["Quote it in your report", "Plot the monthly figures yourself and compare; ask which rows it used", "Ask it to be more confident", "Ask it to change the wording to “grew strongly”"],
-      answer: 1, hints: ["Can you see the trend with your own eyes in a minute?", "Does the claim depend on rows it may not have read?"],
-      explain: "A plot or sum takes a minute and tests the claim directly. Describing a pattern in fluent prose is easier than finding it." },
-    { id: 'l1-08-q2', skill: 'l1.analysis', type: 'multi', difficulty: 2,
-      q: "Select ALL statements about using assistants on data that are sound.",
-      options: ["Ask how many rows it read", "Ask for the formula or code used so you can reproduce it", "Recompute headline totals yourself", "A confident tone means the numbers are right", "Spot-check a few rows against the claim"],
-      answer: [0, 1, 2, 4], hints: ["Which options make the result reproducible?", "One option trusts style."],
-      explain: "Scope, method, recomputation and spot checks make an analysis trustworthy. Tone is not evidence." },
-    { id: 'l1-08-q3', skill: 'l1.multimodal', type: 'mcq', difficulty: 2,
-      q: "You photograph a medicine label and ask an assistant if two medicines can be taken together. What is the sensible approach?",
-      options: ["Rely on the answer; it read the label", "Use it, if at all, only to read the label text clearly; get the safety judgement from a pharmacist or the official leaflet", "Ask three assistants and pick the majority", "Ask it to be very sure"],
-      answer: 1, wrong: { '2': "Several models can share the same blind spots; a majority vote is not a safety check." },
-      hints: ["Is this a high-stakes judgement?", "Who is accountable for medical advice?"],
-      explain: "Reading text from a photo is a reasonable use (check the transcription). Safety-critical decisions need a qualified source." },
-    { id: 'l1-08-q4', skill: 'l1.multimodal', type: 'short', difficulty: 3,
-      q: "Give one instruction that lets you check whether an assistant misread text in an image.",
-      accept: ["(quote|transcribe|repeat|write out).*(exact|text|word|line)", "(mark|flag|say).*(unsure|unclear|uncertain|\\[\\?\\])", "(show|list).*(what you (read|see))"],
-      model: "“First transcribe the text exactly as you read it, marking anything uncertain, then answer.”",
-      hints: ["Make the first step something you can compare with the picture.", "Ask it to expose its reading before the conclusion."],
-      explain: "A literal transcription lets you compare against the image; a misreading is then caught before it spreads into the answer." },
-    { id: 'l1-08-q5', skill: 'l1.multimodal', type: 'mcq', difficulty: 3,
-      q: "A colleague uses an AI-generated image of a flooded street in a news post, captioned as if it were a photo of last night's event. What is wrong?",
-      options: ["Nothing; it is illustrative", "A generated image is not evidence of an event; presenting it as a photograph misleads readers, so label it or use a real photo", "The resolution", "The caption is too long"],
-      answer: 1, hints: ["What does a reader assume a news image is?", "What would honest labelling look like?"],
-      explain: "Generated images can look realistic but record nothing. Passing them off as real documentation is deceptive; label them clearly." }
-  ],
   takeaways: [
     "Multimodal assistants can read files and pictures, but can still miscount, misread or invent detail.",
     "Ask what it actually looked at and how it worked; recompute headline figures yourself.",
@@ -114,49 +85,21 @@ export default [
           { show: ['check', 'final'], text: 'You verify before anything goes out.' },
           { show: ['log'], text: 'Failures improve the prompt for next time.' }
         ] }, caption: 'Step through, or click a box for its note.' },
-    { t: 'code', lang: 'text', src: `PROMPT NAME: Parent letter (consent + payment)
-USE WHEN: Any trip or event needing a return slip
+    { t: 'code', lang: 'text', src: `PROMPT NAME: Customer delay notice
+USE WHEN: Any shipment running more than a day late
 PROMPT:
-  Write a letter to parents of [YEAR GROUP] about [EVENT] on [DATE].
-  Purpose: they must [ACTION] by [DEADLINE]. Cost: [COST].
-  Tone: warm, brisk. 120-150 words. Plain English. No exclamation marks.
+  Write an email to [CUSTOMER ROLE] about shipment [REF].
+  Purpose: they must [DECISION] by [DEADLINE]. New ETA: [ETA].
+  Tone: calm, brisk. 100-130 words. Plain English.
   Use only the facts above; if anything is missing, ask me.
-CHECK BEFORE SENDING: date, cost, deadline, who to contact.
-LAST TESTED: [date] - worked well; tends to add "exciting" - banned in rules.`, caption: 'One entry in a prompt library. The CHECK line is what turns a prompt into a dependable routine.' },
+CHECK BEFORE SENDING: ref, ETA, deadline, who to contact.
+LAST TESTED: [date] - worked well; tends to over-apologise - banned in rules.`, caption: 'One entry in a prompt library. The CHECK line is what turns a prompt into a dependable routine.' },
     { t: 'try', prompt: "Choose a task you do weekly (for example a status email or meeting notes). Write it as a library entry with name, when to use, prompt with [BLANKS], and a CHECK line.", sample: "NAME: Weekly team update. USE WHEN: Friday, to summarise progress. PROMPT: “Turn these notes into a 120-word update for [AUDIENCE]: Done, In progress, Blocked. Use only my notes. If a date is missing, write [date?].” CHECK: every item in the update is in my notes; no promised dates I didn’t give." }
   ],
   reteach: [
     { style: 'analogy', md: "Using code from an assistant is like borrowing a power tool from a neighbour. Useful, but you read the instructions, try it on scrap wood first and don't point it at the only door you have." },
     { style: 'simple', md: "Describe the job with an example, ask for a plain-English explanation, test on a copy, check an awkward case. Save prompts that work, with a note on what to check." },
     { style: 'step-by-step', md: "Coding: example, explain, copy, test, edge case, read for risky actions. Workflow: facts, library prompt, draft, verify, send, update the prompt if anything failed." }
-  ],
-  quiz: [
-    { id: 'l1-09-q1', skill: 'l1.coding', type: 'mcq', difficulty: 2,
-      q: "An assistant gives you a script to reorganise 400 files on your computer. What should you do FIRST?",
-      options: ["Run it on the real folder; it looks right", "Ask for a plain-English explanation, then try it on a small copy of the files", "Share it with colleagues", "Disable your backups so it runs faster"],
-      answer: 1, hints: ["What could go wrong if the script is slightly wrong?", "Where can you make mistakes cheaply?"],
-      explain: "Understanding and testing on a copy limits damage. A script that moves or deletes files can be hard to undo." },
-    { id: 'l1-09-q2', skill: 'l1.coding', type: 'mcq', difficulty: 3,
-      q: "The code suggested to you begins by installing a package whose name you do not recognise. What is the sensible step?",
-      options: ["Install it; the assistant knows best", "Check that the package genuinely exists, is widely used and is from a trustworthy source before installing; ask for a version without it", "Install it with administrator rights", "Ignore the error if it fails"],
-      answer: 1, hints: ["Can an assistant name something that does not exist?", "What could a malicious package do?"],
-      explain: "Assistants sometimes suggest non-existent packages, and attackers can register such names. Verify first or avoid the dependency." },
-    { id: 'l1-09-q3', skill: 'l1.coding', type: 'mcq', difficulty: 2,
-      q: "A formula the assistant wrote returns sensible numbers on your five test rows. Which extra check matters most before applying it to 5,000 rows?",
-      options: ["None; it passed", "Try awkward rows: blanks, odd characters, duplicates", "Make the font bigger", "Ask it to write it in another language"],
-      answer: 1, hints: ["Where do formulas usually fail?", "Real data is messier than examples."],
-      explain: "Edge cases are where silent errors live. Passing easy examples does not show the formula copes with real, messy data." },
-    { id: 'l1-09-q4', skill: 'l1.workflow', type: 'order', difficulty: 2,
-      q: "Order a dependable AI-assisted workflow.",
-      items: ["Gather the real facts and decide what is wanted", "Use a tested prompt from your library", "Get the assistant's draft", "Verify facts, numbers and tone yourself", "Send, then note what to improve in the prompt"],
-      hints: ["Facts before prompts; checks before sending.", "Learning from failures closes the loop."],
-      explain: "Facts, tested prompt, draft, human verification, delivery, then improvement. Verification must sit before delivery." },
-    { id: 'l1-09-q5', skill: 'l1.workflow', type: 'mcq', difficulty: 3,
-      q: "Why add a CHECK line to every prompt in a library?",
-      options: ["It makes prompts longer", "It records what must be verified each time, so reuse does not breed complacency", "It stops the model making errors", "It is required by the model"],
-      answer: 1, wrong: { '2': "A note for you cannot change what the model does; it changes what you do." },
-      hints: ["Who reads the CHECK line: the model or you?", "What risk grows when a prompt ‘always works’?"],
-      explain: "A prompt that worked ten times invites unthinking trust. The CHECK line keeps the human step visible." }
   ],
   takeaways: [
     "Describe code jobs with examples, ask for plain-English explanations, test on a copy, check edge cases.",
@@ -212,41 +155,6 @@ LAST TESTED: [date] - worked well; tends to add "exciting" - banned in rules.`, 
     { style: 'analogy', md: "A pilot's pre-flight checklist. Pilots are skilled; they still run the checklist every time because the cost of a slip is high and memory is unreliable. Your checklist matches the effort to the risk and makes the checking a habit instead of a mood." },
     { style: 'simple', md: "Ask how bad it would be if it were wrong. Check the facts, numbers and quotes against something independent. Look for what is missing. Keep a note. Remember that your name is on it." },
     { style: 'technical', md: "Model errors are not randomly distributed: they cluster in specific details (numbers, citations, rare facts) and are masked by fluent prose, so detection by general impression is poor. Verification should therefore target claim-level atoms, use independent evidence rather than self-consistency alone, and scale with the cost of error." }
-  ],
-  quiz: [
-    { id: 'l1-10-q1', skill: 'l1.verify', type: 'mcq', difficulty: 2, placement: true,
-      q: "An assistant tells you a statistic with a precise figure and a named report. You plan to include it in a published article. What is the best next step?",
-      options: ["Include it; precise figures are rarely invented", "Locate the named report yourself and confirm the figure and its context before using it", "Ask the assistant to confirm it", "Round the number so it looks safer"],
-      answer: 1, wrong: { '0': "Precision is exactly what makes invented numbers convincing.", '2': "Asking the same model is not independent verification." },
-      hints: ["Which check is independent of the assistant?", "What changes with ‘published under my name’?"],
-      explain: "Published claims need verification from the original. Specificity makes a claim look reliable, not be reliable." },
-    { id: 'l1-10-q2', skill: 'l1.verify', type: 'mcq', difficulty: 3,
-      q: "Here is an assistant's answer:",
-      code: `Q: What is 15% of £240, and what is the total with VAT at 20%?\nA: 15% of £240 is £36. Adding 20% VAT to £36 gives £43.20. So the total is £43.20.\n(Question intended: total of £240 + VAT.)`,
-      options: ["The answer is correct", "The arithmetic steps are fine, but it answered a different question: VAT should apply to £240 (giving £288), not to the £36", "The 15% is miscalculated", "VAT is 25%"],
-      answer: 1, hints: ["Check each number, then ask whether it answers the question asked.", "What was the total supposed to be of?"],
-      explain: "The steps are individually right (15% of 240 is 36; 36 × 1.2 is 43.20), but the answer doesn't match the question. Correct sums can still answer the wrong question: verify relevance as well as arithmetic." },
-    { id: 'l1-10-q3', skill: 'l1.verify', type: 'order', difficulty: 2,
-      q: "Order the steps of a trust-but-verify routine.",
-      items: ["Decide how high the stakes are", "Pick out the checkable claims (numbers, names, dates, quotes, references)", "Check them against independent sources", "Ask what is missing or what a critic would say", "Record what you checked and own the result"],
-      hints: ["Stakes decide how much checking.", "You can't check claims you haven't identified."],
-      explain: "Stakes, then claims, then independent checking, then gaps, then a log and accountability. This order stops you spending effort in the wrong place." },
-    { id: 'l1-10-q4', skill: 'l1.verify', type: 'multi', difficulty: 2,
-      q: "Select ALL the signs that deserve extra scrutiny in an AI answer.",
-      options: ["An exact figure with no source", "“Always” or “never” about a complicated topic", "A reference you cannot find", "A claim that is exactly what you hoped to hear", "A sentence that combines a checkable true fact with a doubtful one"],
-      answer: [0, 1, 2, 3, 4], hints: ["Think about where errors hide.", "All of these are known weak spots."],
-      explain: "Specific unsourced numbers, absolutes, unfindable references, wishful claims and mixed sentences are all common hiding places for errors." },
-    { id: 'l1-10-q5', skill: 'l1.verify', type: 'mcq', difficulty: 3,
-      q: "A team uses an assistant for first drafts. Over a year, they stop reading drafts closely because it “has always been fine”. What is the main risk?",
-      options: ["The assistant gets worse", "Their error-spotting skill and attention fade, so a rare serious error slips through", "Drafts become too long", "Nothing; track record proves reliability"],
-      answer: 1, hints: ["What happens to attention when a tool seems reliable?", "Rare errors are the dangerous ones."],
-      explain: "A good record breeds complacency. The errors that matter are rare and well-disguised, and the reading skill needed to catch them weakens with disuse." },
-    { id: 'l1-10-q6', skill: 'l1.verify', type: 'short', difficulty: 2,
-      q: "Name one reason why asking the same assistant “are you sure?” is not real verification.",
-      accept: ["(same|identical).*(model|assistant|source|system)", "(not|isn.t|no).*(independent)", "(repeat|confirm|double down|defend).*(itself|error|mistake|same)", "(confident|fluent)"],
-      model: "It isn't independent: the same model can repeat the same error confidently. You need a different source or your own calculation.",
-      hints: ["Is the second check independent of the first?", "What does a model tend to do when asked to confirm?"],
-      explain: "Independent evidence, such as a primary source, a recalculation, or an expert, is what verifies. Re-asking the same system can simply repeat the mistake." }
   ],
   takeaways: [
     "Match checking effort to stakes; high-stakes advice needs authoritative sources or a qualified person.",

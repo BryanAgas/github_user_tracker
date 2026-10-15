@@ -97,14 +97,18 @@ export function mount(el, props = {}, ctx = {}) {
     const cw = Math.max(280, stage.clientWidth || el.clientWidth || 600);
     W = Math.min(1000, Math.max(380, cw));
     const narrow = W < 600;
-    NW = narrow ? 118 : 156; FS = 14; LH = 17;
+    const rows = {}; nodes.forEach((n) => { const k = Math.round(pos[n.id].y / 14); rows[k] = (rows[k] || 0) + 1; });
+    const rowMax = Math.max(1, ...Object.values(rows));
+    NW = Math.min(narrow ? 126 : 156, Math.floor((W - 28) / rowMax) - 14);
+    if (NW < 100) { NW = 100; W = rowMax * 114 + 28; }
+    FS = Math.max(13, Math.ceil(12 / Math.min(1, cw / W))); LH = Math.round(FS * 1.22);
     const maxChars = Math.floor((NW - 22) / (FS * 0.56));
     H = baseH * (narrow ? 1.35 : 1);
     PADX = NW / 2 + 8; PADY = 34;
     geo = {};
     for (const n of nodes) {
       const lines = wrap(n.label, n.kind === 'human' ? maxChars - 3 : maxChars);
-      const w = NW, hh = Math.max(46, lines.length * LH + (n.kind === 'store' ? 28 : n.kind === 'human' ? 26 : 20));
+      const w = NW, hh = Math.max(46, lines.length * LH + (n.kind === 'store' ? 30 : n.kind === 'human' ? 28 : 22));
       geo[n.id] = { lines, w, h: hh };
       P[n.id] = { x: PADX + (pos[n.id].x / 100) * (W - 2 * PADX), y: PADY + (pos[n.id].y / 100) * (H - 2 * PADY) };
     }
@@ -119,7 +123,7 @@ export function mount(el, props = {}, ctx = {}) {
     const ng = h('svg:g');
     edgeEls = edges.map((e) => {
       const path = h('svg:path', { class: 'w-flow-edge', fill: 'none', 'marker-end': `url(#wf-arrow-${uid})` });
-      const lab = e[2] ? h('svg:text', { class: 'w-flow-elabel', 'text-anchor': 'middle', 'font-size': FS - 1, text: e[2] }) : null;
+      const lab = e[2] ? h('svg:text', { class: 'w-flow-elabel', 'text-anchor': 'middle', 'font-size': FS, text: e[2] }) : null;
       eg.append(path); if (lab) eg.append(lab);
       return { e, path, lab };
     });
@@ -162,7 +166,7 @@ export function mount(el, props = {}, ctx = {}) {
         if (ox < oy) { const d = (A.x < B.x ? -1 : 1); A.x += d * ox * wa; B.x -= d * ox * wb; }
         else { const d = (A.y < B.y ? -1 : 1); A.y += d * oy * wa; B.y -= d * oy * wb; }
       }
-      for (const id of ids) { const g = geo[id]; P[id].x = Math.min(W - g.w / 2 - 4, Math.max(g.w / 2 + 4, P[id].x)); P[id].y = Math.max(g.h / 2 + 6, P[id].y); }
+      for (const id of ids) { const g = geo[id]; P[id].x = Math.min(W - g.w / 2 - 14, Math.max(g.w / 2 + 14, P[id].x)); P[id].y = Math.max(g.h / 2 + 6, P[id].y); }
       if (!any) break;
     }
   }
@@ -203,7 +207,7 @@ export function mount(el, props = {}, ctx = {}) {
       if (!did && Math.hypot(dx, dy) < 4) return;
       did = true; gEl.classList.add('is-drag');
       const g = geo[n.id];
-      P[n.id].x = Math.min(W - g.w / 2 - 4, Math.max(g.w / 2 + 4, o.x + dx));
+      P[n.id].x = Math.min(W - g.w / 2 - 14, Math.max(g.w / 2 + 14, o.x + dx));
       P[n.id].y = Math.min(H - g.h / 2 - 4, Math.max(g.h / 2 + 4, o.y + dy));
       place();
     };
@@ -222,7 +226,7 @@ export function mount(el, props = {}, ctx = {}) {
     if (!d) return;
     ev.preventDefault();
     const step = ev.shiftKey ? 40 : 12, g = geo[n.id];
-    P[n.id].x = Math.min(W - g.w / 2 - 4, Math.max(g.w / 2 + 4, P[n.id].x + d[0] * step));
+    P[n.id].x = Math.min(W - g.w / 2 - 14, Math.max(g.w / 2 + 14, P[n.id].x + d[0] * step));
     P[n.id].y = Math.min(H - g.h / 2 - 4, Math.max(g.h / 2 + 4, P[n.id].y + d[1] * step));
     toPct(n.id); place();
     announce(`${n.label} moved ${k.replace('Arrow', '').toLowerCase()}.`);

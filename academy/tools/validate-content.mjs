@@ -121,5 +121,21 @@ for (const [f, m] of mods) {
     if (p.kind === 'code') { if (!str(p.fnName) || !str(p.starter) || !arr(p.tests) || p.tests.length < 3) err(w, 'code project needs fnName/starter/≥3 tests'); }
   }
 }
+// ── Cross-cutting quality rules ───────────────────────────────────────────────
+// (1) The correct MCQ option must not be predictably the longest (learners spot this and stop thinking).
+// (2) Every skill needs enough questions to be able to reach Strong (needs weighted evidence ≥ 3 over ≥ 2 days).
+const qPerSkill = new Map();
+for (const f of readdirSync(dir).filter((x) => /^l\d\.js$/.test(x))) {
+  let m; try { m = (await import(pathToFileURL(path.join(dir, f)).href)).default; } catch { continue; }
+  for (const L of m.lessons || []) for (const q of L.quiz || []) qPerSkill.set(q.skill, (qPerSkill.get(q.skill) || 0) + 1);
+}
+for (const [f, m] of mods) {
+  const mcq = (m.lessons || []).flatMap((L) => L.quiz || []).filter((q) => q.type === 'mcq' && q.options?.length >= 3);
+  const longest = mcq.filter((q) => { const lens = q.options.map((o) => o.length); const mx = Math.max(...lens); return lens[q.answer] === mx && lens.filter((l) => l === mx).length === 1; }).length;
+  const share = mcq.length ? longest / mcq.length : 0;
+  if (mcq.length >= 8 && share > 0.45) err(f, `correct option is the strict longest in ${Math.round(share * 100)}% of ${mcq.length} MCQs (limit 45%): rebalance distractor length/detail`);
+  const thin = (m.skills || []).filter((s) => (qPerSkill.get(s.id) || 0) < 4);
+  if (thin.length) err(f, `skills with <4 questions (cannot realistically reach Strong): ${thin.map((s) => `${s.id}(${qPerSkill.get(s.id) || 0})`).join(', ')}`);
+}
 console.log(`\n${errors} error(s), ${warns} warning(s)`);
 process.exit(errors ? 1 : 0);

@@ -56,7 +56,9 @@ export default [
         tests:[
           {args:[[['a','b','c'],['b','a','d']],60], expect:['a','b','c','d']},
           {args:[[['x','y'],['y','z'],['y','x']],60], expect:['y','x','z']},
-          {args:[[],10], expect:[]}
+          {args:[[],10], expect:[]},
+          {args:[[['a','b'],['c','b']],1], expect:['b','a','c']},
+          {args:[[['z'],['a']],60], expect:['a','z']}
         ],
         hints:['Use index i of forEach; rank = i + 1.','Sort with (a, b) => score[b] - score[a] || (a < b ? -1 : 1).']
       } },
@@ -103,11 +105,13 @@ export default [
         {args:[[['x','y'],['y','z'],['y','x']],60], expect:['y','x','z']},
         {args:[[['a','b','c'],['d','c']],60], expect:['c','a','d','b']},
         {args:[[],10], expect:[]},
-        {args:[[['p','q','r']],1], expect:['p','q','r']}
+        {args:[[['p','q','r']],1], expect:['p','q','r']},
+        {args:[[['a','b'],['c','b']],1], expect:['b','a','c']},
+        {args:[[['z'],['a']],60], expect:['a','z']}
       ],
       hints:["Loop over lists, then over positions; rank = index + 1.","Object.keys(score).sort((a,b)=> score[b]-score[a] || (a<b?-1:1))"],
       solution:"function rrf(rankings, k) {\n  const score = {};\n  for (const list of rankings) {\n    list.forEach((id, i) => { score[id] = (score[id] || 0) + 1 / (k + i + 1); });\n  }\n  return Object.keys(score).sort((a, b) => score[b] - score[a] || (a < b ? -1 : 1));\n}",
-      explain:"Each appearance adds 1/(k+rank). Document ‘c’ appears in both lists (ranks 3 and 2), so it outranks ‘a’ and ‘d’ which each appear once at rank 1. The common wrong answer is using the 0-based index directly, which divides by k for the top item and shifts every score." },
+      explain:"Each appearance adds 1/(k+rank). Document ‘c’ appears in both lists (ranks 3 and 2), so it outranks ‘a’ and ‘d’ which each appear once at rank 1. Two mistakes are caught by the tests: using the 0-based index as the rank (with k = 1 it makes a single first-place item tie with an item ranked second in two lists, so ‘b’ no longer wins) and omitting the alphabetical tie-break (‘z’ and ‘a’ tie exactly, and insertion order would put ‘z’ first)." },
     { id:'l6-01-q4', skill:'l6.advanced-rag', type:'order', difficulty:2,
       q:"Put these stages of an advanced RAG pipeline in the order they run.",
       items:["Rewrite or decompose the query","Run keyword and vector retrieval","Fuse the ranked lists","Rerank the short list","Assemble context and generate with citations","Check citations or abstain"],
@@ -115,7 +119,7 @@ export default [
       explain:"Each stage narrows or improves the previous one: understand, retrieve broadly, merge, refine the short list, generate, verify. Reranking before fusion would waste work on a list you then merge." },
     { id:'l6-01-q5', skill:'l6.rag-eval', type:'mcq', difficulty:3,
       q:"Your answers sometimes quote a 2019 policy that was replaced in 2023, and both versions are indexed. Which is the best classification and fix?",
-      options:["A generation failure; add ‘be accurate’ to the prompt","A data/metadata failure; version documents and filter or prefer the current one at retrieval","A retrieval-recall failure; increase k","An embedding failure; fine-tune the embedder"],
+      options:["A generation failure, so tighten the prompt with an instruction to be accurate and to prefer recent sources","A data/metadata failure: add versions, then filter or prefer the current one","A retrieval-recall failure, so increase k until the newest policy version is always included in the results","An embedding failure, so fine-tune the embedder on date-sensitive pairs of old and new policies"],
       answer:1, hints:["Is the right content missing, or is the wrong-but-similar content present?","What information tells the system which version is current?"],
       explain:"Both versions are similar, so retrieval returns both correctly by similarity. The system lacks information about which is authoritative. Metadata (effective dates, status) with filtering or ranking fixes it. A larger k makes it worse; a prompt reminder cannot give the model facts it does not have." },
     { id:'l6-01-q6', skill:'l6.advanced-rag', type:'short', difficulty:2,
@@ -123,7 +127,26 @@ export default [
       accept:["scale","calibrat","compar","normali[sz]","different (units|ranges|distribution)"],
       model:"Because scores from different retrievers (such as BM25 and cosine similarity) are on different, non-comparable scales, whereas ranks can be combined without calibration.",
       hints:["Think about BM25 scores versus cosine similarity values."],
-      explain:"Raw scores from different systems are not comparable, and combining them needs normalisation that is fragile. Ranks are directly comparable. The trade-off is losing the size of score gaps." }
+      explain:"Raw scores from different systems are not comparable, and combining them needs normalisation that is fragile. Ranks are directly comparable. The trade-off is losing the size of score gaps." },
+    { id:'l6-01-q7', skill:'l6.rag-eval', type:'mcq', difficulty:2,
+      q:"Find the bug. A teammate wrote this to compute recall@k for one query. A query has 4 relevant passages and the top 5 results contain 2 of them. What does it return, and is that recall@5?",
+      code:"function recallAtK(retrieved, relevant, k) {\n  const top = retrieved.slice(0, k);\n  const hits = top.filter((id) => relevant.includes(id)).length;\n  return hits / top.length;\n}",
+      options:["0.4, which is correct recall@5","0.4; that is precision@k, and recall@5 here is 0.5 (2 of 4 relevant)","0.5, which is correct recall@5","0.4, and the bug is that slice(0, k) should be slice(0, k + 1), otherwise rank k is missed"],
+      answer:1, wrong:{ '0':"Dividing by the number retrieved measures precision@k, which answers a different question.", '3':"slice(0, k) correctly takes ranks 1 to k; the end index is exclusive." },
+      hints:["What is in the denominator of recall: retrieved items or relevant items?","Compute 2 / 5 and 2 / 4."],
+      explain:"The function divides hits by the number retrieved (5), giving 0.4, which is precision@5. Recall divides by the number of relevant passages: 2 / 4 = 0.5. Mixing them up hides retrieval misses, because precision can look fine when only a few passages were ever relevant." },
+    { id:'l6-01-q8', skill:'l6.rag-eval', type:'multi', difficulty:3,
+      q:"Answer quality dropped after a pipeline change and you must decide whether retrieval or generation is responsible. Which experiments isolate the cause? Select all that apply.",
+      options:["Run the generator on hand-picked gold passages and score its answers","Compare recall@k on a labelled query set before and after the change","Re-run the whole pipeline with a larger generator and see whether the score recovers","Check whether the claims in each failing answer are supported by the passages it cited"],
+      answer:[0,1,3],
+      hints:["An experiment isolates a cause when it changes or measures one stage only.","Which option changes two things at once?"],
+      explain:"Gold passages remove retrieval from the picture; recall@k measures retrieval alone; a support check separates ‘passage missing’ from ‘passage misused’. Swapping in a larger generator for the whole pipeline confounds the stages, and a recovery would not tell you which stage was at fault." },
+    { id:'l6-01-q9', skill:'l6.advanced-rag', type:'mcq', difficulty:2,
+      q:"Predict the behaviour. A fusion function adds 1 / i for each document at 0-based position i in each list (instead of 1 / (k + i + 1)). What happens?",
+      options:["Nothing unusual; scores are just smaller","The first item of every list scores infinity, so each list's top item beats everything else","Documents in several lists are penalised","Scores become negative"],
+      answer:1, wrong:{ '0':"Smaller is not the issue; dividing by zero is.", '2':"Appearing in more lists adds score; it is not penalised." },
+      hints:["Evaluate 1 / i at i = 0.","With k in the denominator the constant stops the top item from dominating."],
+      explain:"1 / 0 is infinity in JavaScript, so every list's first item gets an infinite score and ties with the other lists' first items regardless of the rest. The constant k keeps early ranks from dominating and keeps the formula defined." }
   ],
   takeaways:[
     "Advanced RAG is a pipeline of small decisions; each stage exists to fix a specific failure.",
@@ -140,7 +163,7 @@ export default [
   hook:"Some questions are not about a passage but about how things connect — and chunks of text are a poor place to store connections.",
   skills:['l6.graph-rag','l6.advanced-rag'],
   blocks:[
-    { t:'p', md:"Vector search finds passages *similar* to a question. But consider: “Which suppliers are affected if Plant 7 shuts down, and which customers depend on them?” No single passage says this. The answer is a **path** through relationships: Plant 7 supplies Part X, Part X goes into Product Y, Product Y is bought by Customer Z. Retrieving similar text may find some links and miss the chain." },
+    { t:'p', md:"Vector search finds passages *similar* to a question. But consider: “Which customers are affected if Supplier A fails?” No single passage says this. The answer is a **path** through relationships: Supplier A supplies Part X, Part X is used at Plant 7, Plant 7 makes Product Y, Product Y is bought by Customer Z. Retrieving similar text may find some links and miss the chain." },
     { t:'p', md:"A **knowledge graph** stores facts as **entities** (nodes) and typed **relationships** (edges). **Graph RAG** uses such a graph in retrieval. There are two quite different ideas under that name, and it matters which you mean." },
     { t:'list', items:[
       "**Traversal-style.** Extract entities and relations; at query time find the entities in the question, walk the graph a few hops, and give the connected facts to the model. Good for multi-hop and “what depends on what” questions.",
@@ -150,18 +173,18 @@ export default [
         title:'A small supply-chain graph',
         height:340,
         nodes:[
-          {id:'p7',label:'Plant 7',x:12,y:50,kind:'store',note:'Entity of type Facility.'},
-          {id:'sa',label:'Supplier A',x:35,y:20,kind:'store',note:'Entity of type Supplier.'},
-          {id:'sb',label:'Supplier B',x:35,y:80,kind:'store',note:'Entity of type Supplier.'},
-          {id:'px',label:'Part X',x:58,y:35,kind:'process',note:'Entity of type Part.'},
-          {id:'py',label:'Product Y',x:78,y:35,kind:'process',note:'Entity of type Product.'},
-          {id:'cz',label:'Customer Z',x:92,y:65,kind:'output',note:'Entity of type Customer.'}
+          {id:'sa',label:'Supplier A',x:10,y:25,kind:'store',note:'Entity of type Supplier.'},
+          {id:'sb',label:'Supplier B',x:10,y:75,kind:'store',note:'Entity of type Supplier (alternative source of Part X).'},
+          {id:'px',label:'Part X',x:34,y:50,kind:'process',note:'Entity of type Part.'},
+          {id:'p7',label:'Plant 7',x:58,y:50,kind:'process',note:'Entity of type Facility.'},
+          {id:'py',label:'Product Y',x:78,y:30,kind:'process',note:'Entity of type Product.'},
+          {id:'cz',label:'Customer Z',x:92,y:68,kind:'output',note:'Entity of type Customer.'}
         ],
-        edges:[['p7','sa','owns'],['p7','sb','owns'],['sa','px','supplies'],['px','py','part_of'],['py','cz','sold_to'],['sb','py','supplies']],
+        edges:[['sa','px','supplies'],['sb','px','supplies'],['px','p7','used_at'],['p7','py','makes'],['py','cz','sold_to']],
         steps:[
-          {show:['p7','sa','sb'],text:'Start from the entity named in the question: Plant 7.'},
-          {show:['p7','sa','sb','px'],text:'Hop 1-2: follow ‘owns’ then ‘supplies’ edges.'},
-          {show:['p7','sa','sb','px','py','cz'],text:'Hop 3-4: the path reaches a customer. Each edge is a stored fact you can cite.'}
+          {show:['sa','px'],text:'Start from the entity named in the question: Supplier A. Follow ‘supplies’ to the part it provides.'},
+          {show:['sa','sb','px','p7'],text:'Hop 2: where is Part X used? Note Supplier B also supplies it, a fact that matters for ‘who else could cover?’.'},
+          {show:['sa','px','p7','py','cz'],text:'Hops 3-4: Plant 7 makes Product Y, which is sold to Customer Z. Each edge is a stored fact you can cite.'}
         ]
       }, caption:'A question about dependencies is a path query. Which edge would a text-chunk retriever most likely miss?' },
     { t:'h', text:'How the graph gets built (and what it costs)' },
@@ -208,7 +231,7 @@ export default [
   quiz:[
     { id:'l6-02-q1', skill:'l6.graph-rag', type:'mcq', difficulty:2,
       q:"A legal team asks: “Across all our contracts, which clauses conflict with the data-protection obligations we have to our largest clients?” Which design is most justified?",
-      options:["Plain vector search over contract chunks with k = 5","Build a graph of parties, obligations and clauses so conflicts can be found by traversal, validating extraction accuracy","Put all contracts in a very long prompt and hope","Fine-tune a model on the contracts"],
+      options:["Plain vector search over contract chunks with k = 5, since embeddings capture clause meaning well","Build a graph of parties, obligations and clauses, and validate extraction accuracy","Put all contracts into one very long prompt and rely on the model to cross-reference them","Fine-tune a model on the contracts so it memorises which clauses conflict with which obligations"],
       answer:1, hints:["Does the answer live in a single passage?","What is the main risk of building the graph?"],
       explain:"The question links entities (clients, obligations, clauses) across many documents, which suits traversal. Plain top-5 retrieval would miss most links. The option is only sound if extraction quality is validated, which is the main risk. A long prompt may not fit and has its own reliability limits; fine-tuning does not give citable, current facts." },
     { id:'l6-02-q2', skill:'l6.graph-rag', type:'multi', difficulty:3,
@@ -234,7 +257,7 @@ export default [
       explain:"Level-by-level breadth-first search respects the hop limit. The triangle test checks cycles: without a visited set the search would revisit nodes or include the start. Treating edges as one-directional is the common mistake when the question is symmetric." },
     { id:'l6-02-q4', skill:'l6.graph-rag', type:'mcq', difficulty:3,
       q:"A paper reports that a graph-based method beats a vector RAG baseline on questions like ‘What are the main themes in this corpus?’. A colleague concludes ‘we should replace our vector search with it for our FAQ bot’. What is the best response?",
-      options:["Agree: published results show graph RAG is strictly better","Disagree: the evidence is for global summarisation questions; an FAQ bot asks local lookups, where vector or hybrid search is simpler and cheaper, so test on our own questions","Disagree: graph methods never work with LLMs","Agree, but only if we use a larger model"],
+      options:["Agree: published results show graph RAG beats vector RAG, so it should win on every question type","Disagree: the evidence covers global questions, not FAQ lookups, so test on our own","Disagree: graph methods are known not to work with language models at any realistic scale","Agree, but only after upgrading to a larger model, because extraction quality limits graph methods"],
       answer:1, hints:["Match the question type in the evidence to your use case.","What does an FAQ question usually need?"],
       explain:"Evidence supports a specific question type. A colleague extrapolating to a different workload is making a generalisation the paper does not support. The right move is to evaluate on your own question distribution, including indexing cost." },
     { id:'l6-02-q5', skill:'l6.advanced-rag', type:'short', difficulty:2,
@@ -293,14 +316,15 @@ export default [
         title:'Keep the system messages plus the most recent turns',
         fnName:'compact',
         starter:`function compact(messages, budget) {
-  // messages: [{role, tokens}]. Always keep every 'system' message.
-  // Then keep the most recent non-system messages, contiguous from the end,
-  // while the total stays <= budget. Return the kept indexes, ascending.
+  // messages: [{role, tokens}]. Always keep every 'system' message (its tokens
+  // count toward the budget). Then keep the most recent non-system messages,
+  // contiguous from the end, while the total stays <= budget. Return the kept indexes, ascending.
   return [];
 }`,
         tests:[
           {args:[[{role:'system',tokens:10},{role:'user',tokens:20},{role:'assistant',tokens:30},{role:'user',tokens:15}],60], expect:[0,2,3]},
-          {args:[[{role:'user',tokens:5},{role:'assistant',tokens:5}],7], expect:[1]}
+          {args:[[{role:'user',tokens:5},{role:'assistant',tokens:5}],7], expect:[1]},
+          {args:[[{role:'system',tokens:10},{role:'user',tokens:5},{role:'assistant',tokens:50},{role:'user',tokens:5}],30], expect:[0,3]}
         ],
         hints:['Start the total with the system messages.','Walk backwards from the end; stop at the first message that does not fit.']
       } },
@@ -316,7 +340,7 @@ export default [
   quiz:[
     { id:'l6-03-q1', skill:'l6.long-context', type:'mcq', difficulty:2,
       q:"A team's contract-review assistant sends all 300 pages of each contract in one prompt and finds that obligations mentioned in the middle are missed more often than those near the ends. Which interpretation is best supported?",
-      options:["The model is broken and should be replaced","This matches published position effects for some models; test their model at several positions and consider reordering, extracting sections first, or retrieval","Long context can never work for legal text","The window is too small"],
+      options:["The model is defective and should be replaced by whichever one scores highest on a public leaderboard","This resembles published position effects; measure it at several positions, then mitigate","Long context cannot work for legal text, because contracts are too dense for any language model to read","The window is too small, so the contract must be getting truncated before it reaches the model"],
       answer:1, hints:["Is this behaviour known in research?","What action tests the hypothesis cheaply?"],
       explain:"Position effects were documented in research for tested models, and a middle-position dip is a plausible cause. The sound response is to measure on their data and apply mitigations. The absolute claims (never works; just replace the model) go beyond the evidence, and the window is not too small if the contract fits." },
     { id:'l6-03-q2', skill:'l6.long-context', type:'multi', difficulty:3,
@@ -326,7 +350,7 @@ export default [
       hints:["Which reasons concern access, scale or freshness?","The last option favours the opposite design."],
       explain:"Access control, scale and freshness favour retrieval. A small corpus needed in full is the case where long context shines." },
     { id:'l6-03-q3', skill:'l6.long-context', type:'code', difficulty:3,
-      q:"Write compact(messages, budget). messages is an array of {role, tokens}. Always keep every message with role 'system' (even if they exceed the budget). Then, going backwards from the last message, keep non-system messages while the running total stays within budget; stop at the first one that does not fit. Return kept indexes in ascending order.",
+      q:"Write compact(messages, budget). messages is an array of {role, tokens}. Always keep every message with role 'system' (even if they alone exceed the budget); system tokens DO count toward the budget. Then, going backwards from the last message, keep non-system messages while the running total (system plus kept) stays within budget; stop at the first one that does not fit. Return kept indexes in ascending order.",
       fnName:'compact',
       starter:"function compact(messages, budget) {\n  return [];\n}",
       tests:[
@@ -334,7 +358,8 @@ export default [
         {args:[[{role:'system',tokens:10},{role:'user',tokens:20},{role:'assistant',tokens:30},{role:'user',tokens:15}],10], expect:[0]},
         {args:[[{role:'system',tokens:10},{role:'user',tokens:20},{role:'assistant',tokens:30},{role:'user',tokens:15}],1000], expect:[0,1,2,3]},
         {args:[[{role:'user',tokens:5},{role:'assistant',tokens:5}],7], expect:[1]},
-        {args:[[{role:'system',tokens:100},{role:'user',tokens:1}],50], expect:[0]}
+        {args:[[{role:'system',tokens:100},{role:'user',tokens:1}],50], expect:[0]},
+        {args:[[{role:'system',tokens:10},{role:'user',tokens:5},{role:'assistant',tokens:50},{role:'user',tokens:5}],30], expect:[0,3]}
       ],
       hints:["Compute the system total first and start 'used' from it.","Loop i from the end; if used + tokens > budget, break."],
       solution:"function compact(messages, budget) {\n  let used = 0;\n  const keep = new Set();\n  messages.forEach((m, i) => { if (m.role === 'system') { used += m.tokens; keep.add(i); } });\n  for (let i = messages.length - 1; i >= 0; i--) {\n    if (messages[i].role === 'system') continue;\n    if (used + messages[i].tokens > budget) break;\n    used += messages[i].tokens;\n    keep.add(i);\n  }\n  return [...keep].sort((a, b) => a - b);\n}",

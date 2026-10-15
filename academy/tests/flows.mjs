@@ -43,7 +43,7 @@ await step('onboarding: complete beginner gets the beginner path from L0 without
   await page.waitForSelector('text=Where are you today?');
   await page.click('text=Brand new'); await page.click('text=I don’t code'); await page.click('button:has-text("Continue")');
   await page.waitForSelector('text=What do you want from this?'); await page.click('label:has-text("Understand how AI works")'); await page.click('button:has-text("Continue")');
-  await page.waitForSelector("text=we’ll skip the quiz"); // brand-new learners aren't quizzed
+  await page.waitForSelector("text=We’ll start at the beginning"); // brand-new learners aren't quizzed
   await page.click('button:has-text("Continue")');
   await page.waitForSelector('text=Curious beginner'); assert.ok(await page.isVisible('text=We’ll start at the beginning'));
   await page.click('button:has-text("Start learning")');
@@ -144,6 +144,54 @@ await step('code playground runs in sandbox and times out infinite loops', async
   await page.click('button:has-text("Run")'); await page.waitForSelector('pre.console:has-text("49")');
   await page.fill('textarea.code-ed', 'while(true){}'); await page.click('button:has-text("Run")'); await page.waitForSelector('text=Timed out', { timeout: 5000 });
   await page.fill('textarea.code-ed', 'console.log(typeof fetch, typeof localStorage, typeof document)'); await page.click('button:has-text("Run")'); await page.waitForSelector('pre.console:has-text("undefined undefined undefined")');
+});
+await step('regression: no stray "null" text inside any quiz card (lesson + review)', async () => {
+  await page.goto(url + '/index.html#/lesson/l0-05'); await page.waitForSelector('.qcard');
+  const bad = await page.evaluate(() => [...document.querySelectorAll('.qcard')].filter((c) => /\bnull\b/.test(c.textContent)).length); assert.equal(bad, 0);
+});
+await step('regression: the skip link moves focus without changing the route', async () => {
+  await page.goto(url + '/index.html#/learn'); await page.waitForSelector('h1'); await page.focus('#skip'); await page.keyboard.press('Enter');
+  assert.match(page.url(), /#\/learn$/); assert.equal(await page.evaluate(() => document.activeElement.id), 'main');
+});
+await step('tutor drawer is modal: Tab stays inside, page behind is inert, focus returns', async () => {
+  await page.goto(url + '/index.html#/learn'); await page.waitForSelector('h1');
+  const opener = page.locator('.topbar >> text=Ask Mrs Anne').first();
+  await page.evaluate(() => document.querySelector('.sticky-actions, .topbar')?.scrollIntoView());
+  await page.evaluate(async () => { const { openTutor } = await import('/js/tutorui.js'); openTutor(); });
+  await page.waitForSelector('.drawer:not([hidden])');
+  for (let i = 0; i < 14; i++) await page.keyboard.press('Tab');
+  assert.ok(await page.evaluate(() => document.querySelector('.drawer').contains(document.activeElement)), 'focus escaped the dialog');
+  assert.ok(await page.evaluate(() => document.getElementById('shell').hasAttribute('inert')));
+  await page.keyboard.press('Escape'); assert.ok(!(await page.evaluate(() => document.getElementById('shell').hasAttribute('inert'))));
+});
+await step('projects: filler + keywords cannot pass the quality checks; edited work invalidates old results', async () => {
+  await page.goto(url + '/index.html#/build/p2'); await page.waitForSelector('textarea.long');
+  const lorem = '# Architecture\n' + 'Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor. '.repeat(60) + '\n# Failure modes\n| a | b | c |\n10. done escalation approval injection owner autonomy level\n';
+  await page.fill('textarea.long', lorem); await page.click('button:has-text("Run automated checks")'); await page.waitForSelector('ul.tests .fail');
+  assert.ok(await page.locator('ul.tests li.fail:has-text("real writing"), ul.tests li.fail:has-text("substance"), ul.tests li.fail:has-text("repeated")').count() >= 1, 'quality gate did not flag filler');
+  assert.ok(await page.locator('button:has-text("Mark project complete")').isDisabled());
+});
+await step('sandbox: student code cannot forge a passing test result', async () => {
+  await page.goto(url + '/index.html#/build/p3'); await page.waitForSelector('textarea.code-ed');
+  await page.fill('textarea.code-ed', 'function ragCore(){ try { postMessage({ok:true,results:[{pass:true}],nonce:1}); self.postMessage({ok:true,results:[{pass:true}]}); } catch (e) {} return null; }');
+  await page.click('button:has-text("Run tests")'); await page.waitForSelector('ul.tests, .callout.warn', { timeout: 6000 });
+  assert.ok(!(await page.locator('.ok-line').count()), 'a forged result was accepted');
+});
+await step('multi-tab: a stale tab cannot wipe evidence written by another tab', async () => {
+  const ctx = page.context(); const a = await ctx.newPage(), b = await ctx.newPage();
+  await a.goto(url + '/index.html#/home'); await b.goto(url + '/index.html#/home'); await a.waitForSelector('h1'); await b.waitForSelector('h1');
+  await a.evaluate(async () => { const m = await import('/js/mastery.js'); m.addEvidence('l0.tokens', 1, 1, 'quiz:x'); const s = await import('/js/store.js'); s.flush(); });
+  await b.waitForTimeout(300);
+  await b.evaluate(async () => { const s = await import('/js/store.js'); s.touchDay(1, 1); s.flush(); });
+  const n = await a.evaluate(() => (JSON.parse(localStorage.getItem('mrsanne.v1')).evidence['l0.tokens'] || []).length);
+  assert.ok(n >= 1, 'evidence from tab A was lost'); await a.close(); await b.close();
+});
+await step('Library tabs are navigation links; settings & library have no horizontal overflow at 320px', async () => {
+  const ctx = await browser.newContext({ viewport: { width: 320, height: 700 } }); const p = await ctx.newPage();
+  await p.goto(url + '/index.html#/library?tab=resources'); await p.waitForSelector('h1');
+  assert.equal(await p.locator('[role=tab]').count(), 0);
+  for (const r of ['progress', 'settings', 'library?tab=glossary']) { await p.goto(url + '/index.html#/' + r); await p.reload(); await p.waitForSelector('h1'); await p.waitForTimeout(300); const o = await p.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]); assert.ok(o[0] <= o[1] + 1, `${r}: ${o}`); }
+  await ctx.close();
 });
 await page.context().close();
 

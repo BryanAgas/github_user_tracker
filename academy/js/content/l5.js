@@ -3,6 +3,11 @@ import { lessons as a } from './l5/a.js';
 import { lessons as b } from './l5/b.js';
 import { lessons as c } from './l5/c.js';
 import { lessons as d } from './l5/d.js';
+import { lessons as e } from './l5/e.js';
+import { extra } from './l5/extra.js';
+
+const base = [...a, ...b, ...c, ...d, ...e];
+for (const L of base) if (extra[L.id]) L.quiz.push(...extra[L.id]);
 
 export default {
   skills: [
@@ -18,9 +23,11 @@ export default {
     { id:'l5.preference', name:'RLHF and preference optimisation', desc:'Reward models, KL penalty and DPO-style training at intuition level.' },
     { id:'l5.evaluation', name:'Model evaluation', desc:'Precision, recall, F1, thresholds, benchmark limits, contamination and uncertainty.' },
     { id:'l5.running-models', name:'Running models locally', desc:'Memory arithmetic, KV cache, quantisation and speed limits.' },
-    { id:'l5.model-selection', name:'Model selection', desc:'An evidence-based process for choosing and adapting a model.' }
+    { id:'l5.model-selection', name:'Model selection', desc:'An evidence-based process for choosing and adapting a model.' },
+    { id:'l5.training-at-scale', name:'Training at scale and modern architecture', desc:'BPE, Adam, mixed precision, FlashAttention, GQA, mixture of experts and parallelism.' },
+    { id:'l5.verifiable-rewards', name:'Post-training with verifiable rewards', desc:'RLVR, GRPO-style group advantages, pass@k and reward hacking of verifiers.' }
   ],
-  lessons: [...a, ...b, ...c, ...d],
+  lessons: base,
   projects: [
     {
       id:'p5', level:5, kind:'text',
@@ -121,6 +128,15 @@ export default {
     { term:'Confusion matrix', def:'A table of true positives, false positives, false negatives and true negatives, from which precision, recall and accuracy are computed.', level:5, see:['Precision and recall'] },
     { term:'Contamination', def:'Evaluation items appearing in a model\'s training data, so benchmark scores reflect memorisation rather than ability.', level:5, see:['Benchmark'] },
     { term:'Benchmark', def:'A fixed test set and scoring method used to compare models. Useful for screening, limited by contamination, saturation, narrow format and sensitivity to setup.', level:5, see:['Contamination'] },
+    { term:'BPE', def:'Byte-pair encoding: build a token vocabulary by repeatedly merging the most frequent adjacent pair of symbols, starting from characters or bytes.', level:5, see:['Embedding'] },
+    { term:'AdamW', def:'Adam with decoupled weight decay: per-weight step sizes scaled by gradient history, with decay applied directly to the weights rather than through the gradient.', level:5, see:['Gradient'] },
+    { term:'Mixed precision', def:'Training with 16-bit numbers for compute and 32-bit master weights and optimiser state, saving memory and time while keeping updates accurate.', level:5, see:['AdamW'] },
+    { term:'FlashAttention', def:'An exact attention algorithm that tiles the computation in fast on-chip memory so the full score matrix is never stored, cutting memory traffic.', level:5, see:['Attention','KV cache'] },
+    { term:'Mixture of experts', def:'A layer with many expert networks and a router sending each token to the top few. Total parameters set memory; active parameters set per-token compute.', level:5, see:['Transformer'] },
+    { term:'Tensor and pipeline parallelism', def:'Ways to split one model across devices: tensor parallelism splits individual matrix multiplications, pipeline parallelism places consecutive layers on different devices.', level:5, see:['Mixed precision'] },
+    { term:'RLVR', def:'Reinforcement learning with verifiable rewards: the reward comes from a programmatic check (matching answer, passing tests) instead of a learned preference model.', level:5, see:['GRPO','Reward hacking'] },
+    { term:'GRPO', def:'Group Relative Policy Optimization: sample several answers per prompt and use each answer\'s reward relative to the group as its advantage, with no learned critic.', level:5, see:['RLVR','RLHF'] },
+    { term:'pass@k', def:'The probability that at least one of k sampled answers is correct, estimated unbiasedly from n samples of which c are correct.', level:5, see:['RLVR'] },
     { term:'Open-weight model', def:'A model whose trained weights are published for download and use under a licence. Not necessarily open-source, since data and training code may not be released.', level:5, see:['Quantisation'] },
     { term:'Quantisation', def:'Storing model weights in fewer bits, with shared scale factors, to save memory and speed up inference at the cost of some rounding error.', level:5, see:['KV cache','Open-weight model'] }
   ],
@@ -144,13 +160,41 @@ export default {
       ]
     },
     'l5-post-training-landscape': {
-      title:'Post-training methods: foundational papers and moving research',
+      title:'Post-training methods: foundations and what has moved',
       asOf:'2026-10',
-      md:"The foundational published methods covered in this level are: supervised fine-tuning plus RLHF as described for InstructGPT (Ouyang et al., 2022), parameter-efficient adaptation with LoRA (Hu et al., 2021) and direct preference optimisation (Rafailov et al., 2023). Read the originals; they are short enough to read in an evening.\n\nThe field has moved on in ways that change quickly: many variants of preference optimisation have been proposed, and labs increasingly describe training with rewards that can be checked automatically (for example whether code passes tests or a maths answer is correct). Which methods are used in any specific commercial model is usually only partly disclosed, and comparative claims are often contested.\n\nHow to keep up: follow primary sources (papers, model cards, technical reports), distinguish what a source demonstrates from what it speculates, and test claims on your own task.",
+      md:"Foundations (stable): supervised fine-tuning plus RLHF as described for InstructGPT (Ouyang et al., 2022), LoRA (Hu et al., 2021) and direct preference optimisation (Rafailov et al., 2023). Read the originals.\n\nWhat has moved (as of this entry): reinforcement learning against automatically checkable rewards (RLVR) became a central ingredient of post-training for reasoning-oriented models; GRPO (Shao et al., 2024), which replaces the learned critic with group-relative advantages, was used in the open DeepSeek-R1 work, and published variants such as Dr. GRPO and DAPO adjust normalisation, clipping and sampling. Tulu 3 described an open post-training recipe combining supervised fine-tuning, preference tuning and RLVR. Many preference-optimisation variants beyond DPO exist.\n\nWhat is contested: how far RLVR creates new capability rather than sharpening what the base model could already sample, how well gains transfer outside checkable domains, and which variant is best; reported results differ by model family and task. Commercial labs disclose their recipes only partly.\n\nWhat will go stale fastest: algorithm names and defaults, and any statement about which model uses which method. How to keep up: read the technical report or model card rather than summaries, separate what was measured from what was speculated, and re-run your own evaluation.",
       sources:[
         { label:'Training language models to follow instructions with human feedback (InstructGPT)', url:'https://arxiv.org/abs/2203.02155' },
         { label:'LoRA: Low-Rank Adaptation of Large Language Models', url:'https://arxiv.org/abs/2106.09685' },
-        { label:'Direct Preference Optimization: Your Language Model is Secretly a Reward Model', url:'https://arxiv.org/abs/2305.18290' }
+        { label:'Direct Preference Optimization', url:'https://arxiv.org/abs/2305.18290' },
+        { label:'DeepSeekMath (introduces GRPO)', url:'https://arxiv.org/abs/2402.03300' },
+        { label:'DeepSeek-R1 (RL for reasoning)', url:'https://arxiv.org/abs/2501.12948' },
+        { label:'Tulu 3 (open post-training recipe, RLVR)', url:'https://arxiv.org/abs/2411.15124' }
+      ]
+    },
+    'l5-rl-reasoning-landscape': {
+      title:'RL for reasoning models: current practice and open questions',
+      asOf:'2026-10',
+      md:"Current practice (as reported in public papers and technical reports): sample several answers per prompt; score them with a verifier (exact-match answers, unit tests, format checks) and sometimes a learned reward model; compute group-relative advantages (GRPO-style, without a critic) or a close variant; keep a KL term or similar constraint to a reference model; filter prompts that are too easy or too hard so the group has reward variance. Variants such as Dr. GRPO and DAPO (2025) change length and standard-deviation normalisation, clipping and dynamic sampling, and later work continues to compare them; recent papers report that results differ across model families and domains.\n\nOpen questions: whether RLVR mainly improves pass@1 by sharpening the sampling distribution or also extends what a model can solve at large k; how to give useful rewards for steps rather than only final answers; how to avoid reward hacking in code and tool-use settings; how well gains generalise beyond maths and code.\n\nWhat will go stale: algorithm names and recommended hyperparameters, and which labs use which approach. Check the most recent technical reports and verify claims with your own held-out tasks. This entry reflects searches up to its date and does not list every method published since.",
+      sources:[
+        { label:'DeepSeekMath (introduces GRPO)', url:'https://arxiv.org/abs/2402.03300' },
+        { label:'DeepSeek-R1', url:'https://arxiv.org/abs/2501.12948' },
+        { label:'DAPO: an open-source LLM RL system at scale', url:'https://arxiv.org/abs/2503.14476' },
+        { label:'Understanding R1-Zero-like training (Dr. GRPO)', url:'https://arxiv.org/abs/2503.20783' },
+        { label:'Tulu 3', url:'https://arxiv.org/abs/2411.15124' }
+      ]
+    },
+    'l5-training-at-scale-landscape': {
+      title:'Training at scale: what practice looks like now',
+      asOf:'2026-10',
+      md:"Widely used building blocks (documented in papers and open technical reports): BPE-family tokenisers, often byte-level; AdamW with warm-up and decay schedules; bf16 mixed precision, with FP8 training used in some large runs (the DeepSeek-V3 report describes a recipe, validated against bf16 at several scales); FlashAttention-style fused attention kernels, now in several generations; grouped-query attention for smaller KV caches; rotary position embeddings; and sparse mixture-of-experts layers, where model cards give total and active parameters (Switch Transformers, Mixtral and DeepSeek-V3 are public examples). Distributed training combines data parallelism with sharding (ZeRO, PyTorch FSDP), tensor, pipeline and expert parallelism, as in Megatron-style frameworks.\n\nOpen or moving: lower-precision formats beyond FP8 (for example 4-bit floating-point training) and their stability; the best MoE routing and load-balancing methods; attention variants for very long context; how data quality and synthetic data change scaling trade-offs.\n\nWhat will go stale: framework names and versions, supported formats and kernel generations. Check each project's documentation and the latest technical reports. This entry summarises sources verified up to its date and does not claim to list every recent system.",
+      sources:[
+        { label:'FlashAttention', url:'https://arxiv.org/abs/2205.14135' },
+        { label:'DeepSeek-V3 Technical Report (FP8 training, MoE)', url:'https://arxiv.org/abs/2412.19437' },
+        { label:'Switch Transformers', url:'https://arxiv.org/abs/2101.03961' },
+        { label:'ZeRO: memory optimizations for training large models', url:'https://arxiv.org/abs/1910.02054' },
+        { label:'Megatron-LM', url:'https://arxiv.org/abs/1909.08053' },
+        { label:'PyTorch FSDP documentation', url:'https://pytorch.org/docs/stable/fsdp.html' }
       ]
     },
     'l5-eval-tooling': {

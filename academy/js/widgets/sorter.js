@@ -36,7 +36,7 @@ export function mount(el, props = {}, ctx = {}) {
   const poolEl = h('ul', { class: 'w-sorter-list w-sorter-pool', 'aria-label': 'Items still to sort' });
   const poolBox = h('div', { class: 'w-sorter-box w-sorter-poolbox', 'data-b': '' }, h('h4', {}, 'To sort'), poolEl);
   const boxes = cfg.buckets.map((b) => ({ name: b, ul: h('ul', { class: 'w-sorter-list', 'aria-label': b + ' items' }) }));
-  const status = h('p', { class: 'w-sorter-status' });
+  const status = h('p', { class: 'w-sorter-status', 'aria-live': 'polite' });
   const live = h('p', { class: 'wa-live', 'aria-live': 'polite' });
   const check = h('button', { type: 'button', class: 'wa-btn wa-btn-primary', onclick: doCheck }, 'Check my answers');
   const area = h('div', { class: 'w-sorter-area' });
@@ -71,7 +71,7 @@ export function mount(el, props = {}, ctx = {}) {
     const s = sel != null ? items.find((i) => i.id === sel) : null;
     hint.textContent = s ? `Selected: “${s.text}”. Now press a bucket button to place it.` : left ? 'Select an item (or drag it), then choose where it goes.' : 'All sorted. Press Check, or select an item to move it.';
     if (!checked) status.textContent = '';
-    live.textContent = s ? `Selected ${s.text}.` : `${items.length - left} of ${items.length} sorted.`;
+    live.textContent = checked ? '' : (s ? `Selected ${s.text}.` : `${items.length - left} of ${items.length} sorted.`);
   }
   function doCheck() {
     checked = true; sel = null;
@@ -80,20 +80,20 @@ export function mount(el, props = {}, ctx = {}) {
     status.className = 'w-sorter-status ' + (good === items.length ? 'good' : 'warn');
     if (!reported && props.skill && ctx.evidence) { ctx.evidence(props.skill, frac); }
     reported = true; render();
-    live.textContent = status.textContent;
     if (ctx.announce) ctx.announce(status.textContent);
   }
   dropTarget(poolBox, null);
   boxes.forEach((b) => {
     const box = h('div', { class: 'w-sorter-box' }, h('h4', {}, b.name), b.ul);
     dropTarget(box, b.name); area.append(box);
+    box.addEventListener('click', (e) => { if (sel != null && !e.target.closest('button')) place(sel, b.name); });
   });
   const reset = () => { items.forEach((i) => { i.at = null; }); sel = null; checked = false; status.textContent = ''; render(); };
 
   el.append(h('section', { class: 'wa w-sorter' },
-    h('header', { class: 'wa-head' }, h('h3', {}, cfg.title || 'Sort it out'), h('p', {}, 'Tap an item to select it, then tap a bucket. On a computer you can also drag.')),
+    h('header', { class: 'wa-head' }, h('h3', {}, cfg.title || 'Sort it out'), h('p', {}, 'Tap an item to select it, then tap a bucket (or use the \u201cPut in\u201d buttons that appear). On a computer you can also drag.')),
     h('p', { class: 'wa-try' }, h('b', {}, 'Try this: '), 'sort everything first, then press Check and read why each answer is right.'),
-    poolBox, area, hint,
+    hint, poolBox, area,
     h('div', { class: 'wa-row' }, check, h('button', { type: 'button', class: 'wa-btn', onclick: reset }, 'Reset')),
     status, live));
   render();

@@ -1,3 +1,6 @@
+import quiz from './q09.js';
+const Q = (id, title) => { const q = quiz.find((x) => x.id === id); return { title, fnName: q.fnName, starter: q.starter, tests: q.tests, hints: q.hints }; };
+
 export default {
   id: 'l4-09', title: 'Latency and reliability: streaming, timeouts, fallbacks, breakers', minutes: 24,
   hook: 'Users forgive slow if it feels alive, and forgive failure if it fails gracefully; they forgive neither a frozen screen nor a retry storm.',
@@ -30,8 +33,25 @@ export default {
         { id: 'deg', label: 'Graceful message + handover', x: 80, y: 78, kind: 'output', note: 'When everything fails, say so plainly and create a ticket.' } ],
       edges: [['req', 'cb'], ['cb', 'pri', 'closed'], ['pri', 'retry', 'transient error'], ['cb', 'fb', 'open'], ['retry', 'fb', 'attempts exhausted'], ['fb', 'deg', 'also fails']] } },
     { t: 'predict', q: "A provider has a 10-minute partial outage returning 503. Your service retries each failed call 5 times with no breaker. What happens?", options: ["Request volume to the provider multiplies about 5x and your threads/queues fill, so your own service degrades too", "Nothing; retries always help", "The provider recovers faster because of the extra traffic", "Costs fall"], answer: 0, explain: "Retry storms amplify load and exhaust your own resources. A breaker fails fast and gives the dependency room to recover.", skill: 'l4.reliability' },
+    { t: 'h', text: 'Cancelling for real' },
+    { t: 'p', md: "A timeout that only stops *waiting* leaves the call running and holding resources. Pass an abort signal into the call so it is cancelled, and give each call a slice of the request's remaining time." },
+    { t: 'code', lang: 'js', caption: 'Per-call timeout inside a request deadline (display only).', src: `async function callWithDeadline(fn, deadlineAt, perCallMs) {
+  const remaining = deadlineAt - Date.now();
+  if (remaining <= 0) throw new Error('deadline_exceeded');
+  const signal = AbortSignal.timeout(Math.min(remaining, perCallMs));
+  try {
+    return await fn({ signal });              // fn must pass the signal to fetch/SDK
+  } catch (err) {
+    if (signal.aborted) throw new Error('timeout');   // map to a structured error
+    throw err;
+  }
+}` },
+    { t: 'p', md: "Splitting the deadline between steps is plain arithmetic you can test." },
+    { t: 'widget', w: 'codeplay', props: Q('l4-09-q6', 'allocateDeadline') },
     { t: 'p', md: "Write the decision function a retry wrapper would call after each failure." },
-    { t: 'widget', w: 'codeplay', props: { title: 'nextAction', fnName: 'nextAction', starter: "function nextAction(err, attempt, policy) {\n  // err: {status, retryAfterMs?}; attempt: attempts made so far (1-based)\n  // policy: {maxAttempts, baseMs, capMs, fallback}\n  // return {action:'retry', delayMs} | {action:'fallback'} | {action:'fail'}\n}", tests: [{ args: [{ status: 429 }, 1, { maxAttempts: 3, baseMs: 200, capMs: 1000, fallback: true }], expect: { action: 'retry', delayMs: 200 } }], hints: ['Retryable: 0, 429, 500, 502, 503, 504.', 'delay = min(cap, base * 2^(attempt-1)); retryAfterMs can raise it.'] } },
+    { t: 'widget', w: 'codeplay', props: Q('l4-09-q4', 'nextAction') },
+    { t: 'p', md: "A circuit breaker is a small state machine: closed (calls flow), open (calls are skipped for a cool-down), and half-open (one probe decides). Build it as a pure function over a list of attempts so you can test every transition." },
+    { t: 'widget', w: 'codeplay', props: Q('l4-09-q5', 'breakerRun') },
     { t: 'try', prompt: "Design the failure behaviour for your support agent if the model provider is down for 20 minutes. What does the customer see?", sample: "Breaker opens after repeated 5xx/timeouts. For order-status questions the system answers from the order database with a templated reply (no model). For everything else it says: 'I can't reach my assistant right now; your message is saved and a person will reply by email within X hours', and creates a ticket with the transcript. Status is visible on a health page, and an alert pages the on-call engineer." }
   ],
   reteach: [
@@ -39,23 +59,7 @@ export default {
     { style: 'simple', md: "Show words as they arrive. Put a time limit on everything. If something fails for a good reason, try again after a short wait that grows; if it keeps failing, switch to a backup, and if that fails, tell the user honestly." },
     { style: 'technical', md: "Perceived latency is dominated by TTFT; total latency = TTFT + output_tokens / tps. Resilience: per-hop timeouts under a request deadline, bounded exponential backoff with full jitter on idempotent or keyed operations, health-based breakers (closed, open, half-open), bulkheads, and graded degradation paths." }
   ],
-  quiz: [
-    { id: 'l4-09-q1', skill: 'l4.reliability', type: 'mcq', difficulty: 3, q: "Incident: during a provider rate-limit episode, your retries (3 attempts, fixed 1 s delay) from 2,000 concurrent users kept the limit saturated for 40 minutes. Safest redesign?", options: ["Exponential backoff with jitter, honour retry-after, add a circuit breaker and a fallback path", "Retry 10 times instead of 3", "Remove timeouts so calls wait longer", "Move to a fixed 100 ms delay"], answer: 0, wrong: { 1: "More retries intensify the storm." }, hints: ["Synchronised retries at a fixed delay arrive together.", "What gives the provider breathing room?"], explain: "Backoff and jitter spread load; the provider's retry-after is the best hint; a breaker stops hammering; a fallback keeps users served." },
-    { id: 'l4-09-q2', skill: 'l4.latency', type: 'mcq', difficulty: 2, q: "Users say the chat 'feels frozen' for 6 seconds before a 300-word answer appears all at once. Total generation time is acceptable. Best first change?", options: ["Stream the response so text appears as it is generated", "Use a bigger model", "Add more retries", "Lengthen the answer"], answer: 0, hints: ["The problem is the time to first visible output.", "Which option changes what the user sees first?"], explain: "Streaming improves perceived latency by showing progress immediately. Total completion time is unchanged, so also trim output length if the full time matters." },
-    { id: 'l4-09-q3', skill: 'l4.reliability', type: 'multi', difficulty: 2, q: "Which errors are generally worth retrying? Select all that apply.", options: ["429 rate limited", "503 service unavailable", "400 invalid request (malformed arguments)", "Network timeout (for idempotent calls)"], answer: [0, 1, 3], hints: ["Retry only when trying again could produce a different result.", "A malformed request will be malformed again."], explain: "Transient conditions can clear. A 400 is deterministic; fix the request instead." },
-    { id: 'l4-09-q4', skill: 'l4.reliability', type: 'code', difficulty: 3, q: "Write nextAction(err, attempt, policy). Retryable statuses: 0, 429, 500, 502, 503, 504. If not retryable return {action:'fail'}. If attempt >= policy.maxAttempts: return {action:'fallback'} when policy.fallback is true, else {action:'fail'}. Otherwise return {action:'retry', delayMs} where delayMs = max(min(capMs, baseMs * 2**(attempt-1)), err.retryAfterMs || 0).", fnName: 'nextAction',
-      starter: "function nextAction(err, attempt, policy) {\n  return { action: 'fail' };\n}",
-      tests: [
-        { args: [{ status: 429 }, 1, { maxAttempts: 3, baseMs: 200, capMs: 1000, fallback: true }], expect: { action: 'retry', delayMs: 200 } },
-        { args: [{ status: 503 }, 3, { maxAttempts: 4, baseMs: 200, capMs: 1000, fallback: true }], expect: { action: 'retry', delayMs: 800 } },
-        { args: [{ status: 503 }, 4, { maxAttempts: 4, baseMs: 200, capMs: 1000, fallback: true }], expect: { action: 'fallback' } },
-        { args: [{ status: 503 }, 4, { maxAttempts: 4, baseMs: 200, capMs: 1000, fallback: false }], expect: { action: 'fail' } },
-        { args: [{ status: 400 }, 1, { maxAttempts: 4, baseMs: 200, capMs: 1000, fallback: true }], expect: { action: 'fail' } },
-        { args: [{ status: 429, retryAfterMs: 5000 }, 1, { maxAttempts: 4, baseMs: 200, capMs: 1000, fallback: true }], expect: { action: 'retry', delayMs: 5000 } },
-        { args: [{ status: 500 }, 6, { maxAttempts: 9, baseMs: 200, capMs: 1000, fallback: true }], expect: { action: 'retry', delayMs: 1000 } } ],
-      solution: "function nextAction(err, attempt, policy) {\n  const retryable = [0, 429, 500, 502, 503, 504];\n  if (!retryable.includes(err.status)) return { action: 'fail' };\n  if (attempt >= policy.maxAttempts) return policy.fallback ? { action: 'fallback' } : { action: 'fail' };\n  const delay = Math.min(policy.capMs, policy.baseMs * Math.pow(2, attempt - 1));\n  return { action: 'retry', delayMs: Math.max(delay, err.retryAfterMs || 0) };\n}",
-      hints: ["Non-retryable errors fail immediately, even if a fallback exists.", "Cap the exponential delay, but let the provider's retry-after exceed the cap."], explain: "Note a 400 does not trigger the fallback: the request itself is wrong, and sending it elsewhere wastes time. The cap bounds our own backoff, while a server's explicit retry-after is respected. Production code would also add random jitter to the delay." }
-  ],
+  quiz,
   takeaways: ['Streaming improves perceived latency; fewer sequential calls and shorter outputs improve real latency.', 'Every external call needs a timeout inside a request-wide deadline.', 'Retry transient errors with backoff and jitter; never blindly retry unsafe writes.', 'Breakers and fallbacks prevent retry storms and keep users served.'],
   apply: "Find every outbound call in a feature you own. Which have no timeout? Which would double-charge if retried?"
 };

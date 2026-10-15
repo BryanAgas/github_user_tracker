@@ -164,8 +164,8 @@ export function mount(el, props = {}, ctx = {}) {
         h('label', { class: 'wa-field' }, h('span', {}, 'Learning rate: ', lo), lIn),
         stats, lc)),
     btns, live,
-    h('p', { class: 'wa-note' }, 'This is real: the network is genuinely trained in your browser by backpropagation and the Adam optimiser (tanh hidden units, sigmoid output, cross-entropy loss, fixed random seed). It is tiny and only sees x and y; real models have billions of weights.')));
-  newData(); build(true); step(150); refresh();
+    h('p', { class: 'wa-note' }, 'This is real: the tiny network is genuinely learning in your browser, nudging its weights after every pass over the points. Real models have billions of weights.')));
+  newData(); build(true); step(props.pretrain != null ? Math.max(0, +props.pretrain || 0) : 150); refresh();
   const ro = new ResizeObserver(() => { const w = cv.parentNode.clientWidth; if (Math.abs(w - W) > 1 && w < 481) draw(); });
   ro.observe(cv.parentNode);
   const mq = matchMedia('(prefers-color-scheme: dark)'), mo = new MutationObserver(draw);

@@ -1,6 +1,6 @@
 // Question engine. One component per question type, all sharing: hint ladder → explanation → (code) solution,
 // and honest evidence: full marks only for unaided first-try success.
-import { h, shuffle, inline, announce, clear } from './util.js';
+import { h, shuffle, inline, announce, clear, append } from './util.js';
 import { addEvidence } from './mastery.js';
 import { state, save } from './store.js';
 import { runCode } from './runner.js';
@@ -27,12 +27,12 @@ export function renderQuestion(q, opts = {}) {
   explainBtn.hidden = true;
   let getAnswer, grade, lockInputs = () => {}, revealSolution = null;
 
-  root.append(
+  append(root, [
     h('div', { class: 'qhead' }, opts.number ? h('span', { class: 'qnum' }, opts.number) : null, h('span', { class: 'qtype' }, labelFor(q.type)), h('span', { class: 'qdiff', title: 'Difficulty' }, '◆'.repeat(q.difficulty) + '◇'.repeat(3 - q.difficulty))),
     h('p', { class: 'qtext', id: `${q.id}-t` }, inline(q.q)),
     q.code ? h('pre', { class: 'codeblock' }, h('code', {}, q.code)) : null,
     body, h('div', { class: 'row qactions' }, checkBtn, hintBtn, explainBtn), hintBox, feedback,
-  );
+  ]);
 
   const T = { mcq: buildMcq, multi: buildMulti, order: buildOrder, short: buildShort, code: buildCode }[q.type];
   ({ getAnswer, grade, lockInputs, revealSolution } = T(q, body, checkBtn));
@@ -71,8 +71,11 @@ export function renderQuestion(q, opts = {}) {
     if (state_.resolved) return;
     const a = getAnswer();
     if (a == null) { clear(feedback); feedback.append(h('p', { class: 'muted' }, 'Choose or write an answer first.')); return; }
+    if (checkBtn.disabled) return;
+    checkBtn.disabled = true;
     state_.attempts++;
-    const g = await grade(a, state_);
+    let g;
+    try { g = await grade(a, state_); } finally { checkBtn.disabled = false; }
     if (g.pending) return;
     if (g.correct) { showExplain('Yes.', 'good'); announce('Correct'); resolve(true, 1); return; }
     // wrong

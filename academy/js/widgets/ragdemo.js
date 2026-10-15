@@ -143,7 +143,8 @@ export function mount(el, props = {}, ctx = {}) {
   const out = h('div', { class: 'w-rag-out' });
   const live = h('div', { class: 'w-b-sr', 'aria-live': 'polite' });
   const ctrl = h('div', { class: 'w-rag-ctrl' });
-  const qIn = h('input', { type: 'text', class: 'w-b-input', id: 'rq' + Math.random().toString(36).slice(2, 6), value: st.q, 'aria-label': 'Your question', oninput: (e) => { st.q = e.target.value; st.gold = (CORPORA[st.corpus].examples.find((x) => x[0] === st.q) || [0, ''])[1]; render(); } });
+  const qIn = h('input', { type: 'text', class: 'w-b-input', id: 'rq' + Math.random().toString(36).slice(2, 6), value: st.q, 'aria-label': 'Your question', oninput: (e) => { st.q = e.target.value; const ex = CORPORA[st.corpus].examples.find((x) => x[0] === st.q); st.gold = ex ? ex[1] : phraseIn.value.trim(); if (ex) phraseIn.value = ex[1]; render(); } });
+  const phraseIn = h('input', { type: 'text', class: 'w-b-input', 'aria-label': 'Answer phrase to look for (optional)', placeholder: 'e.g. before 8:30am', oninput: (e) => { st.gold = e.target.value.trim(); render(); } });
   const chips = h('div', { class: 'w-b-row w-rag-chips' });
 
   const sliders = {};
@@ -155,7 +156,7 @@ export function mount(el, props = {}, ctx = {}) {
   };
   const methodSel = h('select', { 'aria-label': 'Retrieval method', onchange: (e) => { st.method = e.target.value; render(); } },
     [['keyword', 'Keyword count (no weighting)'], ['tfidf', 'TF-IDF cosine'], ['bm25', 'BM25'], ['semantic', 'Toy "semantic" (concept groups)']].map(([v, l]) => h('option', { value: v, selected: v === st.method, text: l })));
-  const corpusSel = h('select', { 'aria-label': 'Document set', onchange: (e) => { st.corpus = e.target.value; first(); qIn.value = st.q; renderChips(); render(); } },
+  const corpusSel = h('select', { 'aria-label': 'Document set', onchange: (e) => { st.corpus = e.target.value; first(); qIn.value = st.q; phraseIn.value = st.gold; renderChips(); render(); } },
     Object.entries(CORPORA).map(([k, c]) => h('option', { value: k, selected: k === st.corpus, text: c.label })));
   const toggle = (key, label) => h('label', { class: 'w-b-check' }, h('input', { type: 'checkbox', onchange: (e) => { st[key] = e.target.checked; ['size', 'overlap', 'k'].forEach((x) => { sliders[x].val.textContent = effective()[x] + (effective()[x] !== st[x] ? ' (forced)' : ''); }); render(); } }), label);
 
@@ -172,7 +173,7 @@ export function mount(el, props = {}, ctx = {}) {
     h('h3', { class: 'w-b-title', text: 'Retrieval lab: find the right chunk' }),
     h('p', { class: 'w-b-try' }, h('b', { text: 'Try this: ' }), 'tick "Chunks too small" and watch the answer fall apart, then switch the method to see who ranks what.'),
     ctrl,
-    h('div', { class: 'w-b-field w-rag-q' }, h('span', { text: 'Question' }), qIn, chips),
+    h('div', { class: 'w-b-field w-rag-q' }, h('span', { text: 'Question' }), qIn, chips, h('span', { text: 'Answer phrase to look for (optional)' }), phraseIn, h('small', { class: 'w-cc-hint', text: 'Type the words you expect in a good answer and the lab will tell you where they ended up.' })),
     out, docsBox, live,
     h('p', { class: 'w-b-note', text: 'Toy model: tiny corpus, simple stemming, a hand-made concept list standing in for real embeddings, and a template (not a language model) writing the answer. Keyword, TF-IDF and BM25 scoring are the real formulas.' }),
   );
@@ -180,7 +181,7 @@ export function mount(el, props = {}, ctx = {}) {
 
   function renderChips() {
     chips.textContent = '';
-    CORPORA[st.corpus].examples.forEach(([q, g]) => chips.append(h('button', { type: 'button', class: 'w-b-btn w-rag-chip', text: q, onclick: () => { st.q = q; st.gold = g; qIn.value = q; render(); } })));
+    CORPORA[st.corpus].examples.forEach(([q, g]) => chips.append(h('button', { type: 'button', class: 'w-b-btn w-rag-chip', text: q, onclick: () => { st.q = q; st.gold = g; qIn.value = q; phraseIn.value = g; render(); } })));
     const dl = docsBox.querySelector('.w-rag-doclist'); dl.textContent = '';
     CORPORA[st.corpus].docs.forEach(([t, x]) => dl.append(h('p', {}, h('b', { text: t + ': ' }), x)));
   }
@@ -232,6 +233,12 @@ export function mount(el, props = {}, ctx = {}) {
         diag = pos < 0 ? `Nothing was retrieved that holds "${st.gold}": your chunking has split the fact across two chunks (try a bigger chunk size or more overlap).`
           : `The chunk with "${st.gold}" ranked #${pos + 1}, outside the top ${eff.k}. Raise k, or try another retrieval method.`;
       }
+    } else if (!st.vague && !top.length) {
+      diag = 'No chunk shared any useful words with the question, so nothing was retrieved. Try different wording or another method.';
+    } else if (!st.vague) {
+      const unsent = ranked.slice(eff.k).find((c) => c.score > 0);
+      diag = `Best-scoring chunk: "${ranked[0].title}" (chunk ${ranked[0].idx + 1}, score ${ranked[0].score.toFixed(3)}). Sent to the model: ${top.map((c) => c.title + ' #' + (c.idx + 1)).join(', ')}.` + (unsent ? ` The next one, "${unsent.title}" (score ${unsent.score.toFixed(3)}), was left out. If the fact you need is there, raise k.` : ' Nothing else scored above zero.') + ' Type an answer phrase above to check whether it made it into the top-k.';
+      ok = null;
     } else if (st.vague) diag = 'With a vague question, retrieval has little to latch on to, so it returns whatever shares a few common words. Good systems ask a clarifying question or rewrite the query first.';
     out.append(
       h('h4', { class: 'w-rag-h', text: `1. Retrieved chunks (${chunks.length} chunks in the index)` }), list,

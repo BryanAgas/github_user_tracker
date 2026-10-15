@@ -53,7 +53,7 @@ export function mount(el, props = {}, ctx = {}) {
   const bo = h('output', {}, '');
   const bi = h('input', { type: 'range', min: '-4', max: '4', step: '0.1', value: String(s.b) });
   bi.addEventListener('input', () => { s.b = +bi.value; update(); });
-  goalSel.addEventListener('change', () => { s.goal = goalSel.value; update(); });
+  goalSel.addEventListener('change', () => { s.goal = goalSel.value; if (typeof hintEl !== 'undefined') hintEl.textContent = ''; update(); });
   actSel.addEventListener('change', () => { s.act = actSel.value; update(); });
   const f1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
 
@@ -93,23 +93,28 @@ export function mount(el, props = {}, ctx = {}) {
     const body = h('tbody');
     for (let m = 0; m < 8; m++) {
       const x = [(m >> 2) & 1, (m >> 1) & 1, m & 1], want = goal.t(x) ? 1 : 0, o = run(x)[1], say = o > 0.5 ? 1 : 0, ok = want === say; if (ok) good++;
-      body.append(h('tr', { class: ok ? 'ok' : 'bad' }, ...x.map((v) => h('td', {}, v ? 'yes' : 'no')), h('td', {}, want ? 'yes' : 'no'), h('td', {}, say ? 'yes' : 'no', ' ', h('small', {}, '(' + o.toFixed(2) + ')')), h('td', { class: 'w-neuron-mark' }, ok ? '✓ right' : '✗ wrong')));
+      body.append(h('tr', { class: ok ? 'ok' : 'bad' }, ...x.map((v) => h('td', {}, v ? 'yes' : 'no')), h('td', {}, want ? 'yes' : 'no'), h('td', {}, say ? 'yes' : 'no'), h('td', { class: 'w-neuron-mark' }, ok ? '✓ right' : '✗ wrong')));
     }
-    table.replaceChildren(h('caption', {}, `Your neuron gets ${good} of 8 rows right`), h('thead', {}, h('tr', {}, ...INPUTS.map((n) => h('th', {}, n.split(' ')[0])), h('th', {}, 'Should say'), h('th', {}, 'It says'), h('th', {}, 'Result'))), body);
+    table.replaceChildren(h('caption', {}, `Your neuron gets ${good} of 8 rows right`), h('thead', {}, h('tr', {}, ...INPUTS.map((n) => h('th', {}, n.split(' ')[0])), h('th', {}, 'Should'), h('th', {}, 'Says'), h('th', {}, 'OK?'))), body);
     const solved = good === 8;
     live.textContent = `Output ${out.toFixed(2)}. Challenge: ${good} of 8 rows correct.` + (solved ? ' Solved! Your neuron implements this rule.' : '');
     table.classList.toggle('is-solved', solved);
   }
+  const SOL = { and: [[2.5, 2.5, 0], -3.5], or: [[2.5, 2.5, 0], -1], maj: [[2, 2, 2], -3], not: [[2.5, 0, -2.5], -1.5] };
+  const HINT = { and: 'Make the bias negative so one \u201cyes\u201d alone is not enough, then give Sunny and Free time big positive weights. Set the Homework weight to 0 so it is ignored.', or: 'Give Sunny and Free time big positive weights, and a bias only slightly negative so one \u201cyes\u201d is enough. Homework weight 0.', maj: 'Give all three the same positive weight and a negative bias that needs two \u201cyes\u201d inputs to overcome.', not: 'Sunny gets a positive weight, Homework gets a negative weight, Free time 0, and a small negative bias.' };
+  const hintEl = h('p', { class: 'wa-muted', 'aria-live': 'polite' });
+  const solve = () => { const [w, b] = SOL[s.goal]; s.w = w.slice(); s.b = b; s.act = 'sigmoid'; ws.forEach(([i], k) => { i.value = s.w[k]; }); bi.value = s.b; actSel.value = s.act; update(); };
   const reset = () => { Object.assign(s, { x: [1, 0, 1], w: [1, 1, 1], b: -0.5, act: 'sigmoid' }); xs.forEach(([i], k) => { i.value = s.x[k]; }); ws.forEach(([i], k) => { i.value = s.w[k]; }); bi.value = s.b; actSel.value = s.act; update(); };
 
   el.append(h('section', { class: 'wa w-neuron' },
     h('header', { class: 'wa-head' }, h('h3', {}, 'One artificial neuron'), h('p', {}, 'Multiply each input by a weight, add them up with a bias, then squash the result with an activation function.')),
-    h('p', { class: 'wa-try' }, h('b', {}, 'Try this: '), 'pick a goal below and tune the weights and bias until all 8 rows turn into ticks. Hint: for AND, make the bias quite negative.'),
+    h('p', { class: 'wa-try' }, h('b', {}, 'Try this: '), 'pick a goal below and play with the sliders and watch the output bar. Then scroll to the Challenge and tune until all 8 rows show a tick (there is a hint button if you get stuck).'),
     h('div', { class: 'w-neuron-wrap' }, h('div', { class: 'w-neuron-left' }, svg, meter, verdict, formula),
       h('div', { class: 'w-neuron-ctl' }, rows, h('label', { class: 'wa-field' }, h('span', {}, 'Bias (how eager it is) = ', bo), bi), h('label', { class: 'wa-field' }, h('span', {}, 'Activation function'), actSel), h('button', { type: 'button', class: 'wa-btn', onclick: reset }, 'Reset'))),
     h('h4', { class: 'wa-h4' }, 'Challenge'),
     h('label', { class: 'wa-field' }, h('span', {}, 'Goal'), goalSel),
+    h('div', { class: 'wa-row' }, h('button', { type: 'button', class: 'wa-btn wa-btn-small', onclick: () => { hintEl.textContent = HINT[s.goal]; } }, 'Give me a hint'), h('button', { type: 'button', class: 'wa-btn wa-btn-small', onclick: solve }, 'Show a solution')), hintEl,
     h('div', { class: 'wa-scroll' }, table), live,
-    h('p', { class: 'wa-note' }, 'Toy model: this is a single neuron with 3 inputs, and the output counts as “yes” above 0.5. Real networks stack millions of these and learn the weights automatically instead of you tuning them by hand. Positive weights are drawn solid, negative weights dashed.')));
+    h('p', { class: 'wa-note' }, 'Toy model: this is a single neuron with 3 inputs, and the output counts as “yes” above 0.5. Real networks stack millions of these and learn the weights by themselves. Solid lines are positive weights, dashed lines are negative.')));
   update();
 }

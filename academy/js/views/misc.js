@@ -1,7 +1,7 @@
 import { h, inline, mdBlock, debounce, clear, announce, today } from '../util.js';
 import { levels, lessons, skillById, skillsOfLevel, projectById, glossary, resources, current, lessonById } from '../content.js';
 import { state, save, streak, exportData, importData, resetAll, apiKey, weekMinutes } from '../store.js';
-import { skillStatus, levelProgress, weakSkills, pickQuestions, lessonDone, projectPassed } from '../mastery.js';
+import { skillStatus, levelProgress, weakSkills, pickQuestions, lessonDone, projectPassed, studiedSkills } from '../mastery.js';
 import { renderQuestion } from '../assess.js';
 import { page, bar, linkBtn, lvStyle, levelChip, skillChip, statusPill } from './common.js';
 import { chatPanel } from '../tutorui.js';
@@ -39,7 +39,8 @@ function milestones() {
 
 // ── Certificate (printable, honest) ──────────────────────────────────────────
 export function certView({ id }) {
-  const n = +id.slice(1); const L = levels[n]; const lp = levelProgress(n);
+  const n = /^L[0-7]$/.test(id || '') ? +id[1] : -1;
+  if (n < 0) return page('Certificate', linkBtn('See my progress', '#/progress')); const L = levels[n]; const lp = levelProgress(n);
   if (!lp.certified) return page('Certificate', h('p', {}, `Level ${n} isn’t certified yet: it needs 75% of skills Strong and ${lp.projNeeded} passed project(s).`), linkBtn('See Level ' + n, `#/learn/L${n}`));
   const strong = skillsOfLevel(n).filter((s) => skillStatus(s.id).status === 'strong');
   return h('div', { class: 'page cert-wrap' }, h('h1', { id: 'page-title', tabindex: '-1', class: 'sr-only' }, 'Certificate'),
@@ -52,7 +53,7 @@ export function certView({ id }) {
 // ── Library ──────────────────────────────────────────────────────────────────
 export function libraryView({ query }) {
   const tab = query?.get('tab') || 'glossary';
-  const tabs = h('div', { class: 'tabs', role: 'tablist' }, [['glossary', 'Glossary'], ['resources', 'Resources'], ['cheat', 'Cheat sheets'], ['current', 'Current practice']].map(([k, t]) => h('a', { role: 'tab', 'aria-selected': k === tab ? 'true' : 'false', class: `tab ${k === tab ? 'on' : ''}`, href: `#/library?tab=${k}` }, t)));
+  const tabs = h('nav', { class: 'tabs', 'aria-label': 'Library sections' }, [['glossary', 'Glossary'], ['resources', 'Resources'], ['cheat', 'Cheat sheets'], ['current', 'Current practice']].map(([k, t]) => h('a', { 'aria-current': k === tab ? 'page' : null, class: `tab ${k === tab ? 'on' : ''}`, href: `#/library?tab=${k}` }, t)));
   let body;
   if (tab === 'glossary') {
     const q = h('input', { type: 'search', class: 'search', 'aria-label': 'Search glossary', placeholder: 'Search the glossary…' });
@@ -77,11 +78,13 @@ export function libraryView({ query }) {
 
 // ── Review: spaced, adaptive practice ────────────────────────────────────────
 export function reviewView({ query }) {
-  const skill = query?.get('skill'); const level = query?.get('level'); const count = +(query?.get('count') || 6);
+  const skill = query?.get('skill'); const level = query?.get('level'); const count = Math.min(20, Math.max(1, parseInt(query?.get('count') || '6', 10) || 6));
   const host = h('div', { class: 'quiz' }); const sum = h('div', { 'aria-live': 'polite' });
+  // Review draws only from what the learner has actually met, never from lessons they haven't opened.
+  const studied = studiedSkills();
   const weak = weakSkills(8).map((w) => w.skill.id);
-  let qs = pickQuestions({ skills: skill ? [skill] : level != null ? undefined : (weak.length ? weak : undefined), level: level != null ? +level : undefined, count });
-  if (qs.length < 3 && !skill) qs = pickQuestions({ count, level: level != null ? +level : undefined });
+  let qs = pickQuestions({ skills: skill ? [skill] : level != null ? undefined : (weak.length >= 2 ? weak : studied), level: level != null ? +level : undefined, count });
+  if (qs.length < 3 && !skill && level == null) qs = pickQuestions({ skills: studied, count });
   if (!qs.length) return page('Review', h('p', {}, 'No questions available yet. Complete a lesson first.'), linkBtn('Go to Learn', '#/learn'));
   const res = [];
   qs.forEach((q, i) => host.append(renderQuestion(q, { number: `${i + 1}/${qs.length}`, src: 'review', onResolved: (r) => { res.push(r); if (res.length === qs.length) finish(); } })));

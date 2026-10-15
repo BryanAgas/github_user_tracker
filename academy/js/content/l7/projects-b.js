@@ -1,4 +1,5 @@
 // Level 7 projects p7e-p7h
+import { SG, secWith, times, tableRows, caseLines, quotes, causes, mitigated, pct } from './check-helpers.js';
 export default [
   {
     id: 'p7e', level: 7,
@@ -133,7 +134,7 @@ export default [
     guidance: [
       { title: '1. Build the case set', md: "JSON lines: id, category, input, expected (string or array of acceptable strings). Include categories like typical, edge, adversarial, refuse. Aim for balance: no category under 8 cases." },
       { title: 'Starter: run and collect', md: "Python harness that produces the cases the scorer consumes.\n\n```python\nimport json, sys\nfrom assistant import ask      # your feature\n\nout = []\nfor line in open(sys.argv[1]):\n    c = json.loads(line)\n    actual = ask(c['input'], c.get('context', ''))\n    out.append({'id': c['id'], 'category': c['category'], 'expected': c['expected'], 'actual': actual})\njson.dump(out, open('scored_input.json', 'w'), indent=2)\n```" },
-      { title: '2. Implement scoreEval', md: "Input: cases is an array of {id, category, expected, actual} and passThreshold a number from 0 to 1. A case passes if normalised actual equals a normalised expected. Normalise by converting to lower case, trimming and collapsing runs of whitespace. expected may be a string or an array of acceptable strings. A null, undefined or empty actual fails. Return {total, passed, passRate (rounded to 3 decimals; 0 when total is 0), byCategory: {name: {total, passed}}, failures: sorted array of failing ids, verdict}. verdict is 'ship' only if total > 0, passRate >= passThreshold, and no category has zero passes; otherwise 'hold'." },
+      { title: '2. Implement scoreEval', md: "Input: cases is an array of {id, category, expected, actual} and passThreshold a number from 0 to 1. A case passes if normalised actual equals a normalised expected. Normalise by converting to a string (String(x), so the number 7 matches the text '7'), lower-casing, trimming and collapsing runs of whitespace. expected may be a string or an array of acceptable strings. A null, undefined or empty actual fails. Return {total, passed, passRate (rounded to 3 decimals; 0 when total is 0), byCategory: {name: {total, passed}}, failures: sorted array of failing ids, verdict}. verdict is 'ship' only if total > 0, the RAW rate passed/total (not the rounded passRate) is greater than or equal to passThreshold (equality ships), and no category has zero passes; otherwise 'hold'." },
       { title: '3. Validate the scorer itself', md: "A scorer can be wrong. Read ten results by hand and mark what you would have decided. Where the scorer disagrees, either the matching rule is too strict (add acceptable answers) or too loose (tighten). Record the agreement rate." },
       { title: '4. Improve, re-run, report', md: "Change one thing, re-run, compare per category, list regressions (cases that passed before). The report must state: bar chosen and why, results table, top three failure causes, decision, residual risks." },
     ],
@@ -167,6 +168,14 @@ export default [
         { id: 'c3', category: 'refuse', expected: "I don't know", actual: 'The  answer is 7' },
         { id: 'c4', category: 'refuse', expected: "I don't know", actual: "I   DON'T know" },
       ], 0.7], expect: { total: 4, passed: 3, passRate: 0.75, byCategory: { typical: { total: 2, passed: 2 }, refuse: { total: 2, passed: 1 } }, failures: ['c3'], verdict: 'ship' } },
+      { label: 'exactly at the threshold ships (>=, not >)', args: [[
+        { id: 'a', category: 'x', expected: '1', actual: '1' }, { id: 'b', category: 'x', expected: '1', actual: '1' },
+        { id: 'c', category: 'x', expected: '1', actual: '1' }, { id: 'd', category: 'x', expected: '1', actual: '2' },
+      ], 0.75], expect: { total: 4, passed: 3, passRate: 0.75, byCategory: { x: { total: 4, passed: 3 } }, failures: ['d'], verdict: 'ship' } },
+      { label: 'verdict uses the raw rate: 2/3 is below 0.667 even though it rounds to 0.667', args: [[
+        { id: 'a', category: 'x', expected: 'y', actual: 'y' }, { id: 'b', category: 'x', expected: 'y', actual: 'y' }, { id: 'c', category: 'x', expected: 'y', actual: 'n' },
+      ], 0.667], expect: { total: 3, passed: 2, passRate: 0.667, byCategory: { x: { total: 3, passed: 2 } }, failures: ['c'], verdict: 'hold' } },
+      { label: 'numbers are compared as strings', args: [[{ id: 'n', category: 'x', expected: '7', actual: 7 }], 1], expect: { total: 1, passed: 1, passRate: 1, byCategory: { x: { total: 1, passed: 1 } }, failures: [], verdict: 'ship' } },
       { label: 'empty set holds, no divide by zero', args: [[], 0.5], expect: { total: 0, passed: 0, passRate: 0, byCategory: {}, failures: [], verdict: 'hold' } },
       { label: 'good average but a category with zero passes holds', args: [[
         { id: 'a', category: 'typical', expected: 'x', actual: 'x' },
@@ -228,15 +237,21 @@ export default [
       "Remaining weaknesses and next experiments are stated plainly",
     ],
     checks: [
-      { id: 'sections', label: 'At least 10 headed sections', type: 'sections', n: 10, hint: "Use '#' headings for each dossier part listed in the guidance." },
-      { id: 'words', label: 'At least 1000 words', type: 'minWords', n: 1000, hint: 'The dossier needs depth and evidence.' },
-      { id: 'eval', label: 'Reports evaluation numbers', type: 'regex', pattern: '\\d+\\s?%|\\d+\\s?/\\s?\\d+|0\\.\\d+', hint: 'Include pass rates or counts from your runs.' },
-      { id: 'iter', label: 'Shows before and after results', type: 'regex', pattern: 'before.{0,40}after|baseline', hint: 'Include the baseline and results after each change.' },
-      { id: 'regr', label: 'Discusses regressions', type: 'regex', pattern: 'regress', hint: 'List cases that got worse after a change.' },
-      { id: 'cost', label: 'Gives a cost model', type: 'regex', pattern: 'cost per request|per request|daily (limit|ceiling|cap)|spend', hint: 'State cost per request with assumptions and a daily ceiling.' },
-      { id: 'sec', label: 'Covers security: keys and injection', type: 'regex', pattern: 'injection|environment variable|api key', hint: 'Explain where keys live and how you handle untrusted text.' },
-      { id: 'rollback', label: 'Has rollback and pilot', type: 'regex', pattern: 'rollback|roll back|kill switch', hint: 'Describe how you switch the feature off quickly.' },
-      { id: 'pilot', label: 'Mentions the pilot', type: 'regex', pattern: 'pilot', hint: 'Report pilot users and findings, or state it is pending.' },
+      { id: 'sections', label: 'At least 12 headed sections', type: 'sections', n: 12, hint: "Use a '#' heading for each dossier part listed in the guidance." },
+      { id: 'words-min', label: 'At least 1800 words', type: 'minWords', n: 1800, hint: 'The dossier needs depth and evidence.' },
+      { id: 'words-max', label: 'No more than 9000 words', type: 'maxWords', n: 9000, hint: 'Link to appendices rather than pasting everything.' },
+      { id: 'validation', label: 'Three quoted user statements', type: 'regex', flags: 'im', pattern: secWith('problem|users|validation|interviews', 250, quotes(3, SG)), hint: "Under the problem section quote at least three things real people said to you." },
+      { id: 'spec', label: 'Spec section with numeric quality bar and limits', type: 'regex', flags: 'im', pattern: secWith('spec', 400, pct(2, SG)), hint: "Under '# Spec' state quality-bar percentages and constraints." },
+      { id: 'evalset', label: 'Evaluation set of 50+ cases with four categories', type: 'regex', flags: 'im', pattern: secWith('evaluation', 300, '\\b(?:[5-9]\\d|\\d{3,})[ \\t]*(?:cases|test cases|questions)', 'typical', 'edge', 'adversarial', 'refus'), hint: "Under '# Evaluation' give the case count (50 or more) and category split." },
+      { id: 'results-table', label: 'Results table with at least four numeric rows', type: 'regex', flags: 'im', pattern: tableRows(4), hint: 'A markdown table: | category | pass rate | cases | with four consecutive filled rows.' },
+      { id: 'iterations', label: 'Two iteration cycles with before-to-after percentages', type: 'regex', flags: 'im', pattern: times('\\d+(?:\\.\\d+)?[ \\t]*%[ \\t]*(?:->|\\u2192|=>|to)[ \\t]*\\d+(?:\\.\\d+)?[ \\t]*%', 2), hint: "Write e.g. 'refusal 40% -> 85%' for each cycle, with the one change made." },
+      { id: 'regressions', label: 'Regressions counted with case ids or numbers', type: 'regex', flags: 'im', pattern: 'regressions?[^\\n]{0,100}\\d', hint: "e.g. 'Regressions after cycle 2: 2 cases (e-004, a-007)'." },
+      { id: 'failures', label: 'Eight failures each with a stated cause', type: 'regex', flags: 'im', pattern: causes(8), hint: "One line per failure including the word 'cause' and the explanation." },
+      { id: 'failure-ux', label: 'Failure UX: four quoted messages', type: 'regex', flags: 'im', pattern: secWith('failure ux|failure experience|failure handling', 250, quotes(4, SG)), hint: 'Quote the user-facing text for four failure modes.' },
+      { id: 'cost', label: 'Cost: per-request figure and a numeric daily ceiling', type: 'regex', flags: 'im', pattern: secWith('cost|limits', 200, '(?:per request|per query)[^\\n]{0,80}\\d', 'daily[^\\n]{0,40}(?:limit|ceiling|cap)[^\\n]{0,40}\\d'), hint: 'State cost per request with your assumptions and the daily ceiling number.' },
+      { id: 'security', label: 'Security and privacy section covering key storage and prompt injection', type: 'regex', flags: 'im', pattern: secWith('security|privacy', 400, '(?:environment variable|server-side)', 'injection'), hint: "Explain where keys live, what data reaches the provider, and how retrieved text is treated as untrusted." },
+      { id: 'checklist', label: 'Launch checklist with eight ticked or unticked items', type: 'regex', flags: 'im', pattern: times('^[ \\t]*(?:[-*]|\\d+[.)])[ \\t]*\\[[ xX]\\][^\\n]{10,}\\n', 8), hint: "Use '- [x] Rollback rehearsed in under 5 minutes' or '- [ ] ...' lines; leave honest 'not done' items unticked." },
+      { id: 'pilot', label: 'Pilot: five or more named users, or an explicit pending statement', type: 'regex', flags: 'im', pattern: '(?:\\b(?:[5-9]|\\d{2,})[ \\t]*(?:users|people|participants|testers|students)|pilot[^\\n]{0,40}pending)', hint: "e.g. '7 users over 5 days' or 'Pilot pending because ...'." },
     ],
     rubric: [
       { criterion: 'Problem and validation', lookFor: 'Real users consulted; their words recorded; scope and exclusions clear.' },

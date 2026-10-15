@@ -3,7 +3,7 @@ import { lessonById, levels, nextLesson, lessons, skillById, current } from '../
 import { renderBlocks } from '../blocks.js';
 import { renderQuestion } from '../assess.js';
 import { openLesson, recordQuiz, lessonDone, skillStatus, lessonRec } from '../mastery.js';
-import { inPath } from '../paths.js';
+import { inPath, nextOnPath } from '../paths.js';
 import { state, touchDay } from '../store.js';
 import { levelChip, skillChip, page, linkBtn, bar } from './common.js';
 import { setTutorContext, openTutor } from '../tutorui.js';
@@ -11,7 +11,7 @@ import { setTutorContext, openTutor } from '../tutorui.js';
 export default function lessonView({ id }, env) {
   const L = lessonById.get(id);
   if (!L) return page('Lesson not found', h('p', {}, 'That lesson doesn’t exist.'), linkBtn('Back to Learn', '#/learn'));
-  openLesson(id); touchDay(1, 0);
+  openLesson(id); // opening a page is not activity: streaks count answers, not page views
   const lv = levels[L.level];
   const strongAlready = L.skills.length && L.skills.every((s) => skillStatus(s).status === 'strong');
   let challengeOnly = false;
@@ -56,11 +56,11 @@ export default function lessonView({ id }, env) {
     const rec = full ? recordQuiz(L.id, results) : lessonRec(L.id);
     const avg = results.reduce((a, r) => a + r.score, 0) / results.length;
     const weak = [...new Set(results.filter((r) => r.score < 0.6).map((r) => r.skill))].map((s) => skillById.get(s)?.name).filter(Boolean);
-    const nxt = nextLesson(L.id);
+    const nxt = nextOnPath(L.id);
     const passed = full ? rec?.completed && avg >= 0.6 : avg >= 0.6;
     summary.replaceChildren(h('div', { class: `callout ${passed ? 'good' : 'warn'}` },
-      h('h3', {}, passed ? (full ? 'Lesson complete' : 'Challenge passed') : 'Not quite secure yet'),
-      h('p', {}, `Your first-try understanding score: ${Math.round(avg * 100)}%. Marks reflect unaided answers: hints and revealed solutions earn less, because the goal is to know it, not to finish it.`),
+      h('h3', {}, passed ? (full ? 'Lesson complete' : 'Challenge passed') : 'Let’s firm this up'),
+      h('p', {}, `First-try understanding: ${Math.round(avg * 100)}%. Hints and revealed solutions count for less, because the goal is to know it, not to finish it.`),
       weak.length ? h('p', {}, 'Shaky on: ', h('strong', {}, weak.join(', ')), '. Re-read the highlighted ideas, try “I’m confused”, then retake.') : h('p', {}, 'Nothing shaky here.'),
       !full ? h('p', { class: 'muted small' }, 'Challenge questions only count as extra evidence; take the full quiz to complete the lesson.') : null,
       h('div', { class: 'row' },
@@ -74,6 +74,10 @@ export default function lessonView({ id }, env) {
 
   const apply = L.apply ? h('div', { class: 'callout k-tip' }, h('div', { class: 'callout-h' }, '🚀 Apply it today'), h('div', {}, inline(L.apply))) : null;
   const take = h('section', { class: 'takeaways' }, h('h2', {}, 'Keep this'), h('ul', {}, L.takeaways.map((t) => h('li', {}, inline(t)))));
+  const lastRec = lessonRec(L.id);
+  const hard = L.quiz.filter((q) => q.difficulty >= 2).length >= 2;
+  const lastBanner = lastRec?.firstTry != null ? h('p', { class: 'muted small' }, `Last time (${lastRec.at}): ${Math.round(lastRec.firstTry * 100)}% first-try${lastRec.completed ? ', lesson completed' : ''}. Answer the questions again whenever you like; every attempt is fresh evidence.`) : null;
+  const testOut = !strongAlready && !lessonDone(L.id) && hard ? h('details', { class: 'reveal' }, h('summary', {}, 'Know this already? Try the hard questions first'), h('p', {}, 'If you can answer the harder questions unaided, you’ll earn the evidence without reading the lesson. If not, you’ll know exactly what to read.'), h('button', { class: 'btn', type: 'button', onclick: () => { challengeOnly = true; buildQuiz(); quizHost.scrollIntoView({ behavior: 'smooth' }); } }, 'Show the hard questions')) : null;
   const challengeBanner = strongAlready ? h('div', { class: 'callout info' },
     h('strong', {}, 'You seem to know this already. '), 'Your evidence on these skills is strong. Try the challenge questions only, or read on anyway.',
     h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: () => { challengeOnly = true; buildQuiz(); quizHost.scrollIntoView({ behavior: 'smooth' }); } }, 'Challenge questions only'))) : null;
@@ -87,7 +91,7 @@ export default function lessonView({ id }, env) {
   } });
   env.cleanups.push(() => setTutorContext({}));
 
-  return h('article', { class: 'page lesson' }, header, challengeBanner, h('div', { class: 'row sticky-actions' }, confused, h('button', { class: 'btn', type: 'button', onclick: () => openTutor() }, '💬 Ask Mrs Anne')), reteachBox, body, apply,
-    h('section', { class: 'quiz-section', 'aria-labelledby': 'quiz-h' }, h('h2', { id: 'quiz-h' }, 'Check your understanding'), h('p', { class: 'muted' }, 'Every answer is evidence. Opening a lesson never counts as learning; showing it does.'), prog, quizHost, summary),
+  return h('article', { class: 'page lesson' }, header, challengeBanner, testOut, h('div', { class: 'row sticky-actions' }, confused, h('button', { class: 'btn', type: 'button', onclick: () => openTutor() }, '💬 Ask Mrs Anne')), reteachBox, body, apply,
+    h('section', { class: 'quiz-section', 'aria-labelledby': 'quiz-h' }, h('h2', { id: 'quiz-h' }, 'Check your understanding'), h('p', { class: 'muted' }, 'Every answer is evidence. Opening a lesson never counts as learning; showing it does.'), lastBanner, prog, quizHost, summary),
     take);
 }

@@ -17,19 +17,26 @@ function buildIndex() {
     L.blocks.forEach((b) => { const t = text(b); if (t.length > 30) docs.push({ lesson: L, text: t, kind: 'lesson' }); });
     docs.push({ lesson: L, text: `${L.title}. ${L.hook}. ${(L.takeaways || []).join(' ')}`, kind: 'lesson' });
   }
-  for (const g of glossary) docs.push({ text: `${g.term}: ${g.def}`, kind: 'gloss', term: g.term });
+  for (const g of glossary) docs.push({ text: `${g.term}: ${g.def}`, kind: 'gloss', term: g.term, level: g.level ?? 0 });
   const df = new Map();
   docs.forEach((d) => { d.tf = new Map(); toks(d.text).forEach((w) => d.tf.set(w, (d.tf.get(w) || 0) + 1)); d.tf.forEach((_, w) => df.set(w, (df.get(w) || 0) + 1)); d.len = Math.max(1, [...d.tf.values()].reduce((a, b) => a + b, 0)); });
   index = { docs, df, N: docs.length };
 }
-export function search(q, limit = 3) {
+export function search(q, limit = 3, { maxLevel = 7 } = {}) {
   if (!index) buildIndex();
   const qt = [...new Set(toks(q))]; if (!qt.length) return [];
-  const out = index.docs.map((d) => {
-    let s = 0; for (const w of qt) { const f = d.tf.get(w); if (f) s += (f / Math.sqrt(d.len)) * Math.log(1 + index.N / index.df.get(w)); }
-    return { d, s: s / Math.sqrt(qt.length) };
+  const out = index.docs.filter((d) => (d.lesson ? d.lesson.level : d.level) <= maxLevel).map((d) => {
+    let s = 0, matched = 0; for (const w of qt) { const f = d.tf.get(w); if (f) { matched++; s += (f / Math.sqrt(d.len)) * Math.log(1 + index.N / index.df.get(w)); } }
+    return { d, s: s / Math.sqrt(qt.length), matched, of: qt.length };
   }).filter((x) => x.s > 0).sort((a, b) => b.s - a.s);
   return out.slice(0, limit);
+}
+// How far along the curriculum this learner is: never answer a beginner's worry with a Level-5 passage.
+export function levelCap(L) {
+  if (L) return Math.min(7, L.level + 1);
+  let top = state.profile.startLevel || 0;
+  for (const id of Object.keys(state.lessons)) { const l = lessonById.get(id); if (l) top = Math.max(top, l.level); }
+  return Math.min(7, top + 1);
 }
 
 const I = {
@@ -44,6 +51,7 @@ const I = {
   define: /^(?:what(?:'s| is| are)|define|meaning of|explain|tell me about)\s+(?:an?\s+|the\s+)?(.{2,60}?)\??$/i,
   greet: /^(hi|hello|hey|good (morning|afternoon|evening))\b/i,
   thanks: /\b(thanks|thank you|cheers)\b/i,
+  worry: /(take my job|replace (me|us)|steal my job|\bsafe for\b|\bkids?\b|children|pupils|students? (use|cheat)|cheat|ethic|confidential|can i (paste|upload|share|put)|is it (ok|okay|safe|legal|allowed))/i,
 };
 
 export class Tutor {
@@ -55,12 +63,13 @@ export class Tutor {
   async respond(text, ctx = {}, onDelta) {
     text = text.trim();
     this.history.push({ role: 'user', content: text });
+    const norm = text.replace(/[’‘]/g, "'");
     let out;
-    const local = this.local(text, ctx);
+    const local = this.local(norm, ctx);
     // Structured local intents always win (they drive the app: hints, quizzes). Open questions go to the model when connected.
     if (local.structured || !this.modelReady) out = local;
     else {
-      try { out = { md: await askModel(this.history.slice(-12), systemPrompt(ctx), onDelta), actions: local.actions || [], source: 'model' }; }
+      try { out = { md: await askModel(validHistory(this.history), systemPrompt(ctx), onDelta), actions: local.actions || [], source: 'model' }; }
       catch (e) { out = { ...local, md: `${local.md}\n\n(I couldn’t reach the model: ${e.message}. Answering from the course material instead.)` }; }
     }
     this.history.push({ role: 'assistant', content: out.md });
@@ -77,6 +86,7 @@ export class Tutor {
     if (I.answerNow.test(text)) return this.answerNow(ctx);
     if (I.hint.test(text)) return this.hint(ctx);
     if (I.confused.test(text)) return this.reteachNow(L, text);
+    if (I.worry.test(text)) return this.worry(text, L);
     if (I.technical.test(text)) return this.deeper(L);
     if (I.quiz.test(text)) return this.quizMe(L);
     if (I.next.test(text)) return this.recommend();
@@ -87,6 +97,11 @@ export class Tutor {
     return this.answerFromCourse(text, L);
   }
 
+  worry(text, L) {
+    const privacy = /(paste|upload|share|client|customer|confidential|private|secret|personal data|gdpr|privacy)/i.test(text);
+    const target = lessonById.get(privacy ? 'l1-02' : 'l0-10') || lessonById.get('l0-10');
+    return { md: `${privacy ? 'Be careful here, and check your organisation’s rules before pasting anything sensitive into any tool.' : 'That’s a real question, and a sensible one. The honest answer depends on your situation, so I won’t give a glib one.'} The course covers it properly${target ? ` in “${target.title}”` : ''}. ${this.modelReady ? '' : 'Connect a model in Settings if you’d like to talk it through in your own context.'}`, actions: target ? [{ label: `Read: ${target.title}`, href: `#/lesson/${target.id}` }] : [], structured: true, chips: this.chips(L) };
+  }
   chips(L) { return L ? ['I’m confused', 'Give me an example', 'Quiz me', 'Go deeper'] : ['What should I do next?', 'How am I doing?', 'Quiz me']; }
 
   reteachNow(L, text) {
@@ -179,16 +194,24 @@ export class Tutor {
     return { md: `**${g.term}** — ${g.def}${g.see?.length ? `\n\nRelated: ${g.see.join(', ')}.` : ''}`, structured: false, actions: rel.map((l) => ({ label: `Lesson: ${l.title}`, href: `#/lesson/${l.id}` })), chips: ['Give me an example', 'Quiz me'] };
   }
   answerFromCourse(text, L) {
-    const hits = search(text, 6).filter((h) => h.s > 0.35);
-    // prefer current lesson when relevant
+    const cap = levelCap(L);
+    const hits = search(text, 8, { maxLevel: cap }).filter((h) => h.matched >= Math.min(2, h.of) && h.s > 0.5);
     hits.sort((a, b) => (b.s + (L && b.d.lesson === L ? 0.4 : 0)) - (a.s + (L && a.d.lesson === L ? 0.4 : 0)));
     const top = hits[0];
-    if (!top) return { md: `I can’t find that in the course material${this.modelReady ? '' : ', and I’m running without a model connected, so I can’t answer open questions yet'}. Try rephrasing with the key term, check the Library glossary, or connect a model in Settings for open-ended help.`, actions: [{ label: 'Search the Library', href: '#/library' }, { label: 'Settings', href: '#/settings' }], chips: this.chips(L) };
+    if (!top) return { md: `I don’t have a good answer to that in the course material${this.modelReady ? '' : ', and I’m running offline, so I can’t judge pasted text or answer open-ended questions yet'}. I can explain a lesson differently, give hints, quiz you, look things up in the glossary, or suggest your next step. Connect a model in Settings for open-ended help.`, actions: [{ label: 'Search the Library', href: '#/library' }, { label: 'Settings', href: '#/settings' }], chips: this.chips(L) };
     const d = top.d;
     const where = d.kind === 'gloss' ? { label: 'Library glossary', href: '#/library' } : { label: `Read: ${d.lesson.title}`, href: `#/lesson/${d.lesson.id}` };
     const second = hits.find((h) => h.d !== d && h.d.kind === 'lesson' && h.d.lesson !== d.lesson);
-    return { md: `${d.kind === 'gloss' ? '' : 'From the course: '}${d.text}${d.kind === 'lesson' ? '' : ''}`, actions: [where, ...(second ? [{ label: `Also: ${second.d.lesson.title}`, href: `#/lesson/${second.d.lesson.id}` }] : [])], chips: ['I’m confused', 'Give me an example', 'Quiz me'], note: 'local' };
+    return { md: `${d.kind === 'gloss' ? '' : 'From the course: '}${d.text}`, actions: [where, ...(second ? [{ label: `Also: ${second.d.lesson.title}`, href: `#/lesson/${second.d.lesson.id}` }] : [])], chips: ['I’m confused', 'Give me an example', 'Quiz me'], note: 'local' };
   }
+}
+// The Messages API wants the conversation to start with a user turn and alternate roles.
+function validHistory(hist) {
+  const h = hist.slice(-12).filter((m) => m.content);
+  while (h.length && h[0].role !== 'user') h.shift();
+  const out = [];
+  for (const m of h) { if (out.length && out[out.length - 1].role === m.role) out[out.length - 1] = { role: m.role, content: out[out.length - 1].content + '\n\n' + m.content }; else out.push({ role: m.role, content: m.content }); }
+  return out;
 }
 const rank = (s, order) => { const i = order.indexOf(s); return i < 0 ? 9 : i; };
 

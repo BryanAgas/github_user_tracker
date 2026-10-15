@@ -79,6 +79,7 @@ function closeMore() { const m = document.getElementById('more'); if (m && !m.hi
 
 applyTheme();
 buildShell();
+document.getElementById('skip').addEventListener('click', (e) => { e.preventDefault(); main.focus(); });
 addEventListener('hashchange', render);
 if (!location.hash && !state.onboarded) { /* first visit: Home shows the welcome call to action */ }
 render();

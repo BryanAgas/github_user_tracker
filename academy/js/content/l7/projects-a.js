@@ -1,4 +1,5 @@
 // Level 7 projects p7a-p7d
+import { SG, secWith, times, tableRows, caseLines, quotes, causes, mitigated, pct } from './check-helpers.js';
 const pyCall = `# assistant.py : minimal, runnable outside the app (pip install anthropic)
 # Any provider works the same way: a system message, the user's message, a limit on output.
 # Keep the key and model name in environment variables, never in the code.
@@ -87,12 +88,17 @@ export default [
       "You state what remains broken",
     ],
     checks: [
-      { id: 'sections', label: 'Has at least 7 headed sections', type: 'sections', n: 7, hint: "Start each section line with '#', e.g. '# Scope', '# Results'." },
-      { id: 'words', label: 'At least 500 words', type: 'minWords', n: 500, hint: 'Explain your reasoning and results more fully.' },
-      { id: 'oos', label: 'Mentions out of scope', type: 'regex', pattern: 'out.of.scope|will not|won.t (do|handle)', hint: 'State what the assistant refuses or does not do.' },
-      { id: 'num', label: 'Reports a pass rate with a percentage or fraction', type: 'regex', pattern: '\\d+\\s?%|\\d+\\s?/\\s?\\d+|0\\.\\d+', hint: 'Give actual numbers from your run.' },
-      { id: 'cat', label: 'Mentions per-category results (refuse, edge, adversarial)', type: 'regex', pattern: 'refus|adversarial|edge', hint: 'Show results by category, including refusal cases.' },
-      { id: 'fail', label: 'Includes failure analysis with causes', type: 'regex', pattern: 'cause|because|root', hint: 'Explain why each failure occurred.' },
+      { id: 'sections', label: 'At least 9 headed sections', type: 'sections', n: 9, hint: "Start each section line with '#': Problem and user, Scope, Spec, Evaluation set, Results, Failure analysis, Failure UX, Cost, Limits." },
+      { id: 'words-min', label: 'At least 700 words', type: 'minWords', n: 700, hint: 'Explain your reasoning, results and failures in full.' },
+      { id: 'words-max', label: 'No more than 3500 words', type: 'maxWords', n: 3500, hint: 'Cut padding: a reviewer should be able to read this in ten minutes.' },
+      { id: 'scope', label: 'A Scope section of real content that gives a numeric success measure and an out-of-scope list', type: 'regex', flags: 'im', pattern: secWith('scope', 250, '(?:out.of.scope|will not|won.t)', '\\d+[ \\t]*(?:%|cases|questions|users)'), hint: "Under a '# Scope' heading: who, job, what it will NOT do, and a success number such as '85% on 40 cases'." },
+      { id: 'spec', label: 'A Spec section with at least three numeric thresholds', type: 'regex', flags: 'im', pattern: secWith('spec', 350, '\\d+(?:[ \\t]*(?:%|ms|seconds|words|characters))' ), hint: "Under '# Spec': inputs/outputs, rules, quality bar with percentages, failure behaviour, constraints." },
+      { id: 'evalset', label: 'Evaluation set of 30+ cases naming all four categories', type: 'regex', flags: 'im', pattern: secWith('evaluation set|eval set|test set', 200, '\\b(?:[3-9]\\d|\\d{3,})[ \\t]*(?:cases|test cases|questions)', 'typical', 'edge', 'adversarial', 'refus'), hint: "Under an '# Evaluation set' heading state the case count (e.g. '34 cases') and the typical / edge / adversarial / refuse split." },
+      { id: 'results-table', label: 'A results table with at least three category rows (name | number | note)', type: 'regex', flags: 'im', pattern: tableRows(3), hint: "Use a markdown table: | category | pass rate | cases | with at least three consecutive rows containing a number." },
+      { id: 'results-pct', label: 'A Results section with at least three percentages', type: 'regex', flags: 'im', pattern: secWith('results', 150, pct(3, SG)), hint: "Under '# Results' report overall and per-category pass rates as percentages." },
+      { id: 'failures', label: 'Five failures each with a stated cause', type: 'regex', flags: 'im', pattern: causes(5), hint: "Write each failure on its own line, e.g. 'F3 ... cause: retrieval returned the 2023 page because ...'." },
+      { id: 'failure-ux', label: 'Failure UX with three quoted user-facing messages', type: 'regex', flags: 'im', pattern: secWith('failure ux|failure experience|failure handling', 200, quotes(3, SG)), hint: "Under '# Failure UX' quote the exact message shown for timeout, no result and malformed output." },
+      { id: 'cost', label: 'Cost section with token counts and a per-request figure', type: 'regex', flags: 'im', pattern: secWith('cost', 120, '\\d[\\d,.]*[ \\t]+(?:\\w+[ \\t]+)?tokens', '(?:per request|per query|per question)'), hint: "State input and output tokens per request, the price you assumed (cite where you checked it), and cost per request." },
     ],
     rubric: [
       { criterion: 'Scope and user', lookFor: 'Specific named user, a job, a non-empty out-of-scope list, measurable success.' },
@@ -211,6 +217,9 @@ export default [
     starter: "function rrfFuse(rankings, k, topN) {\n  // rankings: array of arrays of ids (best first)\n  // return [{ id, score }] sorted by score desc, then id asc; score rounded to 6 decimals\n  // topN <= 0 means return all\n}",
     tests: [
       { label: 'two lists, ties broken by id', args: [[['a', 'b', 'c'], ['b', 'a', 'd']], 60, 3], expect: [{ id: 'a', score: 0.032522 }, { id: 'b', score: 0.032522 }, { id: 'c', score: 0.015873 }] },
+      { label: 'tie broken by id even when insertion order is reversed', args: [[['b', 'a'], ['a', 'b']], 60, 0], expect: [{ id: 'a', score: 0.032522 }, { id: 'b', score: 0.032522 }] },
+      { label: 'rank is 1-based: a single first place with k=1 scores 0.5', args: [[['solo']], 1, 0], expect: [{ id: 'solo', score: 0.5 }] },
+      { label: 'topN truncates after sorting', args: [[['c', 'b', 'a']], 60, 2], expect: [{ id: 'c', score: 0.016393 }, { id: 'b', score: 0.016129 }] },
       { label: 'empty input', args: [[], 60, 5], expect: [] },
       { label: 'duplicate id inside one list counts once', args: [[['x', 'x', 'y']], 60, 0], expect: [{ id: 'x', score: 0.016393 }, { id: 'y', score: 0.015873 }] },
       { label: 'agreement beats a single high rank', args: [[['p', 'q'], ['q', 'r'], ['q']], 10, 1], expect: [{ id: 'q', score: 0.265152 }] },
@@ -257,12 +266,16 @@ export default [
       "Risks include voice misuse",
     ],
     checks: [
-      { id: 'sections', label: 'At least 6 headed sections', type: 'sections', n: 6, hint: "Use '# Pipeline', '# Latency', '# Failures', '# Test plan', etc." },
-      { id: 'words', label: 'At least 500 words', type: 'minWords', n: 500, hint: 'Add detail on each stage and each risk.' },
-      { id: 'ms', label: 'Contains latency numbers in ms or seconds', type: 'regex', pattern: '\\d+\\s?(ms|milliseconds|s\\b|seconds)', hint: 'Give budget figures per stage.' },
-      { id: 'asr', label: 'Mentions misrecognition handling', type: 'regex', pattern: 'mishear|misrecogn|did you say|confirm|word error|WER', hint: 'Describe what happens on a mis-heard word or low confidence.' },
-      { id: 'priv', label: 'Covers privacy and consent', type: 'regex', pattern: 'consent', hint: 'State how consent is obtained and what is stored.' },
-      { id: 'misuse', label: 'Mentions impersonation or misuse risk', type: 'regex', pattern: 'impersonat|clon|spoof|misuse', hint: 'Name a voice-specific misuse risk.' },
+      { id: 'sections', label: 'At least 8 headed sections', type: 'sections', n: 8, hint: "Use '#' headings: Fit for voice, Pipeline, Latency budget, Failures, Privacy, Test plan, Metrics, Risks." },
+      { id: 'words-min', label: 'At least 700 words', type: 'minWords', n: 700, hint: 'Add detail on each stage, case and risk.' },
+      { id: 'words-max', label: 'No more than 3500 words', type: 'maxWords', n: 3500, hint: 'Trim filler; keep the plan reviewable.' },
+      { id: 'latency', label: 'Latency section with four or more millisecond figures', type: 'regex', flags: 'im', pattern: secWith('latency', 200, times('\\d+[ \\t]*(?:ms|milliseconds)\\b', 4, SG)), hint: "Under '# Latency budget' give ms per stage (end-of-speech, transcription, first token, first audio) and a total." },
+      { id: 'cases', label: 'A test plan of 20 numbered cases, each described in a full line', type: 'regex', flags: 'im', pattern: caseLines(20), hint: "Number your cases 1. to 20. (or table rows starting | 1 |), each with condition and expected outcome on the same line." },
+      { id: 'conditions', label: 'Test conditions include noise, accents/dialects, numbers and names', type: 'regex', flags: 'im', pattern: '(?=[\\s\\S]*\\bnois)(?=[\\s\\S]*(?:accent|dialect))(?=[\\s\\S]*\\bnumbers?\\b)(?=[\\s\\S]*\\bnames?\\b)', hint: 'Cover background noise, accents or dialects, confusable numbers (15 vs 50) and names.' },
+      { id: 'spoken', label: 'Three quoted spoken lines for mishearing, silence and error', type: 'regex', flags: 'im', pattern: secWith('failure|spoken', 200, quotes(3, SG)), hint: "Under '# Failures' quote the exact words the assistant says in each case." },
+      { id: 'metrics', label: 'Two metrics with numeric thresholds', type: 'regex', flags: 'im', pattern: times('(?:word error rate|\\bWER\\b|task success|time to first audio|latency)[^\\n]{0,80}?(?:<=?|>=?|\\u2264|\\u2265|under|below|above|at least|within)[ \\t]*\\d+', 2), hint: "e.g. 'WER <= 10% in quiet, <= 20% in noise' and 'time to first audio under 1500 ms'." },
+      { id: 'privacy', label: 'Privacy section with a retention period or an explicit no-storage statement, and consent', type: 'regex', flags: 'im', pattern: secWith('privacy|consent', 200, '(?:\\d+[ \\t]*(?:days|hours|weeks|months)|not stored|no recordings?|deleted immediately)', 'consent'), hint: "State what is stored, for how many days, who can access it, how to delete it and how consent is obtained." },
+      { id: 'risks', label: 'Three named risks each with a mitigation', type: 'regex', flags: 'im', pattern: mitigated(3), hint: "Write e.g. 'Risk: voice cloning impersonation - mitigation: no custom voices without recorded consent'." },
     ],
     rubric: [
       { criterion: 'Fit for voice', lookFor: 'Honest argument for and against voice in this setting.' },

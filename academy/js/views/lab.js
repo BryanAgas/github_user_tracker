@@ -15,7 +15,7 @@ export default async function lab({ id }, env) {
     h('div', { class: 'row' }, linkBtn('Open the code playground', '#/lab/codeplay'), h('label', { class: 'inline' }, 'Level ', level)), grid);
 }
 async function single(id, env) {
-  const mod = await loadWidget(id);
+  const mod = WIDGET_NAMES.includes(id) ? await loadWidget(id) : null; // allow-list: never import() an arbitrary path
   if (!mod) return page('Experiment not found', linkBtn('Back to the Lab', '#/lab'));
   const m = mod.meta; const host = h('div', { class: 'widget-host big' });
   const related = lessons.filter((l) => l.blocks.some((b) => b.t === 'widget' && b.w === id)).slice(0, 5);

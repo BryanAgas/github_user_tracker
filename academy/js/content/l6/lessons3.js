@@ -81,7 +81,7 @@ export default [
       explain:"A test suite is a reliable verifier, so more attempts translate into more chances to pass. The other tasks lack an objective check, and a learned scorer could be gamed." },
     { id:'l6-07-q2', skill:'l6.reasoning', type:'mcq', difficulty:3, placement:true,
       q:"A team samples 20 answers per question and picks the most common final answer. On the maths set accuracy rises, but on questions where the model has a common misconception accuracy does not improve. What best explains this?",
-      options:["Voting only works when N is above 100","Voting helps when errors are scattered across different wrong answers; a popular wrong answer gets the most votes, so a reliable verifier is needed","Voting reduces accuracy whenever the answer is numeric","The model stops reasoning when voting is used"],
+      options:["Voting only works when N is above 100, because below that the answer counts are too noisy to rank","Voting works when wrong answers are scattered; a popular wrong answer wins, so a verifier is needed","Voting reduces accuracy whenever the answer is numeric, since numeric answers are rarely repeated exactly","The model stops reasoning properly when voting is used, because each sample is generated with less effort"],
       answer:1, hints:["What if the wrong answer is the most likely one?"],
       explain:"Majority voting assumes the correct answer is the most frequent one. When there is a systematic error, the wrong answer is the mode. Independent verification, not more samples, is the fix." },
     { id:'l6-07-q3', skill:'l6.reasoning', type:'code', difficulty:2,
@@ -136,7 +136,8 @@ export default [
     { t:'p', md:"To generate each new token, attention needs the keys and values of all previous tokens. Recomputing them every step would be wasteful, so they are stored: the **KV cache**. Its size per token is" },
     { t:'code', lang:'text', src:`bytes per token = 2 (key and value) x layers x KV heads x head dimension x bytes per number
 total = bytes per token x tokens in sequence x sequences in the batch`, caption:'Grouped-query attention reduces the number of KV heads, shrinking this directly.' },
-    { t:'p', md:"Example (a hypothetical 8-billion-parameter-class configuration): 32 layers, 8 KV heads, head dimension 128, 16-bit numbers (2 bytes). That is 2 × 32 × 8 × 128 × 2 = 131,072 bytes (128 KiB) per token. An 8,192-token sequence needs 1 GiB. Sixteen such sequences need 16 GiB, on top of the weights." },
+    { t:'p', md:"Example (a hypothetical 8-billion-parameter-class configuration): 32 layers, 8 KV heads, head dimension 128, 16-bit numbers (2 bytes). That is 2 × 32 × 8 × 128 × 2 = 131,072 bytes (128 KiB) per token. An 8,192-token sequence needs exactly 1 GiB. Sixteen such sequences need 16 GiB, on top of the weights." },
+    { t:'callout', kind:'tip', title:'Units: GB vs GiB', md:"In this course GB means 10^9 bytes and GiB means 2^30 bytes (about 1.074 x 10^9). Level 5 quotes weights in GB (a 7B model at 16 bits is about 14 GB). GPU memory is usually sold in GiB-style binary sizes but labelled GB, so keep a safety margin of a few percent whichever you use. Here, 1 GiB of cache is about 1.07 GB." },
     { t:'predict', q:"Using the configuration above, how much KV cache does a single 32,000-token sequence need?", options:['About 0.5 GiB','About 4 GiB','About 32 GiB','About 128 GiB'], answer:1, explain:"128 KiB × 32,000 tokens ≈ 4.1 GB, which is about 3.9 GiB, so about 4 GiB. Doubling context length doubles cache per sequence, which cuts the number of concurrent users.", skill:'l6.serving' },
     { t:'widget', w:'codeplay', props:{
         title:'KV-cache memory estimator',
@@ -162,7 +163,7 @@ total = bytes per token x tokens in sequence x sequences in the batch`, caption:
       ["Model parallelism","Split a model across several GPUs","Communication overhead; needed when weights exceed one GPU"]
     ]},
     { t:'callout', kind:'why', title:'Throughput vs latency is a dial, not a choice', md:"Larger batches use the GPU more efficiently (more tokens per second overall, lower cost per token) but each request waits for more neighbours, so latency rises. Interactive products set a latency service target and batch as much as that allows; offline jobs (bulk summarisation) batch aggressively." },
-    { t:'p', md:"Memory planning, worked example. A GPU has 80 GiB. Weights of the 8B-class model in 16-bit take about 16 GiB (8 billion × 2 bytes ≈ 15 GiB, rounded up). Reserve 4 GiB for activations and overhead. That leaves about 60 GiB for cache. At 1 GiB per 8k-token sequence, about 60 concurrent sequences. Quantise weights to 8 bits and you free about 8 GiB, roughly 8 more sequences. Quantise the cache itself and you can fit more again, subject to quality checks." },
+    { t:'p', md:"Memory planning, worked example. A GPU has 80 GiB. Weights of the 8B-class model in 16-bit take 8 billion × 2 bytes = 16 GB, which is about 14.9 GiB; we round up to 16 GiB for headroom. Reserve 4 GiB for activations and overhead. That leaves about 60 GiB for cache. At 1 GiB per 8k-token sequence, about 60 concurrent sequences. Quantise weights to 8 bits and you free about 8 GiB, roughly 8 more sequences. Quantise the cache itself and you can fit more again, subject to quality checks." },
     { t:'h', text:'Autoscaling and operations' },
     { t:'list', items:[
       "**Scale on the right signal.** CPU utilisation is a poor guide for GPU inference. Queue depth, concurrent requests and time to first token are better.",
@@ -200,7 +201,7 @@ total = bytes per token x tokens in sequence x sequences in the batch`, caption:
       explain:"60 GiB of cache divided by 1 GiB per sequence gives 60. Doubling context doubles the cache per sequence, so about 30 fit. Ignoring weights (80) or assuming concurrency does not depend on context length are the common errors." },
     { id:'l6-08-q3', skill:'l6.serving', type:'mcq', difficulty:2,
       q:"Which statement about batching is correct?",
-      options:["Larger batches always reduce latency for every user","Larger batches typically raise total throughput and lower cost per token, but can increase each request's latency","Batching only matters for training","Batching removes the need for a KV cache"],
+      options:["Larger batches always reduce latency for every user because the GPU is better utilised","Larger batches raise throughput and cut cost per token, at some cost in latency","Batching only matters for training; at inference time each request is already processed alone","Batching removes the need for a KV cache because all the requests share the same attention state"],
       answer:1, hints:["Think of throughput and latency as a dial."],
       explain:"Batching shares the weight reads across requests, improving utilisation, but requests may wait for the batch and share compute. It is a trade-off, tuned to the product's latency target." },
     { id:'l6-08-q4', skill:'l6.serving', type:'multi', difficulty:3,
@@ -345,7 +346,7 @@ total = bytes per token x tokens in sequence x sequences in the batch`, caption:
           {text:"We introduce Novel-Q, a retrieval method that improves answer accuracy by 12 points over the previous best.", claim:true, status:'unverifiable', why:"Over what baseline, how tuned, on which dataset? A headline number without these cannot be assessed."},
           {text:"Experiments use our internal benchmark of 150 questions written by the authors.", claim:false, status:'true', why:"A small, author-written set is a limitation, not necessarily a falsehood; it affects how far the result generalises."},
           {text:"Results are from a single run.", claim:false, status:'true', why:"No variance estimate: with 150 questions, a few questions change the score by several points."},
-          {text:"Therefore Novel-Q understands documents better than any existing approach.", claim:true, status:'false', why:"This goes beyond the evidence: one run on 150 internal questions cannot support 'any existing approach' or 'understands'."},
+          {text:"Therefore Novel-Q understands documents better than any existing approach.", claim:true, status:'unverifiable', why:"Unsupported rather than shown false: one run on 150 internal questions cannot support 'any existing approach' or 'understands', and the paper provides no evidence that would settle it either way."},
           {text:"Ablations show the reranking step contributes 8 of the 12 points.", claim:true, status:'unverifiable', why:"Good practice if true; check the table, number of runs and whether other components were also varied."}
         ]
       }, caption:'Flag sentences you would verify before believing. Then reveal.' },
@@ -417,7 +418,7 @@ total = bytes per token x tokens in sequence x sequences in the batch`, caption:
       explain:"Unequal tuning, missing ablations and possible contamination all weaken the claim. Multiple seeds with spread reported is good practice." },
     { id:'l6-10-q4', skill:'l6.research-literacy', type:'mcq', difficulty:3,
       q:"Two papers disagree: one reports that reasoning models fail beyond a complexity threshold; a response argues the failure reflects experimental limits. What is the best way to treat the question?",
-      options:["Trust whichever has the more famous authors","Treat it as disputed; read both, identify what each would need to show, and test the behaviour on your own tasks","Assume the newer paper is correct","Ignore both"],
+      options:["Trust whichever paper has the more famous authors and the larger number of citations","Treat it as disputed: read both, identify the cruxes, and test on your own tasks","Assume the newer paper is correct, since it was written with knowledge of the earlier one","Ignore both papers until a model vendor publishes an official statement on the question"],
       answer:1, hints:["Which option records uncertainty honestly?"],
       explain:"A live scientific dispute should be labelled as such, with the cruxes identified. Deferring to prestige or recency is a heuristic that often fails." },
     { id:'l6-10-q5', skill:'l6.research-literacy', type:'short', difficulty:2,

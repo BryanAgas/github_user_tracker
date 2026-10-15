@@ -2,6 +2,7 @@ import lessonsA from './l7/lessons-a.js';
 import lessonsB from './l7/lessons-b.js';
 import projectsA from './l7/projects-a.js';
 import projectsB from './l7/projects-b.js';
+import extra from './l7/extra-questions.js';
 
 export default {
   skills: [
@@ -18,7 +19,7 @@ export default {
     { id: 'l7.portfolio', name: 'Portfolio write-ups', desc: 'Present work with problem, tests, honest failures, limits and next steps.' },
     { id: 'l7.evidence-reporting', name: 'Evidence reporting', desc: 'Make claims that a reviewer can check with numbers, test sets and failure analysis.' },
   ],
-  lessons: [...lessonsA, ...lessonsB],
+  lessons: [...lessonsA, ...lessonsB].map((L) => ({ ...L, quiz: [...L.quiz, ...(extra[L.id] || [])] })),
   projects: [...projectsA, ...projectsB],
   glossary: [
     { term: 'Scope', def: 'The agreed boundary of what a product will and will not do for a specific user. Explicit exclusions make it testable.', level: 7, see: ['Spec'] },

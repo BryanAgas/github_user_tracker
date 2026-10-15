@@ -2,6 +2,7 @@
 import a from './l1/a.js';
 import b from './l1/b.js';
 import c from './l1/c.js';
+import quizzes from './l1/quizzes.js';
 
 export default {
   skills: [
@@ -21,7 +22,7 @@ export default {
     { id: 'l1.verify', name: 'Verification habits', desc: 'Match checking to stakes and check against independent evidence.' }
   ],
 
-  lessons: [...a, ...b, ...c],
+  lessons: [...a, ...b, ...c].map((L) => ({ ...L, quiz: quizzes[L.id] })),
 
   projects: [
     {

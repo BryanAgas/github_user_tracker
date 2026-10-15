@@ -66,4 +66,57 @@ export const projects = [{
     'Write a one-page blameless postmortem for a simulated incident (double refund) using your own traces design.'
   ],
   est: '3 to 4 hours'
+},
+{
+  id: 'p4b', level: 4,
+  title: 'Code project: eval harness core (scorer, slices and release gate)',
+  objective: 'Implement the pure scoring core of an evaluation harness: grade each case (required text present, forbidden text absent), aggregate by category, track must-pass failures separately, and make the ship/block decision. This is the part of the capstone you can test objectively.',
+  skills: ['l4.evals', 'l4.guardrails', 'l4.injection'],
+  kind: 'code',
+  requirements: [
+    'Pass the supplied tests, including the edge cases (missing output, empty suite, forbidden text, must-pass failure with a high average)',
+    'Handle every case deterministically with no network, randomness or clock',
+    'Round all rates to 2 decimals and compare the rounded overall rate to the threshold',
+    'Add at least 3 further test cases of your own outside the app that target a bug you could plausibly make'
+  ],
+  guidance: [
+    { title: '1. Decide the grading rule', md: "A case passes when the lower-cased, trimmed output contains `expect` and, if the case has a `forbid` string, does not contain it. A missing output is a failure, never a skip: otherwise a crashed run would raise your score." },
+    { title: '2. Aggregate by category', md: "Build a map from category to {pass, total, rate}. Use the order cases first appear. Never report only the overall mean; the capstone's point is that averages hide critical slices." },
+    { title: '3. Separate must-pass failures', md: "Collect ids of cases with `mustPass: true` that failed. The gate is `ship` only if the rounded overall rate is at least the threshold AND there are no must-pass failures. Try the case where the average is 0.95 and one must-pass case fails." },
+    { title: '4. Test the tests', md: "Break your own function on purpose (ignore `forbid`, skip missing outputs, use the raw rate) and check that a test goes red each time. If nothing fails, add a test." }
+  ],
+  hints: [
+    'Use an object keyed by category and add to it as you loop.',
+    'A forbidden-text check is just `!out.includes(forbid)` after lower-casing both sides.',
+    'Compute overall = Math.round(passed / total * 100) / 100 and use that for the gate comparison.',
+    'Empty suite: return overall 0, no categories, mustFail [], gate block.'
+  ],
+  success: [
+    'All shipped tests pass',
+    'Your own extra tests exist and each targets a distinct plausible bug',
+    'The gate blocks a run with a high average but one failed must-pass case',
+    'Missing outputs and empty suites cannot produce a ship decision'
+  ],
+  fnName: 'scoreSuite',
+  starter: "function scoreSuite(cases, outputs, minRate) {\n  // cases: [{id, category, expect, forbid?, mustPass?}]; outputs: {id: text}\n  // pass = output (trimmed, lower-cased) includes expect (lower-cased)\n  //        AND (no forbid OR output does not include forbid). Missing output = fail.\n  // return {\n  //   overall: rate rounded to 2 decimals (0 for an empty suite),\n  //   byCategory: { name: {pass, total, rate} } (rate 2 decimals),\n  //   mustFail: [ids of failed cases with mustPass true, in case order],\n  //   gate: 'ship' if overall >= minRate and mustFail is empty and suite is non-empty, else 'block'\n  // }\n  return { overall: 0, byCategory: {}, mustFail: [], gate: 'block' };\n}",
+  tests: [
+    { label: 'all pass, ship', args: [[{ id: 'a', category: 'refund', expect: 'refund' }, { id: 'b', category: 'refund', expect: 'policy' }], { a: 'Refund issued', b: 'See POLICY' }, 0.9], expect: { overall: 1, byCategory: { refund: { pass: 2, total: 2, rate: 1 } }, mustFail: [], gate: 'ship' } },
+    { label: 'missing output counts as a failure', args: [[{ id: 'a', category: 'x', expect: 'ok' }, { id: 'b', category: 'x', expect: 'ok' }], { a: 'ok' }, 0.5], expect: { overall: 0.5, byCategory: { x: { pass: 1, total: 2, rate: 0.5 } }, mustFail: [], gate: 'ship' } },
+    { label: 'forbidden text fails the case', args: [[{ id: 'a', category: 'safety', expect: 'cannot', forbid: 'password' }], { a: 'I cannot share the password' }, 0.5], expect: { overall: 0, byCategory: { safety: { pass: 0, total: 1, rate: 0 } }, mustFail: [], gate: 'block' } },
+    { label: 'must-pass failure blocks despite a high average', args: [[{ id: 'a', category: 'basic', expect: 'x' }, { id: 'b', category: 'basic', expect: 'x' }, { id: 'c', category: 'basic', expect: 'x' }, { id: 'd', category: 'basic', expect: 'x' }, { id: 'e', category: 'basic', expect: 'x' }, { id: 'f', category: 'basic', expect: 'x' }, { id: 'g', category: 'basic', expect: 'x' }, { id: 'h', category: 'basic', expect: 'x' }, { id: 'i', category: 'basic', expect: 'x' }, { id: 'j', category: 'inj', expect: 'refuse', mustPass: true }], { a: 'x', b: 'x', c: 'x', d: 'x', e: 'x', f: 'x', g: 'x', h: 'x', i: 'x', j: 'sure, done' }, 0.9], expect: { overall: 0.9, byCategory: { basic: { pass: 9, total: 9, rate: 1 }, inj: { pass: 0, total: 1, rate: 0 } }, mustFail: ['j'], gate: 'block' } },
+    { label: 'rounded rate is compared to the threshold', args: [[{ id: 'a', category: 'c', expect: 'x' }, { id: 'b', category: 'c', expect: 'x' }, { id: 'c', category: 'c', expect: 'x' }], { a: 'x', b: 'x' }, 0.67], expect: { overall: 0.67, byCategory: { c: { pass: 2, total: 3, rate: 0.67 } }, mustFail: [], gate: 'ship' } },
+    { label: 'empty suite never ships', args: [[], {}, 0], expect: { overall: 0, byCategory: {}, mustFail: [], gate: 'block' } }
+  ],
+  solution: "function scoreSuite(cases, outputs, minRate) {\n  const r2 = (x) => Math.round(x * 100) / 100;\n  if (!cases.length) return { overall: 0, byCategory: {}, mustFail: [], gate: 'block' };\n  const byCategory = {}; const mustFail = []; let passed = 0;\n  for (const c of cases) {\n    const raw = outputs[c.id];\n    const out = typeof raw === 'string' ? raw.trim().toLowerCase() : null;\n    let ok = out !== null && out.includes(c.expect.toLowerCase());\n    if (ok && c.forbid && out.includes(c.forbid.toLowerCase())) ok = false;\n    const b = byCategory[c.category] || (byCategory[c.category] = { pass: 0, total: 0, rate: 0 });\n    b.total++; if (ok) { b.pass++; passed++; } else if (c.mustPass) mustFail.push(c.id);\n  }\n  for (const k of Object.keys(byCategory)) byCategory[k].rate = r2(byCategory[k].pass / byCategory[k].total);\n  const overall = r2(passed / cases.length);\n  return { overall, byCategory, mustFail, gate: overall >= minRate && !mustFail.length ? 'ship' : 'block' };\n}",
+  rubric: [
+    { criterion: 'Correctness', lookFor: 'All tests pass; gate logic uses the rounded overall rate and must-pass failures.' },
+    { criterion: 'Robustness', lookFor: 'Missing outputs, empty suites and forbidden text are handled without crashes or accidental ships.' },
+    { criterion: 'Test design', lookFor: 'Own tests target plausible bugs (ignored forbid, skipped missing outputs, mean-only gating).' }
+  ],
+  extensions: [
+    'Add a per-category minimum rate so a weak slice can block on its own.',
+    'Add a judge adapter that treats an invalid judge reply as a failure and reports the invalid count.',
+    'Add confidence intervals per category and flag categories with fewer than 5 cases as low-confidence.'
+  ],
+  est: '60 min'
 }];

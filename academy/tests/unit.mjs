@@ -6,8 +6,13 @@ globalThis.sessionStorage = globalThis.localStorage;
 globalThis.addEventListener = () => {};
 const C = await import('../js/content.js'); const S = await import('../js/store.js'); const M = await import('../js/mastery.js');
 const P = await import('../js/paths.js'); const T = await import('../js/tutor.js'); const A = await import('../js/assess.js').catch(() => null);
-let pass = 0; const t = (name, fn) => { try { fn(); pass++; } catch (e) { console.error('✗', name, '\n  ', e.message); process.exitCode = 1; } };
+let pass = 0; const pending = [];
+const fail = (name, e) => { console.error('✗', name, '\n  ', e.message); process.exitCode = 1; };
+const t = (name, fn) => { try { const r = fn(); if (r && r.then) pending.push(r.then(() => { pass++; }, (e) => fail(name, e))); else pass++; } catch (e) { fail(name, e); } };
 const reset = () => { S.resetAll(); };
+const daysAgo = (n) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+// make the earliest evidence for a skill n days old (spacing is part of what Strong means)
+const backdate = (skill, n, count = 1) => S.state.evidence[skill].slice(0, count).forEach((e) => (e.t = daysAgo(n)));
 
 t('all 8 levels loaded with lessons, projects, skills', () => {
   assert.ok(C.levels.every((l) => l.ready), 'a level failed to load');
@@ -17,8 +22,8 @@ t('all 8 levels loaded with lessons, projects, skills', () => {
 t('every skill is taught by at least one lesson and tested by at least one question', () => {
   for (const s of C.skillById.values()) { if (!s.id.startsWith('l7.')) assert.ok(s.lessons.length, 'no lesson teaches ' + s.id); assert.ok(C.questionsForSkill(s.id).length, 'no question tests ' + s.id); }
 });
-t('placement questions exist for levels 0-6 and are mcq (usable in onboarding)', () => {
-  for (let n = 0; n <= 6; n++) assert.ok([...C.questionById.values()].some((q) => q.level === n && q.placement && q.type === 'mcq'), 'no mcq placement question at L' + n);
+t('placement: exactly 2 self-contained MCQs per level 0-6 (onboarding asks both and needs both)', () => {
+  for (let n = 0; n <= 6; n++) { const ps = [...C.questionById.values()].filter((q) => q.level === n && q.placement); assert.equal(ps.length, 2, `L${n} has ${ps.length} placement questions`); assert.ok(ps.every((q) => q.type === 'mcq'), `L${n} placement must be MCQ`); }
 });
 t('mastery: opening a lesson gives NO mastery', () => {
   reset(); const L = C.lessons[0]; M.openLesson(L.id);
@@ -29,12 +34,14 @@ t('mastery: a single correct answer is only "needs practice"', () => {
   reset(); const s = C.lessons[0].skills[0]; M.addEvidence(s, 1, 1, 'quiz:a');
   assert.equal(M.skillStatus(s).status, 'practice');
 });
-t('mastery: strong needs ≥3 weight, ≥2 sources, score ≥0.8', () => {
+t('mastery: strong needs ≥3 weight, ≥2 different days, score ≥0.8', () => {
   reset(); const s = C.lessons[0].skills[0];
-  M.addEvidence(s, 1, 1, 'quiz:q1'); M.addEvidence(s, 1, 1, 'quiz:q2'); M.addEvidence(s, 1, 1, 'quiz:q3');
+  for (let i = 0; i < 4; i++) M.addEvidence(s, 1, 1, 'quiz:q' + i);
+  assert.equal(M.skillStatus(s).status, 'practice', 'one sitting, however good, is not Strong (no spacing)');
+  backdate(s, 2);
   assert.equal(M.skillStatus(s).status, 'strong');
-  reset(); M.addEvidence(s, 1, 1, 'quiz:q1'); M.addEvidence(s, 0.5, 1, 'quiz:q1'); M.addEvidence(s, 1, 1, 'quiz:q1');
-  assert.equal(M.skillStatus(s).status, 'practice', 'weak score or single source must not be strong');
+  reset(); M.addEvidence(s, 1, 1, 'quiz:q1'); M.addEvidence(s, 0.5, 1, 'quiz:q2'); M.addEvidence(s, 0.5, 1, 'quiz:q3'); backdate(s, 3);
+  assert.equal(M.skillStatus(s).status, 'practice', 'a weak score must not be strong');
 });
 t('mastery: stale evidence downgrades strong to review-due', () => {
   reset(); const s = C.lessons[0].skills[0];
@@ -46,6 +53,7 @@ t('mastery: stale evidence downgrades strong to review-due', () => {
 t('mastery: recent mistakes outweigh old successes', () => {
   reset(); const s = C.lessons[0].skills[0];
   for (let i = 0; i < 4; i++) M.addEvidence(s, 1, 1, 'quiz:q' + i);
+  backdate(s, 3, 2);
   for (let i = 0; i < 3; i++) M.addEvidence(s, 0, 1, 'review:r' + i);
   assert.notEqual(M.skillStatus(s).status, 'strong');
 });
@@ -63,7 +71,7 @@ t('lesson completion needs quiz evidence ≥60%', () => {
 });
 t('level certificate requires ≥75% skills strong AND a passed project', () => {
   reset(); const sk = C.skillsOfLevel(0);
-  sk.forEach((s) => { for (let i = 0; i < 3; i++) M.addEvidence(s.id, 1, 1, 'quiz:' + i); });
+  sk.forEach((s) => { for (let i = 0; i < 3; i++) M.addEvidence(s.id, 1, 1, 'quiz:' + i); backdate(s.id, 2, 1); });
   assert.equal(M.levelProgress(0).certified, false, 'no project yet');
   S.state.projects[C.projectsOfLevel(0)[0].id] = { passedAt: '2026-01-01', ticks: [] };
   assert.equal(M.levelProgress(0).certified, true);
@@ -108,7 +116,7 @@ t('tutor: glossary + course search answer from course material', () => {
   const hits = T.search('context window', 3); assert.ok(hits.length >= 1);
 });
 t('tutor: local fallback is honest when nothing matches', () => {
-  const r = new T.Tutor().local('zxqv blorp wibble', {}); assert.ok(/can’t find/i.test(r.md));
+  const r = new T.Tutor().local('zxqv blorp wibble', {}); assert.ok(/don’t have a good answer/i.test(r.md));
 });
 t('content: no raw html, current keys resolve, no placeholder text', () => {
   const bad = /<\/?(script|iframe|img|div)\b|lorem ipsum/i;
@@ -124,4 +132,33 @@ t('content: code questions - starter must not already pass its tests', async () 
 t('content: project test lists are well-formed', () => {
   for (const p of C.projectById.values()) if (p.kind === 'code') { assert.ok(p.tests.every((x) => Array.isArray(x.args) && 'expect' in x), p.id); }
 });
+t('tutor: never answers a beginner from advanced material', () => {
+  reset(); const tu = new T.Tutor(); const L = C.lessonById.get('l0-05');
+  const r = tu.local("I don't understand this", { lessonId: L.id }); assert.ok(r.structured, 'free-text confusion goes to the re-teach path');
+  const hits = T.search('LoRA fine-tuning adapters', 5, { maxLevel: T.levelCap(L) }); assert.ok(hits.every((h) => (h.d.lesson ? h.d.lesson.level : h.d.level) <= 1));
+});
+t('tutor: worry questions get a pointer, not a random paragraph', () => {
+  const r = new T.Tutor().local('is it going to take my job?', {}); assert.ok(/real question/i.test(r.md) && r.actions.length);
+});
+t('store: hostile or corrupt imports are rejected or sanitised, never break the app', () => {
+  const bad = { v: 1, lessons: null, notes: 5, seenQuestions: [], days: 'x', evidence: { '__proto__': [{ t: '2026-01-01', s: 1, w: 1, src: 'x' }], ok: [{ t: 'nope', s: 9, w: 1 }, { t: '2026-01-02', s: 9, w: 99, src: 5 }], 'a b': [] }, profile: { aiRating: 99, path: { x: 1 } } };
+  S.importData(JSON.stringify(bad));
+  assert.deepEqual(S.state.lessons, {}); assert.equal(Object.getPrototypeOf(S.state.evidence), Object.prototype);
+  assert.ok(!Object.prototype.hasOwnProperty.call(S.state.evidence, '__proto__')); assert.equal(S.state.evidence.ok.length, 1); assert.ok(S.state.evidence.ok[0].s <= 1 && S.state.evidence.ok[0].w <= 5);
+  assert.ok(S.state.profile.aiRating <= 5); assert.equal(typeof S.state.profile.path, 'string');
+  assert.throws(() => S.importData('{"v":2}')); assert.throws(() => S.importData('x'.repeat(2_000_001)));
+  M.skillStatus('l0.what-is-ai'); P.nextUp();
+});
+t('paths: AI engineer/researcher skip L7 coaching lessons but still get its projects', () => {
+  for (const k of ['engineer', 'researcher']) { const ls = P.pathLessons(k).filter((l) => l.level === 7); assert.ok(ls.every((l) => l.core), k); assert.ok(P.pathProjects(k).some((p) => p.level === 7), k); }
+});
+t('projects: filler + keywords is caught by the quality gate; genuine prose passes', async () => {
+  const B = await import('../js/views/build.js');
+  const lorem = '# Architecture\n' + 'Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor. '.repeat(30) + '\n# Failure modes\n| a | b | c |\n| 1 | 2 | 3 |\n10. done escalation approval injection owner autonomy level\n# Eval set\nword word word word word word word word word word word word word word word word word word word word word word word word word word word word word word.';
+  const bad = B.qualityChecks(lorem); assert.ok(bad.some((c) => !c.pass), 'filler must fail at least one quality check: ' + JSON.stringify(bad.map((c) => [c.id, c.pass])));
+  const real = '# Architecture\nThe workflow starts when a late-shipment email arrives in the shared inbox. A first model call classifies the message as a delay, a damage claim or something else, and only delays continue automatically. We keep the customer record out of the prompt until the classification is done, because the record contains addresses that the classifier does not need.\n# Failure modes\nThe most likely failure is a misclassified damage claim being answered as a delay, which could cost us a customer, so every message below ninety percent confidence goes to a human. A second failure is a stale tracking number; we handle that by refusing to quote a date unless the carrier lookup succeeded in the last hour.\n# Evaluation\nWe will keep forty real emails with the right answer written by the team lead, run the workflow on all of them every time the prompt changes, and block a release if accuracy on damage claims drops below the previous version, because that is the costly mistake.';
+  const ok = B.qualityChecks(real); assert.ok(ok.every((c) => c.pass), 'genuine prose should pass: ' + JSON.stringify(ok.filter((c) => !c.pass)));
+  const r = B.localReview({ rubric: [] }, real); assert.ok(r.next.length + r.strengths.length > 0);
+});
+await Promise.all(pending);
 console.log(`${pass} unit tests passed`);

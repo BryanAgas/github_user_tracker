@@ -1,3 +1,6 @@
+import quiz from './q04.js';
+const Q = (id, title) => { const q = quiz.find((x) => x.id === id); return { title, fnName: q.fnName, starter: q.starter, tests: q.tests, hints: q.hints }; };
+
 export default {
   id: 'l4-04', title: 'Retrieval strategies: hybrid search, reranking, query rewriting', minutes: 22,
   hook: 'When a RAG answer is wrong, it is usually the retrieval that failed, and you can find out which part.',
@@ -28,7 +31,7 @@ export default {
     { t: 'callout', kind: 'why', title: 'Measure retrieval separately', md: "Evaluate retrieval on its own with questions whose correct source passage you know: is it in the top 5? (recall@5). If the right chunk never arrives, no prompt can rescue the answer; if it arrives and the answer is still wrong, the problem is generation. Separating the two halves your debugging time." },
     { t: 'predict', q: "Users searching 'error E-4091' get generic articles about errors. Which change most directly helps?", options: ["Add keyword (BM25) search and fuse with the vector results", "Increase chunk size to 5,000 tokens", "Use a larger chat model for the answer", "Lower the temperature"], answer: 0, explain: "Embeddings blur exact codes into 'error-ness'. Keyword matching treats 'E-4091' as a rare, highly informative token. Hybrid retrieval keeps both strengths.", skill: 'l4.retrieval' },
     { t: 'p', md: "Implement the merge step." },
-    { t: 'widget', w: 'codeplay', props: { title: 'Reciprocal rank fusion', fnName: 'rrf', starter: "function rrf(rankings, k) {\n  // rankings: [[id, id, ...], [id, ...]] best first\n  // score(id) = sum over lists of 1/(k + rank), rank starting at 1\n  // return ids by score desc; ties by id ascending\n}", tests: [{ args: [[['a', 'b'], ['b', 'a']], 60], expect: ['a', 'b'] }], hints: ['Use an object to accumulate scores.', 'Sort by score then by id.'] } },
+    { t: 'widget', w: 'codeplay', props: Q('l4-04-q4', 'Reciprocal rank fusion') },
     { t: 'try', prompt: "A user asks 'does it come in blue?' right after discussing the Model X kettle. Write the rewritten standalone query and say what could go wrong if rewriting is skipped.", sample: "Rewritten: 'Is the Model X kettle available in blue?' Without rewriting, 'does it come in blue' is embedded with no subject and retrieves any blue product, so the answer may describe the wrong item confidently." }
   ],
   reteach: [
@@ -36,21 +39,7 @@ export default {
     { style: 'step-by-step', md: "1. Clean up the question. 2. Search by words and by meaning. 3. Merge the two lists. 4. Re-read the best candidates carefully. 5. Answer only from what you found, with citations; admit when nothing good was found." },
     { style: 'technical', md: "Two-stage retrieval: high-recall candidate generation (BM25 + dense ANN), rank fusion (RRF, k typically around 60), then cross-encoder reranking for precision at small k. Evaluate with recall@k and MRR on labelled queries before judging answer quality." }
   ],
-  quiz: [
-    { id: 'l4-04-q1', skill: 'l4.retrieval', type: 'mcq', difficulty: 2, q: "Postmortem: a RAG assistant said a warranty is 12 months. The policy says 24 months for the premium range. Logs show the premium policy chunk was never retrieved; an older general policy was. What do you fix first?", options: ["Retrieval: add recall measures, metadata filters or hybrid search so the right chunk is fetched", "The answer prompt: add 'be accurate'", "Switch to a larger model", "Increase the temperature to explore more"], answer: 0, hints: ["Was the correct source ever in the prompt?", "Fix the stage that failed."], explain: "The answer was faithful to what was retrieved. The evidence was wrong or missing, so tuning generation cannot help." },
-    { id: 'l4-04-q2', skill: 'l4.retrieval', type: 'mcq', difficulty: 2, q: "Why use reciprocal rank fusion rather than adding raw BM25 and cosine scores together?", options: ["The score scales differ and are not comparable; ranks are", "RRF is always more accurate than any single list", "Cosine scores are illegal to add", "BM25 scores are always larger"], answer: 0, hints: ["What units is each score in?", "Think about calibration."], explain: "BM25 and cosine live on different scales that shift with the corpus. Ranks are comparable across lists. RRF is a robust default, not a guarantee of best accuracy." },
-    { id: 'l4-04-q3', skill: 'l4.retrieval', type: 'multi', difficulty: 3, q: "Retrieval latency has risen sharply after adding a reranker over the top 200 candidates. Which changes would likely help without wrecking quality? Select all that apply.", options: ["Rerank only the top 30 to 50", "Use a smaller or faster reranker", "Remove first-stage retrieval entirely and rerank the whole corpus", "Cache reranked results for repeated queries"], answer: [0, 1, 3], hints: ["Reranking cost scales with candidates.", "Which option increases work?"], explain: "Rerankers are expensive per pair, so limit candidates, pick a lighter model, or cache. Reranking the whole corpus would be far slower." },
-    { id: 'l4-04-q4', skill: 'l4.retrieval', type: 'code', difficulty: 3, q: "Write rrf(rankings, k): each ranking is an array of ids best-first. score(id) = sum of 1/(k + rank) over rankings that contain it (rank starts at 1). Return all ids sorted by score descending; ties by id ascending.", fnName: 'rrf',
-      starter: "function rrf(rankings, k) {\n  return [];\n}",
-      tests: [
-        { args: [[['a', 'b'], ['b', 'a']], 60], expect: ['a', 'b'] },
-        { args: [[['a', 'b', 'c'], ['c', 'b', 'd']], 60], expect: ['c', 'b', 'a', 'd'] },
-        { args: [[['x']], 60], expect: ['x'] },
-        { args: [[], 60], expect: [] },
-        { args: [[['m', 'n'], ['o', 'm']], 1], expect: ['m', 'o', 'n'] } ],
-      solution: "function rrf(rankings, k) {\n  const score = {};\n  for (const list of rankings) {\n    list.forEach((id, i) => { score[id] = (score[id] || 0) + 1 / (k + i + 1); });\n  }\n  return Object.keys(score).sort((a, b) => (score[b] - score[a]) || (a < b ? -1 : a > b ? 1 : 0));\n}",
-      hints: ["rank = index + 1.", "Appearing in two lists adds two terms."], explain: "In test 2, c (third, then first) narrowly beats b (second in both), and both beat a and d which appear in only one list. In the last test with k=1: m scores 1/2+1/3, o 1/2, n 1/3." }
-  ],
+  quiz,
   takeaways: ['Hybrid retrieval combines exact and semantic matching.', 'Rerank a small candidate set for precision; watch the latency.', 'Rewrite queries using conversation context; log original and rewritten.', 'Measure retrieval separately from generation.'],
   apply: "Collect ten real questions your users ask and note, for each, the passage that answers it. That is the start of a retrieval test set."
 };

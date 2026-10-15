@@ -11,17 +11,17 @@ function h(tag, a = {}, ...kids) {
   for (const c of kids.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(c));
   return e;
 }
-const DEF = { req: 5000, tin: 1800, tout: 350, pin: 3, pout: 15, pcache: 0.3, hit: 40, retry: 5 };
+const DEF = { req: 5000, tin: 1800, tout: 350, pin: 3, pout: 15, pcache: 0.3, hit: 40, retry: 5, wp: 25 };
 const FIELDS = [
   ['req', 'Requests per day', 'req/day', 'Traffic'], ['tin', 'Input tokens per request', 'tokens', 'Prompt + context'], ['tout', 'Output tokens per request', 'tokens', 'Answer length'],
   ['pin', 'Input price per million tokens', 'money', 'Example number: enter your provider\'s'], ['pout', 'Output price per million tokens', 'money', 'Example number: enter your provider\'s'],
-  ['pcache', 'Cached-input price per million', 'money', 'Example number: enter your provider\'s'], ['hit', 'Cache hit rate', '%', 'Share of input served from cache'], ['retry', 'Retry rate', '%', 'Requests that run again'],
+  ['pcache', 'Cached-input price per million', 'money', 'Example number: enter your provider\'s'], ['hit', 'Cache hit rate', '%', 'Share of input served from cache'], ['wp', 'Cache write premium', '%', 'Example number: extra price on input written to the cache (only when cache hit rate > 0)'], ['retry', 'Retry rate', '%', 'Requests that run again'],
 ];
 function cost(v) {
   const days = 30, reqs = v.req * days, hit = Math.min(1, v.hit / 100), rr = v.retry / 100;
-  const inU = reqs * v.tin * (1 - hit) * v.pin / 1e6, inC = reqs * v.tin * hit * v.pcache / 1e6, out = reqs * v.tout * v.pout / 1e6;
-  const base = inU + inC + out, retries = base * rr;
-  return { inU, inC, out, retries, total: base + retries };
+  const inU = reqs * v.tin * (1 - hit) * v.pin / 1e6, inW = hit > 0 ? inU * v.wp / 100 : 0, inC = reqs * v.tin * hit * v.pcache / 1e6, out = reqs * v.tout * v.pout / 1e6;
+  const base = inU + inW + inC + out, retries = base * rr;
+  return { inU, inW, inC, out, retries, total: base + retries };
 }
 const money = (x) => (x < 100 ? x.toFixed(2) : Math.round(x).toLocaleString('en-US'));
 
@@ -49,7 +49,7 @@ export function mount(el, props = {}, ctx = {}) {
     const c = cost(v);
     total.textContent = '';
     total.append(h('span', { class: 'w-cc-lbl', text: 'Estimated monthly cost' }), h('b', { class: 'w-cc-big', text: money(c.total) }), h('span', { class: 'w-cc-per', text: `${(c.total / Math.max(1, v.req * 30) * 1000).toFixed(2)} per 1,000 requests` }));
-    const parts = [['Input (fresh)', c.inU], ['Input (cached)', c.inC], ['Output', c.out], ['Retries', c.retries]];
+    const parts = [['Input (fresh)', c.inU], ['Input (cached)', c.inC], ['Cache write premium', c.inW], ['Output', c.out], ['Retries', c.retries]];
     const mx = Math.max(1e-9, ...parts.map((p) => p[1]));
     bars.textContent = '';
     parts.forEach(([n, x], i) => bars.append(h('div', { class: 'w-cc-bar' }, h('span', { class: 'w-cc-bn', text: n }), h('div', { class: 'w-b-meter' }, h('i', { class: 'w-cc-fill' + i, style: `width:${(x / mx) * 100}%` })), h('span', { class: 'w-cc-bv', text: `${money(x)} (${c.total ? Math.round((x / c.total) * 100) : 0}%)` }))));

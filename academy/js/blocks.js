@@ -60,7 +60,7 @@ function predict(lesson, b, i) {
     const ok = +c.value === b.answer;
     opts.querySelectorAll('input').forEach((x) => { x.disabled = true; if (+x.value === b.answer) x.parentElement.classList.add('right'); });
     lock.hidden = true;
-    fb.replaceChildren(h('div', { class: `callout ${ok ? 'good' : 'info'}` }, h('strong', {}, ok ? 'Good instinct. ' : 'Interesting — that’s the usual guess. '), inline(b.explain)));
+    fb.replaceChildren(h('div', { class: `callout ${ok ? 'good' : 'info'}` }, h('strong', {}, ok ? 'Good instinct. ' : 'Not quite — and it’s a very common guess. '), inline(b.explain)));
     if (b.skill) addEvidence(b.skill, ok ? 1 : 0, 0.5, `predict:${name}`);
     announce(ok ? 'Correct prediction' : 'Not what happens');
   });

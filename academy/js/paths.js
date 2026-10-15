@@ -11,13 +11,13 @@ export const PATHS = {
   founder:    { label: 'Founder', who: 'You decide what to build, buy and trust.', rules: { 0: 'core', 1: 'core', 2: 'all', 3: 'corenocode', 4: 'corenocode', 7: 'nocode' }, projects: 'text' },
   developer:  { label: 'Developer', who: 'You can code and want to build AI features properly.', rules: { 0: 'core', 1: 'core', 2: 'all', 3: 'all', 4: 'all', 5: 'core', 6: 'core', 7: 'all' }, projects: 'all' },
   data:       { label: 'Data professional', who: 'You know data and statistics; now models, retrieval and evaluation.', rules: { 0: 'core', 1: 'core', 2: 'core', 3: 'all', 4: 'core', 5: 'all', 6: 'core', 7: 'all' }, projects: 'all' },
-  engineer:   { label: 'AI engineer', who: 'You ship software and want production-grade depth.', rules: { 2: 'core', 3: 'core', 4: 'all', 5: 'all', 6: 'all', 7: 'all' }, projects: 'all' },
-  researcher: { label: 'Researcher', who: 'You want mechanisms, evidence and the frontier.', rules: { 0: 'core', 1: 'core', 3: 'core', 4: 'core', 5: 'all', 6: 'all', 7: 'nocode' }, projects: 'all' },
+  engineer:   { label: 'AI engineer', who: 'You ship software and want production-grade depth.', rules: { 2: 'core', 3: 'core', 4: 'all', 5: 'all', 6: 'all', 7: 'core' }, projects: 'all' },
+  researcher: { label: 'Researcher', who: 'You want mechanisms, evidence and the frontier.', rules: { 0: 'core', 1: 'core', 3: 'core', 4: 'core', 5: 'all', 6: 'all', 7: 'core' }, projects: 'all' },
   everything: { label: 'The whole curriculum', who: 'Every lesson, every level, in order.', rules: { 0: 'all', 1: 'all', 2: 'all', 3: 'all', 4: 'all', 5: 'all', 6: 'all', 7: 'all' }, projects: 'all' },
 };
 export const ROLE_TO_PATH = { beginner: 'beginner', nontech: 'explorer', business: 'professional', founder: 'founder', developer: 'developer', data: 'data', engineer: 'engineer', researcher: 'researcher' };
 
-const ok = (L, rule) => rule === 'all' ? true : rule === 'core' ? !!L.core : rule === 'nocode' ? !L.code : rule === 'corenocode' ? (!!L.core && !L.code) : false;
+const ok = (L, rule) => rule === 'projects' ? false : rule === 'all' ? true : rule === 'core' ? !!L.core : rule === 'nocode' ? !L.code : rule === 'corenocode' ? (!!L.core && !L.code) : false;
 
 export function pathLessons(pathId = state.profile.path) {
   const P = PATHS[pathId] || PATHS.beginner;
@@ -26,10 +26,13 @@ export function pathLessons(pathId = state.profile.path) {
 export function pathProjects(pathId = state.profile.path) {
   const P = PATHS[pathId] || PATHS.beginner;
   const out = [];
-  for (const L of new Set(pathLessons(pathId).map((l) => l.level))) for (const p of projectsOfLevel(L)) if (P.projects === 'all' || p.kind === 'text') out.push(p);
+  const levels = new Set([...pathLessons(pathId).map((l) => l.level), ...Object.entries(P.rules).filter(([, r]) => r === 'projects').map(([n]) => +n)]);
+  for (const L of [...levels].sort()) for (const p of projectsOfLevel(L)) if (P.projects === 'all' || p.kind === 'text') out.push(p);
   return out;
 }
 export const inPath = (id) => pathLessons().some((l) => l.id === id);
+// The lesson after `id` on the learner's path (falls back to the curriculum order if the path ends).
+export function nextOnPath(id) { const pl = pathLessons(); const i = pl.findIndex((l) => l.id === id); if (i >= 0) return pl[i + 1] || null; const here = lessons.find((l) => l.id === id); return pl.find((l) => here && (l.level > here.level || (l.level === here.level && l.index > here.index))) || null; }
 
 // Where to go next: first unfinished lesson on the path at/after the placement level; then the level project.
 export function nextUp() {

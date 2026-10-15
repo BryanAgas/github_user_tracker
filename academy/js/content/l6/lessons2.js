@@ -107,7 +107,7 @@ export default [
       explain:"A loop guard counts directed pairs. It treats A->B and B->A as different pairs; a guard that only counts unordered pairs would double-count. The strict ‘more than’ comparison matters for the boundary." },
     { id:'l6-04-q4', skill:'l6.multi-agent', type:'mcq', difficulty:3,
       q:"Two worker agents write different values for a company's headcount to shared state. Which design response is best?",
-      options:["Last write wins, since the later agent is probably right","Require structured claims with source and confidence, and have the supervisor or a verifier reconcile conflicts and flag unresolved ones","Let the agents debate until they agree","Delete shared state and rely on each agent's memory"],
+      options:["Last write wins, since the agent that wrote later has probably seen more of the evidence","Require structured claims with sources, then have a verifier reconcile conflicts","Let the two agents debate with each other until they reach agreement on a single value","Delete shared state and rely on each agent's own memory of what it found"],
       answer:1, hints:["Which option preserves provenance?","Is 'later' evidence of correctness?"],
       explain:"Provenance (source, confidence) makes conflicts visible and resolvable. Last-write-wins hides disagreement; debate may end in a confident wrong consensus; dropping shared state loses coordination altogether." },
     { id:'l6-04-q5', skill:'l6.multi-agent', type:'short', difficulty:2,
@@ -203,7 +203,7 @@ export default [
   quiz:[
     { id:'l6-05-q1', skill:'l6.agent-security', type:'mcq', difficulty:2,
       q:"A browser agent with access to a user's logged-in email can also browse arbitrary websites. Which design change reduces risk the most?",
-      options:["Add 'never follow instructions found on web pages' to the system prompt","Separate the tasks: browsing in a sandbox without the email session, and email actions with only trusted inputs and a human confirmation for sending","Use a larger model","Hide the system prompt"],
+      options:["Add a system-prompt line telling the model never to follow instructions that appear on web pages","Separate the tasks: sandboxed browsing without the email session, and human-confirmed sending","Use a larger model, because bigger models have been shown to be immune to injected instructions","Hide the system prompt so that attackers cannot see which rules the agent follows"],
       answer:1, hints:["Which option removes one leg of the dangerous combination?","Which option is a security boundary rather than a request?"],
       explain:"Separating private-data access from untrusted browsing breaks the injection-to-exfiltration chain. A prompt instruction is worth having but is not a boundary; model size does not remove the vulnerability; hiding the prompt does nothing against injection." },
     { id:'l6-05-q2', skill:'l6.computer-use', type:'mcq', difficulty:3,
@@ -236,7 +236,26 @@ export default [
       accept:["code","outside","deterministic","not (the )?model","enforce"],
       model:"In code outside the model, because a prompt can be bypassed by injected or mistaken reasoning, whereas a deterministic gate enforces the policy regardless of what the model decides.",
       hints:["Which one can be talked out of it?"],
-      explain:"A deterministic gate is a boundary; a prompt is a request. If the model is fooled, only a gate outside the model still holds." }
+      explain:"A deterministic gate is a boundary; a prompt is a request. If the model is fooled, only a gate outside the model still holds." },
+    { id:'l6-05-q6', skill:'l6.computer-use', type:'mcq', difficulty:2,
+      q:"Diagnose the failure. A GUI agent clicks ‘Save’ at every step, the screenshot is identical each time, and the task never ends. Which mechanism most directly addresses this?",
+      options:["A step cap plus a detector for repeated (screen, action) pairs that triggers a replan or hands over to a human","A higher-resolution screenshot so the agent can see the button more clearly and stop retrying","A prompt line telling the model to try harder and never give up on the task","Removing the permission gate so that actions run without delay"],
+      answer:0, wrong:{ '1':"The agent can see the button; the state is not changing, which resolution does not fix.", '3':"A gate does not cause the loop, and removing it removes your safety boundary." },
+      hints:["The screen is unchanged: what signals a stuck loop?","Which option bounds the damage regardless of why it loops?"],
+      explain:"A repeated state-action pair is the signature of a stuck loop; budgets and repeat detection bound cost and force a different strategy. More pixels or more persistence do not address a loop whose cause is outside the model's view (for example a disabled button or a hidden error)." },
+    { id:'l6-05-q7', skill:'l6.computer-use', type:'mcq', difficulty:3,
+      q:"Design trade-off. A vendor's API covers about 90% of the operations your agent needs; the rest exist only in the web interface. What is the best default architecture?",
+      options:["Use the web interface for everything, so one mechanism handles every case","Use the API for the 90% and computer use only for the remainder, behind tighter gates","Use the web interface, because screenshots carry more information than structured API responses","Use neither: computer-use agents are too unreliable for any production workflow and the remainder should be dropped"],
+      answer:1, wrong:{ '0':"Simplicity of mechanism is bought with lower reliability, speed and auditability for all operations.", '3':"Unreliable on long unguarded tasks does not mean unusable for a narrow, gated, verifiable remainder." },
+      hints:["Which mechanism is more reliable and auditable per step?","Reserve the fragile tool for where nothing else works."],
+      explain:"APIs give typed inputs, errors and logs and avoid compounding perception errors. Confining GUI control to the gap keeps its risk and cost small and lets you gate it more strictly." },
+    { id:'l6-05-q8', skill:'l6.agent-security', type:'multi', difficulty:3,
+      q:"Find the bug. A navigation gate allows only example.com, using the check below. Select every URL that wrongly passes it.",
+      code:"function allowed(url) {\n  return url.includes('example.com');\n}",
+      options:["https://example.com.attacker.net/login","https://attacker.net/?ref=example.com","https://example.com/account","https://attacker.net/"],
+      answer:[0,1],
+      hints:["includes() looks anywhere in the string, not at the host.","Which fix compares the parsed hostname exactly?"],
+      explain:"A substring test matches lookalike hosts (example.com.attacker.net) and query strings. Parse the URL and compare the hostname exactly (or by a dot-delimited suffix) against an allowlist. The legitimate example.com URL passes correctly and attacker.net alone is blocked." }
   ],
   takeaways:[
     "Computer-use agents run a screenshot-decide-act loop; errors compound across steps.",
@@ -265,7 +284,7 @@ export default [
       ["Failure analysis","Per-stage metrics (word error rate, etc.)","End-to-end evaluation mostly"]
     ]},
     { t:'h', text:'The latency budget' },
-    { t:'p', md:"In human conversation the gap between turns is short: typically a few hundred milliseconds, and in a ten-language study the average gap differed across languages by only about a quarter of a second around a shared mean (Stivers and colleagues, 2009). A voice agent that waits two seconds feels unnatural. So you set a **budget** for “end of user speech to first audio out” and spend it on stages." },
+    { t:'p', md:"In human conversation the gap between turns is short: typically a few hundred milliseconds, and in a ten-language study (Stivers and colleagues, 2009; see the [record at the Max Planck Institute](https://forms.mpi.nl/node/50939)) average response gaps differed by language, from the order of ten milliseconds for Japanese to roughly half a second for Danish according to secondary reports I could not check against the paper's tables, while the underlying pattern of avoiding both overlap and long silence was shared. A voice agent that waits two seconds feels unnatural. So you set a **budget** for “end of user speech to first audio out” and spend it on stages." },
     { t:'widget', w:'flow', props:{
         title:'Where voice latency is spent',
         height:300,
@@ -291,7 +310,7 @@ export default [
       "**Filler and acknowledgement.** A short “let me check” can mask tool-call latency, but should not be used to hide a broken system."
     ]},
     { t:'widget', w:'streaming', props:{}, caption:'Streaming changes what the user perceives. Compare waiting for the whole reply with hearing it start.' },
-    { t:'predict', q:"A cascaded voice agent has: endpointing wait 400 ms, ASR finalise 150 ms, LLM first token 500 ms, TTS first audio 250 ms, network 100 ms. The target is 1,000 ms to first sound. What is the cheapest single change likely to get under budget?", options:["Replace the LLM with a much larger one","Cut endpointing wait to about 200 ms and tune for false cut-offs, or reduce LLM time to first token","Make the reply shorter, since TTS time depends on total length","Lower audio sample rate"], answer:1, explain:"Total is 1,400 ms. Reducing endpointing and/or time to first token directly removes 200–400 ms. TTS first audio does not depend on reply length when you stream sentence by sentence, and a larger LLM generally increases time to first token.", skill:'l6.voice' },
+    { t:'predict', q:"A cascaded voice agent has: endpointing wait 400 ms, ASR finalise 150 ms, LLM first token 500 ms, TTS first audio 250 ms, network 100 ms. The target is 1,200 ms to first sound. Which single change gets under budget, and what does it risk?", options:["Swap in a much larger LLM so that its answers need no follow-up questions, which cuts the number of turns","Cut the endpointing wait from 400 ms to 200 ms, accepting more false cut-offs that you must measure","Make the reply shorter, because TTS first-audio time depends on the total length of the reply","Lower the audio sample rate, since smaller audio chunks arrive faster over the network"], answer:1, explain:"The total is 400 + 150 + 500 + 250 + 100 = 1,400 ms, so 200 ms must go. Halving the endpointing wait removes exactly 200 ms (1,200 ms), at the price of cutting off slow speakers, so measure the cut-off rate. A larger LLM usually raises time to first token; with sentence-level streaming, first audio does not depend on reply length; sample rate changes are negligible.", skill:'l6.voice' },
     { t:'widget', w:'codeplay', props:{
         title:'Latency budget report',
         fnName:'latencyReport',
@@ -304,7 +323,7 @@ export default [
           {args:[[{name:'asr',ms:200},{name:'llm',ms:400},{name:'tts',ms:150}],800], expect:{total:750,remaining:50,slowest:'llm',ok:true}},
           {args:[[],500], expect:{total:0,remaining:500,slowest:null,ok:true}}
         ],
-        hints:['ok means total <= budgetMs.','Return keys in the order total, remaining, slowest, ok.']
+        hints:['ok means total <= budgetMs.','Return an object with exactly the fields total, remaining, slowest and ok.']
       } },
     { t:'h', text:'Part 2 — Vision systems' },
     { t:'p', md:"A **vision-language model (VLM)** takes images and text and produces text. Typical jobs: describe a photo, answer questions about a chart, extract fields from an invoice. For documents there are two designs: a **pipeline** (OCR for text, layout analysis for structure, then a language model) or an **end-to-end VLM** that reads the page image directly. Pipelines give inspectable intermediate text and bounding boxes; VLMs handle messy layouts with less engineering but can invent plausible text." },
@@ -326,11 +345,11 @@ export default [
   quiz:[
     { id:'l6-06-q1', skill:'l6.voice', type:'mcq', difficulty:2,
       q:"A user interrupts a voice assistant halfway through a long answer. Which behaviour is correct?",
-      options:["Finish the sentence, then listen","Stop audio promptly, cancel generation, and record in the conversation only the portion that was actually spoken","Stop audio but keep the full planned answer in the conversation history","Ignore the interruption until the answer is complete"],
+      options:["Finish the current sentence so the speech sounds natural, then start listening again","Stop audio fast, cancel generation, and keep only the spoken part in the history","Stop audio immediately but keep the full planned answer in the conversation history for context","Ignore the interruption until the answer is complete, since barge-in detection often misfires on noise"],
       answer:1, hints:["What does the model need to believe about what the user heard?"],
       explain:"On barge-in the system should stop speaking and make the context reflect what the user actually heard. Keeping the full planned reply in history makes the model think it said things the user never heard, causing confusing follow-ups." },
     { id:'l6-06-q2', skill:'l6.voice', type:'code', difficulty:2,
-      q:"Write latencyReport(stages, budgetMs). stages = [{name, ms}]. Return {total, remaining, slowest, ok} in that key order: total is the sum, remaining = budgetMs - total, slowest is the name of the stage with the largest ms (first if tied; null if no stages), ok is true when total <= budgetMs.",
+      q:"Write latencyReport(stages, budgetMs). stages = [{name, ms}]. Return an object {total, remaining, slowest, ok}: total is the sum, remaining = budgetMs - total, slowest is the name of the stage with the largest ms (first if tied; null if no stages), ok is true when total <= budgetMs.",
       fnName:'latencyReport',
       starter:"function latencyReport(stages, budgetMs) {\n  return {};\n}",
       tests:[
@@ -339,7 +358,7 @@ export default [
         {args:[[],500], expect:{total:0,remaining:500,slowest:null,ok:true}},
         {args:[[{name:'a',ms:100},{name:'b',ms:100}],200], expect:{total:200,remaining:0,slowest:'a',ok:true}}
       ],
-      hints:["Use a loop with a strict > comparison so ties keep the first.","Check the key order in the returned object."],
+      hints:["Use a loop with a strict > comparison so ties keep the first.","Return exactly the four named fields; missing or extra fields fail."],
       solution:"function latencyReport(stages, budgetMs) {\n  let total = 0;\n  let slowest = null;\n  let max = -Infinity;\n  for (const s of stages) { total += s.ms; if (s.ms > max) { max = s.ms; slowest = s.name; } }\n  return { total, remaining: budgetMs - total, slowest, ok: total <= budgetMs };\n}",
       explain:"The budget is a sum, so a report that names the slowest stage tells you where to optimise first. Edge cases: no stages, and exactly on budget (still ok). Using >= in the comparison would pick the last tied stage instead of the first." },
     { id:'l6-06-q3', skill:'l6.voice', type:'multi', difficulty:3,
@@ -350,7 +369,7 @@ export default [
       explain:"Each architecture has real advantages. The claim that fewer parts is always better ignores control, auditing and maturity of tooling." },
     { id:'l6-06-q4', skill:'l6.vision', type:'mcq', difficulty:3, 
       q:"A VLM extracts invoice totals with 94% exact-match accuracy overall. Which additional step is MOST valuable before deployment?",
-      options:["Fine-tune on more invoices without looking at errors","Break errors down by vendor, scan quality and field, and add a check (line items sum to total) that routes suspicious cases to human review","Report the 94% figure to customers","Increase image resolution for all documents"],
+      options:["Fine-tune on several thousand more invoices straight away, without first examining which cases fail","Analyse errors by vendor, scan and field; add a sum check that routes doubtful cases to review","Report the 94% figure to customers as the expected accuracy for their own invoices","Increase image resolution for all documents, since resolution is the main cause of misreads"],
       answer:1, hints:["Where do the 6% errors come from, and can you detect them?"],
       explain:"Error analysis shows whether failures are systematic, and an independent consistency check turns silent errors into reviewable ones. Higher resolution and blind fine-tuning may help but do not tell you where the risk is." },
     { id:'l6-06-q5', skill:'l6.vision', type:'short', difficulty:2,
@@ -358,7 +377,25 @@ export default [
       accept:["small","handwrit","table","chart","count","spatial","hallucinat","invent","low.?contrast","rotat","resolution"],
       model:"For example: misreading small or handwritten text, merged table cells, reading values from charts, counting, or inventing text that is not on the page.",
       hints:["Think about tiny text, tables, and charts."],
-      explain:"These failures come from limited resolution, layout complexity and the tendency to produce fluent output even when the evidence is unclear." }
+      explain:"These failures come from limited resolution, layout complexity and the tendency to produce fluent output even when the evidence is unclear." },
+    { id:'l6-06-q6', skill:'l6.voice', type:'mcq', difficulty:3,
+      q:"Design trade-off. Bank callers pause mid-sentence while reading out account numbers, and your 300 ms endpointing wait is cutting them off. What is the most sensible change?",
+      options:["Raise the endpointing wait to 2 seconds for every turn, so that nobody is ever cut off during the call","Allow longer silence after digits or unfinished phrases, keep it short elsewhere, and track cut-offs against added delay","Remove endpointing and require the caller to press a key at the end of each turn, which removes timing problems","Switch to a larger ASR model, which makes turn detection unnecessary"],
+      answer:1, wrong:{ '0':"A global 2 s wait fixes cut-offs by making every reply feel slow.", '3':"Recognition accuracy and turn detection are different problems." },
+      hints:["Is the problem the same for every kind of utterance?","Name the two costs you are trading off."],
+      explain:"The right wait depends on context: after digits a pause is likely mid-turn. Context-sensitive endpointing spends delay only where needed, and measuring cut-off rate against added latency makes the trade-off explicit." },
+    { id:'l6-06-q7', skill:'l6.vision', type:'mcq', difficulty:2,
+      q:"A team must extract fixed fields from millions of scanned forms with strict audit requirements. Which consideration most favours an OCR-plus-layout pipeline over an end-to-end VLM?",
+      options:["Pipelines are always more accurate than end-to-end VLMs on every document layout and every scan quality","Per-field text and bounding boxes can be inspected, so an error can be located and audited","VLMs cannot read printed text at all","OCR is deterministic, so a pipeline needs no evaluation set"],
+      answer:1, wrong:{ '0':"Neither design is uniformly more accurate; it depends on layouts and scan quality.", '3':"OCR can still misread; any pipeline needs a labelled evaluation set." },
+      hints:["What does the pipeline expose that a single model call hides?"],
+      explain:"Intermediate outputs make failures traceable and auditable. Accuracy comparisons must be measured on your documents, and VLMs can read printed text well; the point is observability, not a blanket accuracy claim." },
+    { id:'l6-06-q8', skill:'l6.vision', type:'multi', difficulty:3,
+      q:"A VLM extracts line items and the total from receipts. Select the checks that would genuinely help catch silent errors.",
+      options:["Line-item amounts must sum to the extracted total","Trust the model's stated confidence, since it is always well calibrated","The extracted total must appear in the text of an independent OCR pass","Report accuracy separately by vendor and receipt format to find concentrated failures"],
+      answer:[0,2,3],
+      hints:["Which checks use evidence independent of the model's own claim?"],
+      explain:"Arithmetic consistency, an independent reader and stratified error analysis all add information. Self-reported confidence is not guaranteed to be calibrated, so it should be validated before being used as a gate." }
   ],
   takeaways:[
     "Voice is a latency-budget problem: sum the stages, overlap them by streaming, and measure end of speech to first sound.",
