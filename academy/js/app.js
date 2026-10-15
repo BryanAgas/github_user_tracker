@@ -69,7 +69,7 @@ function buildShell() {
     h('button', { type: 'button', class: 'morebtn', 'aria-expanded': 'false', 'aria-controls': 'more', onclick: toggleMore }, icon('more'), h('span', {}, 'More')));
   const top = h('div', { class: 'topbar' }, h('a', { class: 'brand sm', href: '#/home' }, h('span', { class: 'logo', 'aria-hidden': 'true' }, 'A'), 'Mrs Anne'),
     h('button', { class: 'btn small', type: 'button', onclick: () => openTutor() }, icon('tutor'), ' Ask Mrs Anne'),
-    h('button', { class: 'btn small icon', type: 'button', 'aria-label': 'Toggle dark mode', onclick: () => { const dark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches); state.settings.theme = dark ? 'light' : 'dark'; applyTheme(); import('./store.js').then((m) => m.save()); } }, '◐'));
+    h('button', { class: 'btn small icon', type: 'button', 'aria-label': 'Toggle dark mode', onclick: () => { const dark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches); state.settings.theme = dark ? 'light' : 'dark'; applyTheme(); import('./store.js').then((m) => m.save()); } }, icon('theme')));
   document.getElementById('shell').prepend(side, top);
   document.getElementById('shell').append(bottom, more);
   mountDrawer(document.body);

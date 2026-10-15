@@ -155,7 +155,7 @@ dl.gloss dt{font-weight:700;margin-top:1rem}dl.gloss dd{margin:.2rem 0 0;color:v
   .bottom a.on{color:var(--brand)}
   .more:not([hidden]){display:grid;position:fixed;left:12px;right:12px;bottom:72px;z-index:31;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:.5rem}
   .lrow{grid-template-columns:1.6rem minmax(0,1fr)}.lmeta{grid-column:2}
-  .level-h{flex-wrap:wrap}.sticky-actions{top:52px}
+  .level-h{flex-wrap:wrap}.sticky-actions{position:static;background:none;backdrop-filter:none}
   .drawer{width:100%;bottom:0;top:auto;height:85vh;border-radius:20px 20px 0 0;border:1px solid var(--line)}
   h1{font-size:1.7rem}
 }

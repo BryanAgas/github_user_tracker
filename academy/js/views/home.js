@@ -9,7 +9,15 @@ import { WIDGET_NAMES } from '../widgets/index.js';
 
 export default function home() {
   const p = state.profile;
-  if (!state.onboarded) return page('Welcome', h('div', { class: 'hero' }, h('h2', { class: 'display' }, 'From “I don’t really get AI” to “I can build it”.'), h('p', { class: 'lede' }, 'I’m Mrs Anne. Let’s find out where you are, and build you a path that fits your job, your goals and your time. It takes about three minutes.'), h('div', { class: 'row' }, linkBtn('Start my path', '#/onboarding'), linkBtn('Just look around', '#/explore', 'btn'))));
+  if (!state.onboarded) return h('div', { class: 'page' },
+    h('div', { class: 'hero' }, h('div', { class: 'kicker' }, 'Mrs Anne’s AI Academy'), h('h1', { id: 'page-title', tabindex: '-1', class: 'display' }, 'From “I don’t really get AI” to “I can build it”.'),
+      h('p', { class: 'lede' }, 'I’m Mrs Anne. Tell me about you, and I’ll build a path through eight levels that fits your job, your goals and your time. About three minutes, no account, nothing leaves your device.'),
+      h('div', { class: 'row' }, linkBtn('Start my path', '#/onboarding'), linkBtn('Just look around', '#/explore', 'btn'))),
+    h('div', { class: 'grid' },
+      h('div', { class: 'card' }, h('h2', {}, '🧪 Learn by touching'), h('p', { class: 'muted' }, 'Train a tiny neural network, split text into tokens, break a retrieval system on purpose. Every idea comes with an experiment.')),
+      h('div', { class: 'card' }, h('h2', {}, '💬 A teacher, not an answer machine'), h('p', { class: 'muted' }, 'Stuck? I’ll explain it another way, then give hints before solutions. Confident? I’ll make it harder.')),
+      h('div', { class: 'card' }, h('h2', {}, '🏅 Mastery you can trust'), h('p', { class: 'muted' }, 'Opening a lesson proves nothing. Answers, exercises and real projects do, and your Progress page shows exactly what is strong.'))),
+    h('section', { class: 'levels-strip', 'aria-label': 'Levels' }, h('h2', {}, 'The journey'), h('div', { class: 'strip' }, levels.map((L) => h('a', { class: 'lv-card', href: `#/learn/L${L.n}`, style: lvStyle(L.n) }, h('span', { class: 'glyph', 'aria-hidden': 'true' }, L.glyph), h('strong', {}, `L${L.n} ${L.short}`), h('span', { class: 'muted small' }, L.outcome))))));
   const n = nextUp(); const due = reviewDueCount(); const pd = projectDue();
   const pl = pathLessons(); const done = pl.filter((l) => lessonDone(l.id)).length;
   const goal = Math.round(p.minutesPerWeek); const wk = weekMinutes();

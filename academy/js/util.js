@@ -84,7 +84,7 @@ export function icon(name) {
     home: 'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10', learn: 'M4 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4zM20 5h-7a3 3 0 0 0-3 3', explore: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z',
     lab: 'M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3', build: 'M14 6l4 4M4 20l5-1 10-10-4-4L5 15z', tutor: 'M4 5h16v11H9l-5 4zM8 9h8M8 12h5',
     progress: 'M4 20V10M10 20V4M16 20v-8M22 20H2', library: 'M5 3h4v18H5zM11 3h4v18h-4zM17 5l3.5 1-4 15-3.5-1z', more: 'M5 12h.01M12 12h.01M19 12h.01', settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.3.9a7 7 0 0 0-2-1.2L14 3h-4l-.6 2.5a7 7 0 0 0-2 1.2l-2.3-.9-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.5 2.3-.9c.6.5 1.3.9 2 1.2L10 21h4l.6-2.5c.7-.3 1.4-.7 2-1.2l2.3.9 2-3.5-2-1.5c.1-.4.1-.8.1-1.2z',
-    check: 'M5 12.5l4.5 4.5L19 7.5', flame: 'M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 2.5 2 2.5C11 9 11 6 12 3z', send: 'M4 12l16-8-6 16-3-7z', close: 'M6 6l12 12M18 6L6 18', arrow: 'M5 12h14M13 6l6 6-6 6',
+    check: 'M5 12.5l4.5 4.5L19 7.5', flame: 'M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 2.5 2 2.5C11 9 11 6 12 3z', send: 'M4 12l16-8-6 16-3-7z', theme: 'M12 3a9 9 0 1 0 0 18zM12 3v18', close: 'M6 6l12 12M18 6L6 18', arrow: 'M5 12h14M13 6l6 6-6 6',
   };
   const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('width', '22'); s.setAttribute('height', '22'); s.setAttribute('aria-hidden', 'true'); s.setAttribute('focusable', 'false');
